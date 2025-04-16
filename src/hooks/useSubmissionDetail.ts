@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Submission } from '@/types/submission';
 import { getSubmissionById, getMockSubmissions } from '@/lib/api';
 
@@ -28,9 +28,16 @@ export function useSubmissionDetail(id: number) {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
+  const queryClient = useQueryClient();
+  
+  const mutate = () => {
+    queryClient.invalidateQueries({ queryKey: ['submission', id] });
+  };
+  
   return {
     submission: data,
     isLoading,
     error,
+    mutate,
   };
 }

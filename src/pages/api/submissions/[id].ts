@@ -6,7 +6,7 @@ const TARGET_API_URL = process.env.INTAKE_API_URL || 'https://flash-intake-form-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Add CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   // Handle OPTIONS request for preflight
@@ -28,13 +28,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
     
-    const response = await fetch(fullUrl, {
+    let fetchOptions: RequestInit = {
       method: req.method,
       headers: {
         'Content-Type': 'application/json',
       },
       signal: controller.signal
-    });
+    };
+    
+    // Include body for PUT requests
+    if (req.method === 'PUT' && req.body) {
+      fetchOptions.body = JSON.stringify(req.body);
+    }
+    
+    const response = await fetch(fullUrl, fetchOptions);
     
     clearTimeout(timeoutId);
     
