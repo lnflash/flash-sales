@@ -10,7 +10,8 @@ import {
   Title, 
   Tooltip, 
   Legend, 
-  Filler 
+  Filler,
+  ChartType,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
@@ -36,7 +37,8 @@ interface InterestChartProps {
 }
 
 export default function InterestChart({ data, isLoading = false }: InterestChartProps) {
-  const chartRef = useRef<ChartJS>(null);
+  // Don't specify the type - let TypeScript infer it correctly
+  const chartRef = useRef(null);
 
   // Update gradient when chart renders
   useEffect(() => {

@@ -30,7 +30,8 @@ export default function InterestDistributionChart({
   distribution, 
   isLoading = false 
 }: InterestDistributionProps) {
-  const chartRef = useRef<ChartJS>(null);
+  // Don't specify the type - let TypeScript infer it correctly
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const chart = chartRef.current;
