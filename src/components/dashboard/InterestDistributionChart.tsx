@@ -30,8 +30,8 @@ export default function InterestDistributionChart({
   distribution, 
   isLoading = false 
 }: InterestDistributionProps) {
-  // Don't specify the type - let TypeScript infer it correctly
-  const chartRef = useRef(null);
+  // Use a more specific type for the Chart.js component
+  const chartRef = useRef<any>(null);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -40,25 +40,28 @@ export default function InterestDistributionChart({
       return;
     }
 
-    const ctx = chart.ctx;
-    const gradients = distribution.map((_, index) => {
-      const ratio = index / (distribution.length - 1);
-      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    // Only run this effect if the chart has been initialized
+    if (chart.ctx) {
+      const ctx = chart.ctx;
+      const gradients = distribution.map((_, index) => {
+        const ratio = index / (distribution.length - 1);
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        
+        // Green to yellow gradient based on interest level
+        const r = Math.round(0 + ratio * 255);
+        const g = Math.round(168 - ratio * 25);
+        const b = Math.round(107 - ratio * 107);
+        
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.8)`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.5)`);
+        
+        return gradient;
+      });
       
-      // Green to yellow gradient based on interest level
-      const r = Math.round(0 + ratio * 255);
-      const g = Math.round(168 - ratio * 25);
-      const b = Math.round(107 - ratio * 107);
-      
-      gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.8)`);
-      gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.5)`);
-      
-      return gradient;
-    });
-    
-    if (chart.data.datasets[0]) {
-      chart.data.datasets[0].backgroundColor = gradients;
-      chart.update();
+      if (chart.data && chart.data.datasets && chart.data.datasets[0]) {
+        chart.data.datasets[0].backgroundColor = gradients;
+        chart.update();
+      }
     }
   }, [distribution]);
 

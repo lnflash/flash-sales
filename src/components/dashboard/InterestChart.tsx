@@ -37,8 +37,8 @@ interface InterestChartProps {
 }
 
 export default function InterestChart({ data, isLoading = false }: InterestChartProps) {
-  // Don't specify the type - let TypeScript infer it correctly
-  const chartRef = useRef(null);
+  // Use a more specific type for the Chart.js component
+  const chartRef = useRef<any>(null);
 
   // Update gradient when chart renders
   useEffect(() => {
@@ -48,14 +48,17 @@ export default function InterestChart({ data, isLoading = false }: InterestChart
       return;
     }
 
-    const ctx = chart.ctx;
-    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(0, 168, 107, 0.4)');
-    gradient.addColorStop(1, 'rgba(0, 168, 107, 0)');
-    
-    if (chart.data.datasets[0]) {
-      chart.data.datasets[0].backgroundColor = gradient;
-      chart.update();
+    // Only run this effect if the chart has been initialized
+    if (chart.ctx) {
+      const ctx = chart.ctx;
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(0, 168, 107, 0.4)');
+      gradient.addColorStop(1, 'rgba(0, 168, 107, 0)');
+      
+      if (chart.data && chart.data.datasets && chart.data.datasets[0]) {
+        chart.data.datasets[0].backgroundColor = gradient;
+        chart.update();
+      }
     }
   }, []);
 
