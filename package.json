@@ -1,6 +1,6 @@
 {
   "name": "flash-sales-dashboard",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Flash Sales Dashboard - Admin panel for monitoring and managing sales data",
   "main": "index.js",
   "scripts": {
