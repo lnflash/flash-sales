@@ -43,14 +43,14 @@ export default function Dashboard() {
         />
         <StatsCard
           title="Avg. Interest Level"
-          value={stats?.avgInterestLevel.toFixed(1) || '0.0'}
+          value={stats?.avgInterestLevel ? stats.avgInterestLevel.toFixed(1) : '0.0'}
           icon={<SparklesIcon className="h-6 w-6" />}
           change={{ value: 5, positive: true }}
           color="blue"
         />
         <StatsCard
           title="Package Seen"
-          value={`${stats?.packageSeenPercentage.toFixed(1) || 0}%`}
+          value={`${stats?.packageSeenPercentage ? stats.packageSeenPercentage.toFixed(1) : 0}%`}
           icon={<ArrowTrendingUpIcon className="h-6 w-6" />}
           change={{ value: 3, positive: true }}
           color="purple"

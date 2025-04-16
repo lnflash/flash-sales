@@ -53,7 +53,7 @@ export default function AnalyticsPage() {
             </div>
             <div>
               <p className="text-sm text-gray-400">Package Exposure</p>
-              <p className="text-2xl font-bold text-white">{stats?.packageSeenPercentage.toFixed(1) || 0}%</p>
+              <p className="text-2xl font-bold text-white">{stats?.packageSeenPercentage ? stats.packageSeenPercentage.toFixed(1) : 0}%</p>
               <p className="text-xs text-gray-500">Owners who saw the package</p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export default function AnalyticsPage() {
             </div>
             <div>
               <p className="text-sm text-gray-400">Avg. Interest Score</p>
-              <p className="text-2xl font-bold text-white">{stats?.avgInterestLevel.toFixed(1) || 0}/5</p>
+              <p className="text-2xl font-bold text-white">{stats?.avgInterestLevel ? stats.avgInterestLevel.toFixed(1) : 0}/5</p>
               <p className="text-xs text-gray-500">From all submissions</p>
             </div>
           </div>

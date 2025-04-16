@@ -89,12 +89,24 @@ export function useSubmissions(
         if (sorting.length > 0) {
           const { id, desc } = sorting[0];
           filteredData.sort((a, b) => {
-            if (a[id as keyof Submission] < b[id as keyof Submission]) {
-              return desc ? 1 : -1;
+            const valueA = a[id as keyof Submission];
+            const valueB = b[id as keyof Submission];
+            
+            // Handle potentially undefined values
+            if (valueA === undefined && valueB === undefined) return 0;
+            if (valueA === undefined) return desc ? -1 : 1;
+            if (valueB === undefined) return desc ? 1 : -1;
+            
+            // String comparison for strings
+            if (typeof valueA === 'string' && typeof valueB === 'string') {
+              return desc 
+                ? valueB.localeCompare(valueA) 
+                : valueA.localeCompare(valueB);
             }
-            if (a[id as keyof Submission] > b[id as keyof Submission]) {
-              return desc ? -1 : 1;
-            }
+            
+            // Numeric or boolean comparison
+            if (valueA < valueB) return desc ? 1 : -1;
+            if (valueA > valueB) return desc ? -1 : 1;
             return 0;
           });
         }
