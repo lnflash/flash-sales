@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --flash-green: #00A86B;
+  --flash-green-light: #00C17D;
+  --flash-green-dark: #008F5A;
+  --flash-yellow: #FFD700;
+  --flash-yellow-light: #FFDF33;
+  --flash-yellow-dark: #E6C200;
+  --flash-dark-1: #0F172A;
+  --flash-dark-2: #1E293B;
+  --flash-dark-3: #334155;
+}
+
+@layer base {
+  body {
+    @apply bg-flash-dark-1 text-white;
+  }
+  
+  /* Custom scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-flash-dark-2;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-flash-dark-3 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-flash-green-dark;
+  }
+}
+
+@layer components {
+  /* Form styling */
+  .form-input,
+  .form-textarea,
+  .form-select {
+    @apply w-full px-4 py-2 bg-flash-dark-2 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-flash-green;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-400 mb-2;
+  }
+  
+  .form-button {
+    @apply px-4 py-2 bg-flash-green text-white rounded-md hover:bg-flash-green-light transition-colors focus:outline-none focus:ring-2 focus:ring-flash-green-dark;
+  }
+  
+  .form-button-secondary {
+    @apply px-4 py-2 border border-gray-400 text-gray-400 rounded-md hover:bg-flash-dark-2 transition-colors focus:outline-none focus:ring-2 focus:ring-flash-dark-2;
+  }
+  
+  /* Custom checkbox */
+  .form-checkbox {
+    @apply h-4 w-4 text-flash-green rounded focus:ring-flash-green bg-flash-dark-2 border-flash-dark-3;
+  }
+  
+  /* Custom radio */
+  .form-radio {
+    @apply h-4 w-4 text-flash-green focus:ring-flash-green bg-flash-dark-2 border-flash-dark-3;
+  }
+  
+  /* Custom toggle switch */
+  .form-toggle {
+    @apply relative inline-block w-10 h-5 cursor-pointer;
+  }
+  
+  .form-toggle-input {
+    @apply opacity-0 w-0 h-0;
+  }
+  
+  .form-toggle-bg {
+    @apply absolute top-0 left-0 right-0 bottom-0 rounded-full transition-colors duration-200;
+  }
+  
+  .form-toggle-circle {
+    @apply absolute left-0.5 bottom-0.5 bg-white rounded-full w-4 h-4 transition-transform duration-200;
+  }
+}
+
+/* Loading animation */
+.loading-spinner {
+  @apply animate-spin h-8 w-8 border-4 border-flash-green-dark border-t-flash-green rounded-full;
+}
