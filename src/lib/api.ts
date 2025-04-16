@@ -8,6 +8,7 @@ import {
 } from '@/types/submission';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+console.log('API base URL:', API_BASE_URL);
 
 // Helper function to handle API responses
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -61,13 +62,28 @@ export async function getSubmissions(
   pagination?: PaginationState,
   sortBy?: SortOption[]
 ): Promise<SubmissionListResponse> {
-  // For now we'll mock this part since we don't have a real API yet
-  // In a real implementation, this would hit the actual API endpoint
-  
   try {
     const queryString = buildQueryString(filters, pagination, sortBy);
-    const response = await fetch(`${API_BASE_URL}/submissions${queryString}`);
-    return handleResponse<SubmissionListResponse>(response);
+    const url = `${API_BASE_URL}/submissions${queryString}`;
+    console.log('Fetching submissions from URL:', url);
+    
+    const response = await fetch(url);
+    console.log('Response status:', response.status);
+    
+    // Log the raw response for debugging
+    const responseText = await response.text();
+    console.log('Raw response:', responseText);
+    
+    // Parse the response text back to JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Error parsing response:', parseError);
+      throw new Error(`Failed to parse response: ${responseText}`);
+    }
+    
+    return data;
   } catch (error) {
     console.error('Error fetching submissions:', error);
     throw error;

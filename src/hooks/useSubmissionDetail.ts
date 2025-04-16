@@ -5,8 +5,9 @@ import { Submission } from '@/types/submission';
 import { getSubmissionById, getMockSubmissions } from '@/lib/api';
 
 export function useSubmissionDetail(id: number) {
-  // Always use real data in production, and only use mock data in development
-  const useMockData = process.env.NEXT_PUBLIC_APP_ENV === 'development';
+  // Force use of real API data
+  console.log('Detail hook - Current environment:', process.env.NEXT_PUBLIC_APP_ENV);
+  const useMockData = false; // Force real API data
   
   const { data, isLoading, error } = useQuery<Submission>({
     queryKey: ['submission', id],

@@ -19,8 +19,10 @@ export function useSubmissions(
   const [pagination, setPagination] = useState<PaginationState>(initialPagination);
   const [sorting, setSorting] = useState<SortOption[]>(initialSorting);
   
-  // Always use real data in production, and only use mock data in development
-  const useMockData = process.env.NEXT_PUBLIC_APP_ENV === 'development';
+  // Force use of real API data unless explicitly in development mode
+  // Adding console logging to debug
+  console.log('Current environment:', process.env.NEXT_PUBLIC_APP_ENV, 'NODE_ENV:', process.env.NODE_ENV);
+  const useMockData = false; // Force real API data
   
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['submissions', filters, pagination, sorting],
