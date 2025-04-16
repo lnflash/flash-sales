@@ -5,8 +5,8 @@ import { SubmissionStats } from '@/types/submission';
 import { getSubmissionStats, getMockSubmissionStats } from '@/lib/api';
 
 export function useSubmissionStats() {
-  // For development, we'll use mock data
-  const useMockData = process.env.NEXT_PUBLIC_APP_ENV !== 'production';
+  // Always use real data in production, and only use mock data in development
+  const useMockData = process.env.NEXT_PUBLIC_APP_ENV === 'development';
   
   const { data, isLoading, error, refetch } = useQuery<SubmissionStats>({
     queryKey: ['submissionStats'],

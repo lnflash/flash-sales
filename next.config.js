@@ -17,7 +17,8 @@ const nextConfig = {
   // },
   // Enable environment variables to be accessed in the browser
   env: {
-    NEXT_PUBLIC_APP_ENV: process.env.NODE_ENV,
+    // Explicitly set NEXT_PUBLIC_APP_ENV to 'production' in production
+    NEXT_PUBLIC_APP_ENV: process.env.NODE_ENV === 'production' ? 'production' : process.env.NODE_ENV,
     NEXT_PUBLIC_API_BASE_URL: '/api', // Use relative URL for API endpoints
     INTAKE_API_URL: process.env.INTAKE_API_URL || 'https://flash-intake-form-3xgvo.ondigitalocean.app/api',
   },
