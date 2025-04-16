@@ -1,0 +1,3 @@
+# All robots are disallowed from accessing admin dashboard
+User-agent: *
+Disallow: /

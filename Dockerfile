@@ -13,6 +13,9 @@ RUN npm ci
 # Copy the rest of the code
 COPY . .
 
+# Ensure public directory exists
+RUN mkdir -p public
+
 # Build the application
 RUN npm run build
 
@@ -23,6 +26,9 @@ WORKDIR /app
 
 # Set environment to production
 ENV NODE_ENV=production
+
+# Create public directory
+RUN mkdir -p public
 
 # Install only production dependencies
 COPY --from=builder /app/package.json ./
