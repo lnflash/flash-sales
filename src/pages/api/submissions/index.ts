@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getMockSubmissions } from '@/lib/api';
 
 // The target API endpoint
 const TARGET_API_URL = process.env.INTAKE_API_URL || 'https://flash-intake-form-3xgvo.ondigitalocean.app/api';
@@ -70,29 +69,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error(`[API PROXY] Failed to parse response as JSON:`, parseError);
       console.log("[API PROXY] Falling back to real data from DB");
       
-      // If the API didn't return valid JSON or is returning mock data, query the database directly
-      // (This is just a simulation for now, replaced with direct flash-intake-form URL later)
-      return res.status(200).json({
-        data: await getMockSubmissions(),
-        totalCount: 8,
-        pageCount: 1
+      // If the API didn't return valid JSON, return an error
+      return res.status(500).json({
+        error: 'Invalid response from API server'
       });
     }
     
     // If we got here, we have valid JSON
-    // Check if the response looks like mock data (first 3 entries of our mock array)
-    if (data && Array.isArray(data.data) && data.data.length === 3 && 
-        data.data[0].id === 3 && data.data[1].id === 2 && data.data[2].id === 1) {
-      console.log("[API PROXY] Detected mock data response, returning query from actual DB");
-      
-      // If the API is returning mock data, go directly to the source
-      // Currently just simulation, should be replaced with direct DB access endpoint
-      return res.status(200).json({
-        data: await getMockSubmissions(),
-        totalCount: 8,
-        pageCount: 1
-      });
-    }
     
     // Return the response
     return res.status(response.status).json(data);
@@ -101,13 +84,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error.name === 'AbortError') {
       res.status(504).json({ error: 'Request timeout' });
     } else {
-      // Return mock data as a fallback
-      console.log("[API PROXY] Falling back to mock data due to error");
-      const mockData = await getMockSubmissions();
-      return res.status(200).json({
-        data: mockData,
-        totalCount: mockData.length,
-        pageCount: 1
+      // Return an error message if the API request failed
+      console.log("[API PROXY] API request failed with error");
+      return res.status(500).json({
+        error: 'API request failed: ' + error.message
       });
     }
   }
