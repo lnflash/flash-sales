@@ -23,9 +23,10 @@ import {
 interface SubmissionTableProps {
   data: Submission[];
   isLoading?: boolean;
+  totalItems?: number;
 }
 
-export default function SubmissionTable({ data, isLoading = false }: SubmissionTableProps) {
+export default function SubmissionTable({ data, isLoading = false, totalItems = 0 }: SubmissionTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'timestamp', desc: true }
   ]);
@@ -202,6 +203,12 @@ export default function SubmissionTable({ data, isLoading = false }: SubmissionT
       {data.length === 0 && (
         <div className="py-12 text-center text-gray-400">
           <p>No submissions found</p>
+        </div>
+      )}
+      
+      {data.length > 0 && (
+        <div className="py-4 px-6 border-t border-flash-dark-2 text-gray-400 text-sm">
+          Showing {data.length} of {totalItems} submissions
         </div>
       )}
     </div>

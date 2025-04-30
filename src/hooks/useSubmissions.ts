@@ -12,7 +12,7 @@ import { getSubmissions } from '@/lib/api';
 
 export function useSubmissions(
   initialFilters: SubmissionFilters = {},
-  initialPagination: PaginationState = { pageIndex: 0, pageSize: 10 },
+  initialPagination: PaginationState = { pageIndex: 0, pageSize: 25 },
   initialSorting: SortOption[] = [{ id: 'timestamp', desc: true }]
 ) {
   const [filters, setFilters] = useState<SubmissionFilters>(initialFilters);

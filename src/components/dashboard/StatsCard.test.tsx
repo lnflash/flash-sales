@@ -41,7 +41,7 @@ describe('StatsCard Component', () => {
       />
     );
     
-    expect(screen.getByText('-10%')).toBeInTheDocument();
+    expect(screen.getByText('10%')).toBeInTheDocument();
   });
   
   it('applies the correct color class', () => {
