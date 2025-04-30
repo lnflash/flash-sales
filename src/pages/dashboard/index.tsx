@@ -10,19 +10,23 @@ import StatsCard from '@/components/dashboard/StatsCard';
 import InterestChart from '@/components/dashboard/InterestChart';
 import InterestDistributionChart from '@/components/dashboard/InterestDistributionChart';
 import RecentSubmissions from '@/components/dashboard/RecentSubmissions';
+import SalesRepScoreboard from '@/components/dashboard/SalesRepScoreboard';
 import { useSubmissionStats } from '@/hooks/useSubmissionStats';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
+import { calculateRepStats } from '@/utils/rep-stats-calculator';
 
 export default function Dashboard() {
   const { stats, isLoading: isLoadingStats } = useSubmissionStats();
+  // Get more submissions for the rep scoreboard than just the recent ones
   const { submissions, isLoading: isLoadingSubmissions } = useSubmissions(
     {}, // No filters
-    { pageIndex: 0, pageSize: 5 }, // Pagination for recent submissions
+    { pageIndex: 0, pageSize: 100 }, // Get more data for accurate rep stats
     [{ id: 'timestamp', desc: true }] // Sort by most recent
   );
 
   const interestDistribution = calculateInterestDistribution(submissions);
+  const repStats = calculateRepStats(submissions);
 
   return (
     <DashboardLayout title="Dashboard">
@@ -72,11 +76,19 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section>
-        <RecentSubmissions 
-          submissions={submissions}
-          isLoading={isLoadingSubmissions}
-        />
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="lg:col-span-2">
+          <RecentSubmissions 
+            submissions={submissions}
+            isLoading={isLoadingSubmissions}
+          />
+        </div>
+        <div>
+          <SalesRepScoreboard
+            repStats={repStats}
+            isLoading={isLoadingSubmissions}
+          />
+        </div>
       </section>
     </DashboardLayout>
   );
