@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { 
   Chart as ChartJS, 
   CategoryScale, 
@@ -36,9 +36,86 @@ interface InterestChartProps {
   isLoading?: boolean;
 }
 
+type TimePeriod = 'week' | 'month' | 'year';
+
 export default function InterestChart({ data, isLoading = false }: InterestChartProps) {
   // Use a more specific type for the Chart.js component
   const chartRef = useRef<any>(null);
+  
+  // State for time period selection
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month');
+
+  // Data filtering logic based on selected time period
+  const filteredData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    const now = new Date();
+    
+    switch (selectedPeriod) {
+      case 'week': {
+        // Show last 4 weeks of data
+        const fourWeeksAgo = new Date(now);
+        fourWeeksAgo.setDate(now.getDate() - 28);
+        
+        // Group monthly data into weeks for the last 4 weeks
+        const weeklyData: MonthlyData[] = [];
+        for (let i = 3; i >= 0; i--) {
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - (i * 7));
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6);
+          
+          // Format as "Week of MM/DD"
+          const weekLabel = `Week of ${(weekStart.getMonth() + 1).toString().padStart(2, '0')}/${weekStart.getDate().toString().padStart(2, '0')}`;
+          
+          // For demo purposes, estimate weekly data from monthly data
+          // In a real implementation, you'd want weekly data from the API
+          const monthData = data.find(item => {
+            const itemDate = new Date(item.month + '-01');
+            return itemDate.getMonth() === weekStart.getMonth() && itemDate.getFullYear() === weekStart.getFullYear();
+          });
+          
+          weeklyData.push({
+            month: weekLabel,
+            count: monthData ? Math.round(monthData.count / 4) : 0 // Rough weekly estimate
+          });
+        }
+        return weeklyData;
+      }
+      
+      case 'month': {
+        // Show last 12 months (current behavior)
+        const twelveMonthsAgo = new Date(now);
+        twelveMonthsAgo.setMonth(now.getMonth() - 11);
+        
+        return data.filter(item => {
+          const itemDate = new Date(item.month + '-01');
+          return itemDate >= twelveMonthsAgo;
+        }).slice(-12); // Ensure we only show 12 months max
+      }
+      
+      case 'year': {
+        // Group data by year, showing last 3 years
+        const yearlyData: { [year: string]: number } = {};
+        
+        data.forEach(item => {
+          const itemDate = new Date(item.month + '-01');
+          const year = itemDate.getFullYear().toString();
+          yearlyData[year] = (yearlyData[year] || 0) + item.count;
+        });
+        
+        // Convert to array and sort, keep last 3 years
+        const sortedYears = Object.keys(yearlyData).sort().slice(-3);
+        return sortedYears.map(year => ({
+          month: year,
+          count: yearlyData[year]
+        }));
+      }
+      
+      default:
+        return data;
+    }
+  }, [data, selectedPeriod]);
 
   // Update gradient when chart renders
   useEffect(() => {
@@ -63,11 +140,11 @@ export default function InterestChart({ data, isLoading = false }: InterestChart
   }, []);
 
   const chartData = {
-    labels: data.map(item => item.month),
+    labels: filteredData.map(item => item.month),
     datasets: [
       {
         label: 'Submissions',
-        data: data.map(item => item.count),
+        data: filteredData.map(item => item.count),
         borderColor: '#00A86B',
         borderWidth: 2,
         pointBackgroundColor: '#00A86B',
@@ -133,7 +210,7 @@ export default function InterestChart({ data, isLoading = false }: InterestChart
   if (isLoading) {
     return (
       <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md h-80 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-flash-green"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-flash-green" role="status" aria-label="Loading chart data"></div>
       </div>
     );
   }
@@ -141,23 +218,35 @@ export default function InterestChart({ data, isLoading = false }: InterestChart
   return (
     <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-medium text-white">Submission Trends</h3>
+        <h3 className="text-lg font-medium text-white">
+          Submission Trends
+          {selectedPeriod === 'week' && ' - Weekly View'}
+          {selectedPeriod === 'month' && ' - Monthly View'}
+          {selectedPeriod === 'year' && ' - Yearly View'}
+        </h3>
         <select 
-          className="bg-flash-dark-2 text-white border border-flash-dark-3 rounded-md px-3 py-1 text-sm"
-          defaultValue="month"
+          className="bg-flash-dark-2 text-white border border-flash-dark-3 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-flash-green"
+          value={selectedPeriod}
+          onChange={(e) => setSelectedPeriod(e.target.value as TimePeriod)}
         >
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-          <option value="year">This Year</option>
+          <option value="week">Last 4 Weeks</option>
+          <option value="month">Last 12 Months</option>
+          <option value="year">Last 3 Years</option>
         </select>
       </div>
       
       <div className="h-64">
-        <Line 
-          ref={chartRef} 
-          data={chartData} 
-          options={options as any} 
-        />
+        {filteredData.length === 0 && !isLoading ? (
+          <div className="flex items-center justify-center h-full text-gray-400">
+            <p>No data available for selected time period</p>
+          </div>
+        ) : (
+          <Line 
+            ref={chartRef} 
+            data={chartData} 
+            options={options as any} 
+          />
+        )}
       </div>
     </div>
   );
