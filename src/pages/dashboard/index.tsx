@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatsCard from '@/components/dashboard/StatsCard';
-import InterestChart from '@/components/dashboard/InterestChart';
+import SubmissionTrends from '@/components/dashboard/SubmissionTrends';
 import InterestDistributionChart from '@/components/dashboard/InterestDistributionChart';
 import RecentSubmissions from '@/components/dashboard/RecentSubmissions';
 import SalesRepScoreboard from '@/components/dashboard/SalesRepScoreboard';
@@ -63,7 +63,7 @@ export default function Dashboard() {
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div className="lg:col-span-2">
-          <InterestChart 
+          <SubmissionTrends 
             data={stats?.interestedByMonth || []}
             isLoading={isLoadingStats}
           />
