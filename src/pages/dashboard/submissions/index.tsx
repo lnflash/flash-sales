@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import SubmissionTable from '@/components/submissions/SubmissionTable';
 import SubmissionFiltersComponent from '@/components/submissions/SubmissionFilters';
@@ -6,6 +7,12 @@ import { useSubmissions } from '@/hooks/useSubmissions';
 import { Submission, SubmissionFilters, PaginationState } from '@/types/submission';
 
 export default function SubmissionsPage() {
+  const router = useRouter();
+  const { search } = router.query;
+  
+  // Set initial filters based on URL search parameter
+  const initialFilters: SubmissionFilters = search ? { search: search as string } : {};
+  
   const {
     submissions,
     totalCount,
@@ -16,7 +23,14 @@ export default function SubmissionsPage() {
     setPagination,
     setFilters,
     resetFilters
-  } = useSubmissions();
+  } = useSubmissions(initialFilters);
+
+  // Update filters when URL search parameter changes
+  useEffect(() => {
+    if (search && search !== filters.search) {
+      setFilters({ ...filters, search: search as string });
+    }
+  }, [search]);
 
   return (
     <DashboardLayout title="Submissions">
