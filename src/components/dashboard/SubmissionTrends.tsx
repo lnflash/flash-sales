@@ -1,13 +1,31 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import { 
   ArrowUpIcon, 
   ArrowDownIcon,
   CalendarDaysIcon,
-  ChartBarIcon,
-  MinusIcon
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface MonthlyData {
   month: string;
@@ -19,173 +37,30 @@ interface SubmissionTrendsProps {
   isLoading?: boolean;
 }
 
-type TimePeriod = 'week' | 'month' | 'year';
-
-interface TrendCardProps {
-  period: string;
-  count: number;
-  change?: number;
-  isHighest?: boolean;
-  isLowest?: boolean;
-  maxCount?: number;
-}
-
-function TrendCard({ period, count, change, isHighest, isLowest, maxCount = 1 }: TrendCardProps) {
-  const getTrendIcon = () => {
-    if (change === undefined || change === 0) return <MinusIcon className="h-4 w-4" />;
-    return change > 0 ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />;
-  };
-
-  const getTrendColor = () => {
-    if (change === undefined || change === 0) return 'text-gray-400';
-    return change > 0 ? 'text-flash-green' : 'text-red-400';
-  };
-
-  const getCardStyle = () => {
-    if (isHighest) return 'border-flash-green bg-flash-green/5';
-    if (isLowest) return 'border-red-400/50 bg-red-400/5';
-    return 'border-flash-dark-2 hover:border-flash-dark-1';
-  };
-
-  return (
-    <div className={`relative p-4 rounded-lg border-2 transition-all duration-200 ${getCardStyle()}`}>
-      {isHighest && (
-        <div className="absolute -top-2 -right-2 bg-flash-green text-flash-dark-1 px-2 py-1 rounded-full text-xs font-semibold">
-          Peak
-        </div>
-      )}
-      {isLowest && (
-        <div className="absolute -top-2 -right-2 bg-red-400 text-white px-2 py-1 rounded-full text-xs font-semibold">
-          Low
-        </div>
-      )}
-      
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-gray-400 font-medium">{period}</span>
-        {change !== undefined && (
-          <div className={`flex items-center space-x-1 ${getTrendColor()}`}>
-            {getTrendIcon()}
-            <span className="text-xs font-medium">
-              {change > 0 ? '+' : ''}{change}
-            </span>
-          </div>
-        )}
-      </div>
-      
-      <div className="text-2xl font-bold text-white mb-1">{count}</div>
-      
-      {/* Visual bar representing relative value */}
-      <div className="w-full bg-flash-dark-2 rounded-full h-2">
-        <div 
-          className={`h-2 rounded-full transition-all duration-500 ${
-            isHighest ? 'bg-flash-green' : 
-            isLowest ? 'bg-red-400' : 
-            'bg-flash-yellow'
-          }`}
-          style={{ 
-            width: count > 0 ? `${Math.max(10, Math.min(100, (count / maxCount) * 100))}%` : '0%'
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function SubmissionTrends({ data, isLoading = false }: SubmissionTrendsProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month');
-
-  // Process data based on selected time period
   const processedData = useMemo(() => {
     if (!data || data.length === 0) return [];
-
+    
+    // Show last 12 months and format dates properly
     const now = new Date();
+    const twelveMonthsAgo = new Date(now);
+    twelveMonthsAgo.setMonth(now.getMonth() - 11);
     
-    switch (selectedPeriod) {
-      case 'week': {
-        // Generate last 8 weeks
-        const weeklyData: MonthlyData[] = [];
-        for (let i = 7; i >= 0; i--) {
-          const weekStart = new Date(now);
-          weekStart.setDate(now.getDate() - (i * 7));
-          
-          const weekLabel = `Week ${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
-          
-          // Estimate weekly data from monthly data
-          const monthData = data.find(item => {
-            const itemDate = new Date(item.month + '-01');
-            return itemDate.getMonth() === weekStart.getMonth() && 
-                   itemDate.getFullYear() === weekStart.getFullYear();
-          });
-          
-          weeklyData.push({
-            month: weekLabel,
-            count: monthData ? Math.round(monthData.count / 4) + Math.floor(Math.random() * 5) : Math.floor(Math.random() * 3)
-          });
-        }
-        return weeklyData;
-      }
-      
-      case 'month': {
-        // Show last 12 months
-        const twelveMonthsAgo = new Date(now);
-        twelveMonthsAgo.setMonth(now.getMonth() - 11);
-        
-        return data
-          .filter(item => {
-            const itemDate = new Date(item.month + '-01');
-            return itemDate >= twelveMonthsAgo;
-          })
-          .slice(-12)
-          .map(item => {
-            const date = new Date(item.month + '-01');
-            return {
-              ...item,
-              month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-            };
-          });
-      }
-      
-      case 'year': {
-        // Group by year, show last 4 years
-        const yearlyData: { [year: string]: number } = {};
-        
-        data.forEach(item => {
-          const itemDate = new Date(item.month + '-01');
-          const year = itemDate.getFullYear().toString();
-          yearlyData[year] = (yearlyData[year] || 0) + item.count;
-        });
-        
-        const sortedYears = Object.keys(yearlyData).sort().slice(-4);
-        return sortedYears.map(year => ({
-          month: year,
-          count: yearlyData[year]
-        }));
-      }
-      
-      default:
-        return data;
-    }
-  }, [data, selectedPeriod]);
+    return data
+      .filter(item => {
+        const itemDate = new Date(item.month + '-01');
+        return itemDate >= twelveMonthsAgo;
+      })
+      .slice(-12)
+      .map(item => {
+        const date = new Date(item.month + '-01');
+        return {
+          ...item,
+          month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+        };
+      });
+  }, [data]);
 
-  // Calculate trends and insights
-  const insights = useMemo(() => {
-    if (processedData.length < 2) return { highest: -1, lowest: -1, trends: [] };
-
-    const counts = processedData.map(d => d.count);
-    const highest = counts.indexOf(Math.max(...counts));
-    const lowest = counts.indexOf(Math.min(...counts));
-    
-    // Calculate period-over-period changes
-    const trends = processedData.map((item, index) => {
-      if (index === 0) return { ...item, change: undefined };
-      const change = item.count - processedData[index - 1].count;
-      return { ...item, change };
-    });
-
-    return { highest, lowest, trends };
-  }, [processedData]);
-
-  // Calculate overall stats
   const stats = useMemo(() => {
     if (processedData.length === 0) return { total: 0, average: 0, growth: 0 };
     
@@ -200,16 +75,80 @@ export default function SubmissionTrends({ data, isLoading = false }: Submission
     return { total, average, growth };
   }, [processedData]);
 
+  const chartData = {
+    labels: processedData.map(item => item.month),
+    datasets: [
+      {
+        label: 'Submissions',
+        data: processedData.map(item => item.count),
+        backgroundColor: 'rgba(34, 197, 94, 0.8)', // flash-green with opacity
+        borderColor: 'rgb(34, 197, 94)', // flash-green
+        borderWidth: 1,
+        borderRadius: 4,
+        borderSkipped: false,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.95)', // flash-dark-3
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: 'rgba(55, 65, 81, 1)', // flash-dark-2
+        borderWidth: 1,
+        cornerRadius: 6,
+        displayColors: false,
+        callbacks: {
+          title: function(context: any) {
+            return `${context[0].label}`;
+          },
+          label: function(context: any) {
+            return `Submissions: ${context.parsed.y}`;
+          }
+        }
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          color: '#9CA3AF', // gray-400
+          font: {
+            size: 12,
+          }
+        },
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(55, 65, 81, 0.3)', // flash-dark-2 with opacity
+        },
+        ticks: {
+          color: '#9CA3AF', // gray-400
+          font: {
+            size: 12,
+          },
+          stepSize: 1,
+        },
+      },
+    },
+  };
+
   if (isLoading) {
     return (
       <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
         <div className="animate-pulse">
           <div className="h-6 bg-flash-dark-2 rounded w-1/3 mb-6"></div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-24 bg-flash-dark-2 rounded-lg"></div>
-            ))}
-          </div>
+          <div className="h-64 bg-flash-dark-2 rounded"></div>
         </div>
       </div>
     );
@@ -221,7 +160,7 @@ export default function SubmissionTrends({ data, isLoading = false }: Submission
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
           <h3 className="text-lg font-medium text-white mb-2">
-            Submission Trends - {selectedPeriod === 'week' ? 'Weekly' : selectedPeriod === 'month' ? 'Monthly' : 'Yearly'} View
+            Submission Trends - Last 12 Months
           </h3>
           <div className="flex items-center space-x-4 text-sm text-gray-400">
             <div className="flex items-center space-x-1">
@@ -238,58 +177,18 @@ export default function SubmissionTrends({ data, isLoading = false }: Submission
             </div>
           </div>
         </div>
-        
-        <select 
-          className="bg-flash-dark-2 text-white border border-flash-dark-3 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-flash-green mt-4 sm:mt-0"
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value as TimePeriod)}
-        >
-          <option value="week">Last 8 Weeks</option>
-          <option value="month">Last 12 Months</option>
-          <option value="year">Last 4 Years</option>
-        </select>
       </div>
 
-      {/* Trend Cards Grid */}
+      {/* Bar Chart */}
       {processedData.length === 0 ? (
-        <div className="flex items-center justify-center h-40 text-gray-400">
-          <p>No data available for selected time period</p>
+        <div className="flex items-center justify-center h-64 text-gray-400">
+          <p>No data available</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {insights.trends.map((item, index) => (
-            <TrendCard
-              key={`${item.month}-${index}`}
-              period={item.month}
-              count={item.count}
-              change={item.change}
-              isHighest={index === insights.highest}
-              isLowest={index === insights.lowest}
-              maxCount={Math.max(...processedData.map(d => d.count))}
-            />
-          ))}
+        <div className="h-64">
+          <Bar data={chartData} options={chartOptions} />
         </div>
       )}
-
-      {/* Legend */}
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400">
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-flash-green rounded"></div>
-          <span>Peak Period</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-red-400 rounded"></div>
-          <span>Lowest Period</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <ArrowUpIcon className="h-3 w-3 text-flash-green" />
-          <span>Period Growth</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <ArrowDownIcon className="h-3 w-3 text-red-400" />
-          <span>Period Decline</span>
-        </div>
-      </div>
     </div>
   );
 }
