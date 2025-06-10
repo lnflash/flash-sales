@@ -41,24 +41,9 @@ export default function SubmissionTrends({ data, isLoading = false }: Submission
   const processedData = useMemo(() => {
     if (!data || data.length === 0) return [];
     
-    // Show last 12 months and format dates properly
-    const now = new Date();
-    const twelveMonthsAgo = new Date(now);
-    twelveMonthsAgo.setMonth(now.getMonth() - 11);
-    
-    return data
-      .filter(item => {
-        const itemDate = new Date(item.month + '-01');
-        return itemDate >= twelveMonthsAgo;
-      })
-      .slice(-12)
-      .map(item => {
-        const date = new Date(item.month + '-01');
-        return {
-          ...item,
-          month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-        };
-      });
+    // The API returns month names like "Jan", "Feb", etc.
+    // We'll use them as-is since they represent the current year's data
+    return data.filter(item => item.count > 0); // Only show months with data
   }, [data]);
 
   const stats = useMemo(() => {
@@ -160,7 +145,7 @@ export default function SubmissionTrends({ data, isLoading = false }: Submission
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
           <h3 className="text-lg font-medium text-white mb-2">
-            Submission Trends - Last 12 Months
+            Submission Trends - Current Year
           </h3>
           <div className="flex items-center space-x-4 text-sm text-gray-400">
             <div className="flex items-center space-x-1">
