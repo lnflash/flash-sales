@@ -33,18 +33,43 @@ interface MonthlyData {
 }
 
 interface SubmissionTrendsProps {
-  data: MonthlyData[];
+  submissions: any[];
   isLoading?: boolean;
 }
 
-export default function SubmissionTrends({ data, isLoading = false }: SubmissionTrendsProps) {
+export default function SubmissionTrends({ submissions, isLoading = false }: SubmissionTrendsProps) {
   const processedData = useMemo(() => {
-    if (!data || data.length === 0) return [];
+    if (!submissions || submissions.length === 0) return [];
     
-    // The API returns month names like "Jan", "Feb", etc.
-    // We'll use them as-is since they represent the current year's data
-    return data.filter(item => item.count > 0); // Only show months with data
-  }, [data]);
+    // Generate last 8 weeks of data
+    const weeksData: MonthlyData[] = [];
+    const now = new Date();
+    
+    for (let i = 7; i >= 0; i--) {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - (i * 7));
+      weekStart.setHours(0, 0, 0, 0);
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+      
+      // Count submissions in this week
+      const weekSubmissions = submissions.filter(sub => {
+        const subDate = new Date(sub.timestamp);
+        return subDate >= weekStart && subDate <= weekEnd;
+      });
+      
+      const weekLabel = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
+      
+      weeksData.push({
+        month: weekLabel,
+        count: weekSubmissions.length
+      });
+    }
+    
+    return weeksData;
+  }, [submissions]);
 
   const stats = useMemo(() => {
     if (processedData.length === 0) return { total: 0, average: 0, growth: 0 };
@@ -145,7 +170,7 @@ export default function SubmissionTrends({ data, isLoading = false }: Submission
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
           <h3 className="text-lg font-medium text-white mb-2">
-            Submission Trends - Current Year
+            Submission Trends - Last 8 Weeks
           </h3>
           <div className="flex items-center space-x-4 text-sm text-gray-400">
             <div className="flex items-center space-x-1">

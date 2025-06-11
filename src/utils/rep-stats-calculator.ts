@@ -9,6 +9,7 @@ export interface SalesRepStats {
   signedUp: number;
   conversionRate: number;
   avgInterestLevel: number;
+  totalInterestScore: number;
   packageSeen: number;
   packageSeenRate: number;
 }
@@ -52,6 +53,7 @@ export function calculateRepStats(submissions: Submission[]): SalesRepStats[] {
       signedUp,
       conversionRate,
       avgInterestLevel,
+      totalInterestScore: totalInterest,
       packageSeen,
       packageSeenRate
     });
@@ -78,5 +80,20 @@ export function calculateSignupLeaderboard(submissions: Submission[]): SalesRepS
       return b.signedUp - a.signedUp; // Higher signups first
     }
     return b.conversionRate - a.conversionRate; // Higher conversion rate as tiebreaker
+  });
+}
+
+/**
+ * Calculates statistics for each sales rep from submission data, sorted by total interest score
+ */
+export function calculateInterestLeaderboard(submissions: Submission[]): SalesRepStats[] {
+  const repStats = calculateRepStats(submissions);
+  
+  // Sort by total interest score (primary) and average interest level (secondary)
+  return repStats.sort((a, b) => {
+    if (a.totalInterestScore !== b.totalInterestScore) {
+      return b.totalInterestScore - a.totalInterestScore; // Higher total interest first
+    }
+    return b.avgInterestLevel - a.avgInterestLevel; // Higher average interest as tiebreaker
   });
 }

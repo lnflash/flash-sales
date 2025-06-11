@@ -12,10 +12,11 @@ import InterestDistributionChart from '@/components/dashboard/InterestDistributi
 import RecentSubmissions from '@/components/dashboard/RecentSubmissions';
 import SalesRepScoreboard from '@/components/dashboard/SalesRepScoreboard';
 import SignupLeaderboard from '@/components/dashboard/SignupLeaderboard';
+import InterestLeaderboard from '@/components/dashboard/InterestLeaderboard';
 import { useSubmissionStats } from '@/hooks/useSubmissionStats';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
-import { calculateRepStats, calculateSignupLeaderboard } from '@/utils/rep-stats-calculator';
+import { calculateRepStats, calculateSignupLeaderboard, calculateInterestLeaderboard } from '@/utils/rep-stats-calculator';
 
 export default function Dashboard() {
   const { stats, isLoading: isLoadingStats } = useSubmissionStats();
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const interestDistribution = calculateInterestDistribution(submissions);
   const repStats = calculateRepStats(submissions);
   const signupLeaderboard = calculateSignupLeaderboard(submissions);
+  const interestLeaderboard = calculateInterestLeaderboard(submissions);
 
   return (
     <DashboardLayout title="Dashboard">
@@ -63,37 +65,14 @@ export default function Dashboard() {
         />
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2">
-          <SubmissionTrends 
-            data={stats?.interestedByMonth || []}
-            isLoading={isLoadingStats}
-          />
-        </div>
-        <div>
-          <InterestDistributionChart 
-            distribution={interestDistribution}
-            isLoading={isLoadingSubmissions}
-          />
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2">
-          <RecentSubmissions 
-            submissions={submissions}
-            isLoading={isLoadingSubmissions}
-          />
-        </div>
+      {/* Second row: Three leaderboards */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div>
           <SalesRepScoreboard
             repStats={repStats}
             isLoading={isLoadingSubmissions}
           />
         </div>
-      </section>
-
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <div>
           <SignupLeaderboard
             repStats={signupLeaderboard}
@@ -101,7 +80,32 @@ export default function Dashboard() {
           />
         </div>
         <div>
-          {/* Future: Add another component here */}
+          <InterestLeaderboard
+            repStats={interestLeaderboard}
+            isLoading={isLoadingSubmissions}
+          />
+        </div>
+      </section>
+
+      {/* Third row: Submission Trends, Recent Submissions, Interest Distribution */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div>
+          <SubmissionTrends 
+            submissions={submissions || []}
+            isLoading={isLoadingSubmissions}
+          />
+        </div>
+        <div>
+          <RecentSubmissions 
+            submissions={submissions}
+            isLoading={isLoadingSubmissions}
+          />
+        </div>
+        <div>
+          <InterestDistributionChart 
+            distribution={interestDistribution}
+            isLoading={isLoadingSubmissions}
+          />
         </div>
       </section>
     </DashboardLayout>
