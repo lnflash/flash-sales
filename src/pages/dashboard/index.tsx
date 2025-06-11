@@ -18,10 +18,10 @@ import { calculateRepStats } from '@/utils/rep-stats-calculator';
 
 export default function Dashboard() {
   const { stats, isLoading: isLoadingStats } = useSubmissionStats();
-  // Get more submissions for the rep scoreboard than just the recent ones
+  // Get ALL submissions for accurate rep scoreboard calculations
   const { submissions, isLoading: isLoadingSubmissions } = useSubmissions(
     {}, // No filters
-    { pageIndex: 0, pageSize: 100 }, // Get more data for accurate rep stats
+    { pageIndex: 0, pageSize: 1000 }, // Get all submissions for accurate rep stats
     [{ id: 'timestamp', desc: true }] // Sort by most recent
   );
 
