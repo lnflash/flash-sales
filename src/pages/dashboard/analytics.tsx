@@ -1,28 +1,15 @@
 import { 
-  ChartBarIcon,
-  UsersIcon, 
-  CheckCircleIcon,
-  BuildingStorefrontIcon,
-  SparklesIcon,
-  ArrowTrendingUpIcon,
-  CurrencyDollarIcon,
-  ClockIcon,
   TrophyIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import StatsCard from '@/components/dashboard/StatsCard';
 import ExecutiveDashboard from '@/components/dashboard/ExecutiveDashboard';
 import SalesFunnelChart from '@/components/dashboard/SalesFunnelChart';
 import PerformanceHeatMap from '@/components/dashboard/PerformanceHeatMap';
 import PredictiveAnalytics from '@/components/dashboard/PredictiveAnalytics';
 import InterestDistributionChart from '@/components/dashboard/InterestDistributionChart';
-import DecisionMakersChart from '@/components/dashboard/DecisionMakersChart';
-import SalesRepPerformanceChart from '@/components/dashboard/SalesRepPerformanceChart';
-import CommonNeedsChart from '@/components/dashboard/CommonNeedsChart';
 import { useSubmissionStats } from '@/hooks/useSubmissionStats';
 import { useSubmissions } from '@/hooks/useSubmissions';
-import { calculateInterestDistribution, calculateConversionRate } from '@/utils/stats-calculator';
-import { calculateEnhancedStats } from '@/utils/enhanced-stats-calculator';
+import { calculateInterestDistribution } from '@/utils/stats-calculator';
 import { calculateAdvancedAnalytics } from '@/utils/advanced-analytics';
 
 export default function AnalyticsPage() {
@@ -36,10 +23,6 @@ export default function AnalyticsPage() {
   );
 
   const interestDistribution = calculateInterestDistribution(submissions);
-  const conversionRate = calculateConversionRate(submissions);
-  
-  // Calculate enhanced analytics for traditional charts
-  const enhancedStats = calculateEnhancedStats(submissions);
   
   // Calculate advanced analytics for executive insights
   const advancedAnalytics = calculateAdvancedAnalytics(submissions);
@@ -118,57 +101,6 @@ export default function AnalyticsPage() {
         </div>
       </section>
       
-      {/* Traditional Analytics Row (for comparison/detail) */}
-      <section className="mb-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-white mb-2">Detailed Analysis</h2>
-          <p className="text-gray-400">Traditional analytics and detailed breakdowns</p>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="bg-flash-dark-3 p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-medium text-white mb-4 flex items-center">
-              <UsersIcon className="h-5 w-5 mr-2 text-flash-green" />
-              Decision-Maker Analysis
-            </h3>
-            <p className="text-xs text-gray-400 mb-4">Conversion rates by decision-making structure</p>
-            <div className="h-64 overflow-y-auto">
-              <DecisionMakersChart 
-                data={enhancedStats.decisionMakers}
-                isLoading={isLoadingSubmissions}
-              />
-            </div>
-          </div>
-          
-          <div className="bg-flash-dark-3 p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-medium text-white mb-4 flex items-center">
-              <ArrowTrendingUpIcon className="h-5 w-5 mr-2 text-flash-yellow" />
-              Sales Rep Performance
-            </h3>
-            <p className="text-xs text-gray-400 mb-4">Ranked by conversion rate with interest levels</p>
-            <div className="h-64 overflow-y-auto">
-              <SalesRepPerformanceChart 
-                data={enhancedStats.repPerformance}
-                isLoading={isLoadingSubmissions}
-              />
-            </div>
-          </div>
-          
-          <div className="bg-flash-dark-3 p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-medium text-white mb-4 flex items-center">
-              <BuildingStorefrontIcon className="h-5 w-5 mr-2 text-blue-500" />
-              Most Requested Features
-            </h3>
-            <p className="text-xs text-gray-400 mb-4">Based on specific needs mentioned in submissions</p>
-            <div className="h-64 overflow-y-auto">
-              <CommonNeedsChart 
-                data={enhancedStats.commonNeeds}
-                isLoading={isLoadingSubmissions}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
     </DashboardLayout>
   );
 }
