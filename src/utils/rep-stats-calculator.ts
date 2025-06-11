@@ -57,11 +57,26 @@ export function calculateRepStats(submissions: Submission[]): SalesRepStats[] {
     });
   });
 
-  // Sort by signups (primary) and total submissions (secondary)
+  // Sort by total submissions (primary) and signups (secondary)
+  return repStats.sort((a, b) => {
+    if (a.totalSubmissions !== b.totalSubmissions) {
+      return b.totalSubmissions - a.totalSubmissions; // Higher total submissions first
+    }
+    return b.signedUp - a.signedUp; // Higher signups as tiebreaker
+  });
+}
+
+/**
+ * Calculates statistics for each sales rep from submission data, sorted by signups
+ */
+export function calculateSignupLeaderboard(submissions: Submission[]): SalesRepStats[] {
+  const repStats = calculateRepStats(submissions);
+  
+  // Sort by signups (primary) and conversion rate (secondary)
   return repStats.sort((a, b) => {
     if (a.signedUp !== b.signedUp) {
       return b.signedUp - a.signedUp; // Higher signups first
     }
-    return b.totalSubmissions - a.totalSubmissions; // Higher total submissions as tiebreaker
+    return b.conversionRate - a.conversionRate; // Higher conversion rate as tiebreaker
   });
 }

@@ -2,20 +2,20 @@
 
 import { useState } from 'react';
 import { 
-  TrophyIcon, 
+  CheckCircleIcon, 
   ChevronDownIcon, 
   ChevronUpIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { SalesRepStats } from '@/utils/rep-stats-calculator';
 
-interface SalesRepScoreboardProps {
+interface SignupLeaderboardProps {
   repStats: SalesRepStats[];
   isLoading?: boolean;
 }
 
-export default function SalesRepScoreboard({ repStats, isLoading = false }: SalesRepScoreboardProps) {
-  const [sortBy, setSortBy] = useState<keyof SalesRepStats>('totalSubmissions');
+export default function SignupLeaderboard({ repStats, isLoading = false }: SignupLeaderboardProps) {
+  const [sortBy, setSortBy] = useState<keyof SalesRepStats>('signedUp');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const handleSort = (column: keyof SalesRepStats) => {
@@ -78,8 +78,8 @@ export default function SalesRepScoreboard({ repStats, isLoading = false }: Sale
       <div className="bg-flash-dark-3 rounded-lg shadow-md overflow-hidden mb-8">
         <div className="p-4 border-b border-flash-dark-2">
           <h2 className="text-lg font-medium text-white flex items-center">
-            <TrophyIcon className="h-5 w-5 mr-2 text-flash-yellow" />
-            Sales Rep Leaderboard
+            <CheckCircleIcon className="h-5 w-5 mr-2 text-flash-green" />
+            Signup Leaderboard
           </h2>
         </div>
         <div className="animate-pulse">
@@ -96,14 +96,14 @@ export default function SalesRepScoreboard({ repStats, isLoading = false }: Sale
     <div className="bg-flash-dark-3 rounded-lg shadow-md overflow-hidden mb-8">
       <div className="p-4 border-b border-flash-dark-2">
         <h2 className="text-lg font-medium text-white flex items-center">
-          <TrophyIcon className="h-5 w-5 mr-2 text-flash-yellow" />
-          Activity Leaderboard
+          <CheckCircleIcon className="h-5 w-5 mr-2 text-flash-green" />
+          Signup Leaderboard
         </h2>
       </div>
       
       {repStats.length === 0 ? (
         <div className="py-12 text-center text-gray-400">
-          <p>No sales rep data available</p>
+          <p>No signup data available</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -114,10 +114,9 @@ export default function SalesRepScoreboard({ repStats, isLoading = false }: Sale
                   Rank
                 </th>
                 {renderHeaderCell('Rep', 'username')}
-                {renderHeaderCell('Submissions', 'totalSubmissions')}
                 {renderHeaderCell('Signups', 'signedUp')}
                 {renderHeaderCell('Conv. Rate', 'conversionRate')}
-                {renderHeaderCell('Avg. Interest', 'avgInterestLevel')}
+                {renderHeaderCell('Total Subs', 'totalSubmissions')}
               </tr>
             </thead>
             <tbody className="divide-y divide-flash-dark-2">
@@ -126,7 +125,7 @@ export default function SalesRepScoreboard({ repStats, isLoading = false }: Sale
                   <td className="px-4 py-3 whitespace-nowrap">
                     <div className={`flex items-center ${getMedalColor(index)}`}>
                       {index < 3 ? (
-                        <TrophyIcon className="h-5 w-5 mr-1" />
+                        <CheckCircleIcon className="h-5 w-5 mr-1" />
                       ) : null}
                       {index + 1}
                     </div>
@@ -135,28 +134,17 @@ export default function SalesRepScoreboard({ repStats, isLoading = false }: Sale
                     {rep.username}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-bold text-flash-yellow text-lg">
-                      {rep.totalSubmissions}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-medium text-flash-green">
+                    <span className="font-bold text-flash-green text-lg">
                       {rep.signedUp}
                     </span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    {rep.conversionRate.toFixed(1)}%
+                    <span className={`font-medium ${rep.conversionRate > 0 ? 'text-flash-yellow' : 'text-gray-400'}`}>
+                      {rep.conversionRate.toFixed(1)}%
+                    </span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-1/2 bg-flash-dark-2 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-flash-green to-flash-yellow h-2 rounded-full"
-                          style={{ width: `${(rep.avgInterestLevel / 5) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="ml-2 text-sm">{rep.avgInterestLevel.toFixed(1)}/5</span>
-                    </div>
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-300">
+                    {rep.totalSubmissions}
                   </td>
                 </tr>
               ))}

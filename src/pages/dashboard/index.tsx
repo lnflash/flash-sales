@@ -11,10 +11,11 @@ import SubmissionTrends from '@/components/dashboard/SubmissionTrends';
 import InterestDistributionChart from '@/components/dashboard/InterestDistributionChart';
 import RecentSubmissions from '@/components/dashboard/RecentSubmissions';
 import SalesRepScoreboard from '@/components/dashboard/SalesRepScoreboard';
+import SignupLeaderboard from '@/components/dashboard/SignupLeaderboard';
 import { useSubmissionStats } from '@/hooks/useSubmissionStats';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
-import { calculateRepStats } from '@/utils/rep-stats-calculator';
+import { calculateRepStats, calculateSignupLeaderboard } from '@/utils/rep-stats-calculator';
 
 export default function Dashboard() {
   const { stats, isLoading: isLoadingStats } = useSubmissionStats();
@@ -27,6 +28,7 @@ export default function Dashboard() {
 
   const interestDistribution = calculateInterestDistribution(submissions);
   const repStats = calculateRepStats(submissions);
+  const signupLeaderboard = calculateSignupLeaderboard(submissions);
 
   return (
     <DashboardLayout title="Dashboard">
@@ -88,6 +90,18 @@ export default function Dashboard() {
             repStats={repStats}
             isLoading={isLoadingSubmissions}
           />
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div>
+          <SignupLeaderboard
+            repStats={signupLeaderboard}
+            isLoading={isLoadingSubmissions}
+          />
+        </div>
+        <div>
+          {/* Future: Add another component here */}
         </div>
       </section>
     </DashboardLayout>
