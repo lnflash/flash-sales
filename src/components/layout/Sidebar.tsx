@@ -10,6 +10,7 @@ import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   HomeIcon,
+  ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -22,6 +23,7 @@ const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
   { name: 'Submissions', href: '/dashboard/submissions', icon: TableCellsIcon },
+  { name: 'Rep Tracking', href: '/dashboard/rep-tracking', icon: ClipboardDocumentCheckIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
 ];
 

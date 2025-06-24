@@ -13,6 +13,7 @@ import RecentSubmissions from '@/components/dashboard/RecentSubmissions';
 import SalesRepScoreboard from '@/components/dashboard/SalesRepScoreboard';
 import SignupLeaderboard from '@/components/dashboard/SignupLeaderboard';
 import InterestLeaderboard from '@/components/dashboard/InterestLeaderboard';
+import { PerformanceReview } from '@/components/dashboard/PerformanceReview';
 import { useSubmissionStats } from '@/hooks/useSubmissionStats';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
@@ -107,6 +108,11 @@ export default function Dashboard() {
             isLoading={isLoadingSubmissions}
           />
         </div>
+      </section>
+
+      {/* Fourth row: Performance Review */}
+      <section className="mb-8">
+        <PerformanceReview />
       </section>
     </DashboardLayout>
   );
