@@ -5,6 +5,9 @@ import { RepWeeklyData, RepTrackingFormData } from '../../../types/rep-tracking'
 // In production, this would be stored in a database
 let repTrackingData: RepWeeklyData[] = [];
 
+// Export for use in stats endpoint
+export { repTrackingData };
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
