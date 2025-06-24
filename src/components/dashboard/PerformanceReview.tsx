@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRepPerformanceStats } from '../../hooks/useRepTracking';
-import { CheckCircleIcon, ExclamationCircleIcon, TrendingUpIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ExclamationCircleIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
 
 export function PerformanceReview() {
   const { data: performanceStats = [], isLoading } = useRepPerformanceStats();
@@ -97,7 +97,7 @@ export function PerformanceReview() {
               
               {rep.currentStreak.mondayUpdates >= 3 || rep.currentStreak.tuesdayCall >= 3 ? (
                 <div className="flex items-center text-sm text-green-500">
-                  <TrendingUpIcon className="h-4 w-4 mr-1" />
+                  <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
                   <span>On streak!</span>
                 </div>
               ) : null}

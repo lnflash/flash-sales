@@ -1,5 +1,5 @@
 import { NextPage } from 'next';
-import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import DashboardLayout from '../../components/layout/DashboardLayout';
 import { RepTrackingForm } from '../../components/rep-tracking/RepTrackingForm';
 import { RepTrackingTable } from '../../components/rep-tracking/RepTrackingTable';
 import { useRepTracking } from '../../hooks/useRepTracking';
