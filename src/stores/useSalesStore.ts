@@ -68,8 +68,8 @@ export const useSalesStore = create<SalesState>()(
         
         // Calculate stats
         const totalDeals = recent?.length || 0
-        const closedDeals = recent?.filter(d => d.status === 'won').length || 0
-        const revenue = recent?.reduce((sum, d) => 
+        const closedDeals = recent?.filter((d: any) => d.status === 'won').length || 0
+        const revenue = recent?.reduce((sum: number, d: any) => 
           d.status === 'won' ? sum + (d.amount || 0) : sum, 0
         ) || 0
         const conversionRate = totalDeals > 0 ? (closedDeals / totalDeals) * 100 : 0
@@ -105,7 +105,7 @@ export const useSalesStore = create<SalesState>()(
             schema: 'public',
             table: 'deals'
           },
-          (payload) => {
+          (payload: any) => {
             // Refetch data on any change
             get().fetchDeals()
           }

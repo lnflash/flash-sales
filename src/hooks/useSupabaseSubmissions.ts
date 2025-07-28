@@ -84,7 +84,7 @@ export function useSupabaseSubmissionStats() {
         .not('interest_level', 'is', null);
 
       const avgInterestLevel = deals?.length 
-        ? deals.reduce((acc, d) => acc + (d.interest_level || 0), 0) / deals.length
+        ? deals.reduce((acc: number, d: any) => acc + (d.interest_level || 0), 0) / deals.length
         : 0;
 
       // Get package seen percentage

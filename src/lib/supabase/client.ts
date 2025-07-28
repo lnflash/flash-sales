@@ -1,21 +1,37 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+// Create a dummy client for build time when env vars are not available
+const createSupabaseClient = () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Supabase environment variables not found. Using placeholder client.');
+    // Return a placeholder client that won't throw during build
+    return {
+      from: () => ({ select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }) }),
+      channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
+      removeChannel: () => {},
+      auth: { getSession: () => Promise.resolve({ data: { session: null }, error: null }) },
+    } as any;
+  }
+  
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
+  });
+};
 
 // Browser client
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10,
-    },
-  },
-});
+export const supabase = createSupabaseClient();
 
 // Hook for real-time subscriptions
 export function useRealtimeSubscription<T extends keyof Database['public']['Tables']>(

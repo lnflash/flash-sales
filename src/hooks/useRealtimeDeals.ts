@@ -35,7 +35,7 @@ export function useRealtimeSubscriptions(options: RealtimeOptions = {
             schema: 'public',
             table: 'deals'
           },
-          (payload) => {
+          (payload: any) => {
             console.log('Deal change:', payload);
             
             // Invalidate queries
@@ -76,7 +76,7 @@ export function useRealtimeSubscriptions(options: RealtimeOptions = {
             schema: 'public',
             table: 'organizations'
           },
-          (payload) => {
+          (payload: any) => {
             console.log('Organization change:', payload);
             queryClient.invalidateQueries({ queryKey: ['supabase-submissions'] });
             queryClient.invalidateQueries({ queryKey: ['organizations'] });
@@ -98,7 +98,7 @@ export function useRealtimeSubscriptions(options: RealtimeOptions = {
             schema: 'public',
             table: 'activities'
           },
-          (payload) => {
+          (payload: any) => {
             console.log('Activity change:', payload);
             queryClient.invalidateQueries({ queryKey: ['activities'] });
             
