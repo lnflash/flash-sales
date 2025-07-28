@@ -16,6 +16,15 @@ module.exports = {
         'flash-yellow': '#FFD700',
         'flash-yellow-light': '#FFDF33',
         'flash-yellow-dark': '#E6C200',
+        // Light theme colors
+        'light-bg-primary': '#FFFFFF',
+        'light-bg-secondary': '#F9FAFB',
+        'light-bg-tertiary': '#F3F4F6',
+        'light-border': '#E5E7EB',
+        'light-text-primary': '#111827',
+        'light-text-secondary': '#6B7280',
+        'light-text-tertiary': '#9CA3AF',
+        // Legacy dark colors (for reference)
         'flash-dark-1': '#0F172A',
         'flash-dark-2': '#1E293B',
         'flash-dark-3': '#334155',

@@ -20,16 +20,16 @@ export default function RecentSubmissions({
 }: RecentSubmissionsProps) {
   if (isLoading) {
     return (
-      <Card className="bg-gray-800/50 border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-lg">Recent Submissions</CardTitle>
+      <Card className="bg-white border-light-border">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold text-light-text-primary">Recent Submissions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
             {[...Array(5)].map((_, index) => (
-              <div key={index} className="p-3 rounded-lg bg-gray-700/50">
-                <div className="bg-gray-600 h-5 w-3/4 rounded mb-2"></div>
-                <div className="bg-gray-600 h-4 w-1/3 rounded"></div>
+              <div key={index} className="p-3 rounded-lg bg-light-bg-secondary">
+                <div className="bg-light-border h-5 w-3/4 rounded mb-2"></div>
+                <div className="bg-light-border h-4 w-1/3 rounded"></div>
               </div>
             ))}
           </div>
@@ -40,12 +40,12 @@ export default function RecentSubmissions({
 
   if (!submissions.length) {
     return (
-      <Card className="bg-gray-800/50 border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-lg">Recent Submissions</CardTitle>
+      <Card className="bg-white border-light-border">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold text-light-text-primary">Recent Submissions</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-8">
+          <p className="text-light-text-secondary text-center py-8">
             No submissions yet. They'll appear here as they come in.
           </p>
         </CardContent>
@@ -53,90 +53,71 @@ export default function RecentSubmissions({
     );
   }
 
-  const getInterestBadgeVariant = (level: number): "success" | "warning" | "secondary" | "destructive" => {
-    if (level >= 8) return 'success';
-    if (level >= 6) return 'warning';
-    if (level >= 4) return 'secondary';
-    return 'destructive';
-  };
-
   return (
-    <Card className="bg-gray-800/50 border-gray-700">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Recent Submissions</CardTitle>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          asChild
-        >
-          <Link href="/dashboard/submissions" className="flex items-center space-x-1">
-            <span>View all</span>
-            <ArrowRightIcon className="h-4 w-4" />
+    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold text-light-text-primary">Recent Submissions</CardTitle>
+          <Link href="/dashboard/submissions" passHref>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-light-text-secondary hover:text-flash-green hover:bg-light-bg-secondary"
+            >
+              View all
+              <ArrowRightIcon className="ml-1 h-4 w-4" />
+            </Button>
           </Link>
-        </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {submissions.slice(0, 5).map((submission) => (
-            <Link
-              key={submission.id}
+          {submissions.map((submission) => (
+            <Link 
+              key={submission.id} 
               href={`/dashboard/submissions/${submission.id}`}
-              className={cn(
-                "block p-3 rounded-lg transition-all duration-200",
-                "hover:bg-gray-700/50 hover:shadow-md",
-                "border border-transparent hover:border-gray-600",
-                "group"
-              )}
+              className="block"
             >
-              <div className="flex justify-between items-start">
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-white group-hover:text-flash-green transition-colors truncate">
-                    {submission.ownerName}
-                  </h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <StarIcon
-                          key={i}
-                          className={cn(
-                            "h-3 w-3 transition-colors",
-                            i < submission.interestLevel 
-                              ? "text-flash-yellow fill-flash-yellow" 
-                              : "text-gray-600"
-                          )}
-                        />
-                      ))}
+              <div className="p-3 rounded-lg border border-transparent hover:border-light-border hover:bg-light-bg-secondary transition-all duration-200 cursor-pointer group">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-light-text-primary truncate group-hover:text-flash-green transition-colors">
+                        {submission.ownerName}
+                      </p>
+                      {submission.interestLevel && submission.interestLevel >= 8 && (
+                        <div className="flex items-center">
+                          {[...Array(Math.floor(submission.interestLevel / 2))].map((_, i) => (
+                            <StarIcon 
+                              key={i} 
+                              className="h-3 w-3 text-yellow-500 fill-yellow-500" 
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    {submission.signedUp && (
-                      <Badge variant="success" className="text-xs">
-                        Signed Up
-                      </Badge>
-                    )}
-                    {submission.packageSeen && (
-                      <Badge variant="info" className="text-xs">
-                        Package Viewed
-                      </Badge>
-                    )}
+                    <p className="text-sm text-light-text-secondary truncate">
+                      {submission.phoneNumber || 'No phone'}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 ml-4">
+                    <Badge 
+                      variant={submission.signedUp ? 'default' : 'secondary'}
+                      className={cn(
+                        "text-xs",
+                        submission.signedUp 
+                          ? 'bg-green-100 text-green-800 border-green-200' 
+                          : 'bg-gray-100 text-gray-600 border-gray-200'
+                      )}
+                    >
+                      {submission.signedUp ? 'Signed Up' : 'Pending'}
+                    </Badge>
+                    <span className="text-xs text-light-text-tertiary">
+                      {formatRelativeTime(submission.timestamp)}
+                    </span>
                   </div>
                 </div>
-                <div className="text-right ml-4">
-                  <Badge 
-                    variant={getInterestBadgeVariant(submission.interestLevel)}
-                    className="mb-1"
-                  >
-                    {submission.interestLevel}/10
-                  </Badge>
-                  <p className="text-xs text-muted-foreground">
-                    {formatRelativeTime(submission.timestamp)}
-                  </p>
-                </div>
               </div>
-              
-              {submission.specificNeeds && (
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
-                  {submission.specificNeeds}
-                </p>
-              )}
             </Link>
           ))}
         </div>

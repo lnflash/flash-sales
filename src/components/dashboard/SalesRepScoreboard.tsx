@@ -53,34 +53,35 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
 
   // Get medal icon based on rank
   const getMedalIcon = (index: number) => {
-    if (index === 0) return <TrophyIcon className="w-5 h-5 text-flash-yellow" />;
+    if (index === 0) return <TrophyIcon className="w-5 h-5 text-yellow-500" />;
     if (index === 1) return <TrophyIcon className="w-5 h-5 text-gray-400" />;
     if (index === 2) return <TrophyIcon className="w-5 h-5 text-amber-600" />;
     return null;
   };
 
-  const getPerformanceBadge = (conversionRate: number) => {
-    if (conversionRate >= 50) return <Badge variant="success">Top Performer</Badge>;
-    if (conversionRate >= 30) return <Badge variant="warning">Strong</Badge>;
-    if (conversionRate >= 20) return <Badge>Average</Badge>;
-    return <Badge variant="secondary">Needs Coaching</Badge>;
+  // Get performance badge
+  const getPerformanceBadge = (rate: number) => {
+    if (rate >= 80) return { label: 'Excellent', color: 'bg-green-100 text-green-800 border-green-200' };
+    if (rate >= 60) return { label: 'Good', color: 'bg-blue-100 text-blue-800 border-blue-200' };
+    if (rate >= 40) return { label: 'Average', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
+    return { label: 'Needs Improvement', color: 'bg-red-100 text-red-800 border-red-200' };
   };
 
   if (isLoading) {
     return (
-      <Card className="bg-gray-800/50 border-gray-700">
+      <Card className="bg-white border-light-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrophyIcon className="w-5 h-5 text-flash-yellow" />
-            Sales Rep Scoreboard
-          </CardTitle>
+          <CardTitle className="text-lg font-semibold text-light-text-primary">Sales Rep Scoreboard</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="animate-pulse space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="p-3 bg-gray-700/50 rounded-lg">
-                <div className="h-5 bg-gray-600 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-600 rounded w-1/2"></div>
+          <div className="animate-pulse space-y-4">
+            {[...Array(3)].map((_, index) => (
+              <div key={index} className="flex items-center space-x-4">
+                <div className="w-8 h-8 bg-light-bg-tertiary rounded-full"></div>
+                <div className="flex-1">
+                  <div className="bg-light-bg-tertiary h-4 w-1/3 rounded mb-2"></div>
+                  <div className="bg-light-bg-tertiary h-3 w-1/2 rounded"></div>
+                </div>
               </div>
             ))}
           </div>
@@ -89,143 +90,112 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
     );
   }
 
-  const maxSubmissions = Math.max(...sortedData.map(rep => rep.totalSubmissions));
-
   return (
-    <Card className="bg-gray-800/50 border-gray-700">
+    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrophyIcon className="w-5 h-5 text-flash-yellow" />
-          Sales Rep Scoreboard
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold text-light-text-primary">Sales Rep Scoreboard</CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-light-text-secondary hover:text-flash-green hover:bg-light-bg-secondary"
+          >
+            <ArrowPathIcon className="w-4 h-4 mr-1" />
+            Refresh
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-900/50">
-              <tr>
-                <th className="px-4 py-3 text-left">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="font-medium text-xs uppercase tracking-wider"
+            <thead>
+              <tr className="border-b border-light-border">
+                <th className="pb-3 text-left">
+                  <button
                     onClick={() => handleSort('username')}
+                    className="flex items-center text-xs font-medium text-light-text-secondary hover:text-light-text-primary transition-colors"
                   >
-                    Sales Rep
+                    Rep Name
                     {sortBy === 'username' && (
-                      sortDirection === 'desc' ? 
-                        <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
-                        <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
+                      sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
                     )}
-                  </Button>
+                  </button>
                 </th>
-                <th className="px-4 py-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="font-medium text-xs uppercase tracking-wider"
+                <th className="pb-3 text-center">
+                  <button
                     onClick={() => handleSort('totalSubmissions')}
+                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary hover:text-light-text-primary transition-colors mx-auto"
                   >
-                    Leads
+                    Submissions
                     {sortBy === 'totalSubmissions' && (
-                      sortDirection === 'desc' ? 
-                        <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
-                        <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
+                      sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
                     )}
-                  </Button>
+                  </button>
                 </th>
-                <th className="px-4 py-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="font-medium text-xs uppercase tracking-wider"
+                <th className="pb-3 text-center">
+                  <button
                     onClick={() => handleSort('signedUp')}
+                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary hover:text-light-text-primary transition-colors mx-auto"
                   >
-                    Conversions
+                    Signed Up
                     {sortBy === 'signedUp' && (
-                      sortDirection === 'desc' ? 
-                        <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
-                        <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
+                      sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
                     )}
-                  </Button>
+                  </button>
                 </th>
-                <th className="px-4 py-3 hidden md:table-cell">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="font-medium text-xs uppercase tracking-wider"
+                <th className="pb-3 text-center">
+                  <button
                     onClick={() => handleSort('conversionRate')}
+                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary hover:text-light-text-primary transition-colors mx-auto"
                   >
-                    Rate
+                    Conversion
                     {sortBy === 'conversionRate' && (
-                      sortDirection === 'desc' ? 
-                        <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
-                        <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
+                      sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
                     )}
-                  </Button>
+                  </button>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
-              {sortedData.map((rep, index) => (
-                <tr 
-                  key={rep.username}
-                  className={cn(
-                    "hover:bg-gray-700/30 transition-colors",
-                    index < 3 && "bg-gray-700/20"
-                  )}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      {getMedalIcon(index)}
-                      <div>
-                        <div className="font-medium text-white">{rep.username}</div>
-                        <div className="text-xs text-muted-foreground">
-                          Avg Interest: {rep.avgInterestLevel.toFixed(1)}/10
+            <tbody>
+              {sortedData.map((rep, index) => {
+                const performanceBadge = getPerformanceBadge(rep.conversionRate);
+                return (
+                  <tr key={rep.username} className="border-b border-light-border last:border-0 hover:bg-light-bg-secondary transition-colors">
+                    <td className="py-4">
+                      <div className="flex items-center gap-3">
+                        {getMedalIcon(index)}
+                        <div>
+                          <p className="font-medium text-light-text-primary">{rep.username}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {rep.conversionRate > 70 && (
+                              <FireIcon className="w-3 h-3 text-orange-500" />
+                            )}
+                            {rep.avgInterestLevel > 4 && (
+                              <SparklesIcon className="w-3 h-3 text-purple-500" />
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="space-y-1">
-                      <div className="text-2xl font-bold text-white">
-                        {rep.totalSubmissions}
-                      </div>
-                      <Progress 
-                        value={rep.totalSubmissions} 
-                        max={maxSubmissions}
-                        className="h-1.5"
-                      />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="text-xl font-bold text-flash-green">
-                          {rep.signedUp}
-                        </span>
-                        {rep.signedUp >= 5 && (
-                          <FireIcon className="w-4 h-4 text-orange-500" />
-                        )}
-                      </div>
-                      {rep.totalInterestScore > 30 && (
-                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                          <SparklesIcon className="w-3 h-3" />
-                          {rep.totalInterestScore} interest pts
+                    </td>
+                    <td className="py-4 text-center">
+                      <p className="text-sm font-semibold text-light-text-primary">{rep.totalSubmissions}</p>
+                    </td>
+                    <td className="py-4 text-center">
+                      <p className="text-sm font-semibold text-light-text-primary">{rep.signedUp}</p>
+                    </td>
+                    <td className="py-4">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-full max-w-[100px]">
+                          <Progress value={rep.conversionRate} className="h-2" />
                         </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center hidden md:table-cell">
-                    <div className="space-y-1">
-                      <div className="text-lg font-semibold">
-                        {rep.conversionRate.toFixed(0)}%
+                        <Badge className={cn("text-xs", performanceBadge.color)}>
+                          {rep.conversionRate.toFixed(0)}%
+                        </Badge>
                       </div>
-                      {getPerformanceBadge(rep.conversionRate)}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
