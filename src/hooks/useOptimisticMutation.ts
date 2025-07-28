@@ -57,8 +57,8 @@ export function useOptimisticMutation<
     },
     onError: (error, variables, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
-      if (rollbackOnError && queryKey && context?.previousData !== undefined) {
-        queryClient.setQueryData(queryKey, context.previousData);
+      if (rollbackOnError && queryKey && context && typeof context === 'object' && 'previousData' in context) {
+        queryClient.setQueryData(queryKey, (context as any).previousData);
       }
 
       if (showNotification) {

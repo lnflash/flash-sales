@@ -103,10 +103,10 @@ export default function Dashboard() {
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <Suspense fallback={<ChartSkeleton />}>
-          <SubmissionTrends interestedByMonth={stats?.interestedByMonth || []} />
+          <SubmissionTrends submissions={submissions} isLoading={isLoadingSubmissions} />
         </Suspense>
         <Suspense fallback={<ChartSkeleton />}>
-          <InterestDistributionChart data={interestDistribution} />
+          <InterestDistributionChart distribution={interestDistribution} />
         </Suspense>
       </section>
 
@@ -115,10 +115,10 @@ export default function Dashboard() {
           <SalesRepScoreboard data={repStats} />
         </Suspense>
         <Suspense fallback={<TableSkeleton />}>
-          <SignupLeaderboard data={signupLeaderboard} />
+          <SignupLeaderboard repStats={signupLeaderboard} />
         </Suspense>
         <Suspense fallback={<TableSkeleton />}>
-          <InterestLeaderboard data={interestLeaderboard} />
+          <InterestLeaderboard repStats={interestLeaderboard} />
         </Suspense>
       </section>
 

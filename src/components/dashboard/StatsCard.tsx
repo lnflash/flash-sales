@@ -3,7 +3,7 @@
 import { ReactNode } from 'react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { TrendingUpIcon, TrendingDownIcon } from '@heroicons/react/24/solid';
+import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/solid';
 
 interface StatsCardProps {
   title: string;
@@ -61,9 +61,9 @@ export default function StatsCard({
             {change && (
               <div className="flex items-center mt-3 space-x-1">
                 {change.positive ? (
-                  <TrendingUpIcon className="h-4 w-4 text-flash-green" />
+                  <ArrowTrendingUpIcon className="h-4 w-4 text-flash-green" />
                 ) : (
-                  <TrendingDownIcon className="h-4 w-4 text-red-500" />
+                  <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />
                 )}
                 <span 
                   className={cn(

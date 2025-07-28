@@ -10,6 +10,7 @@ describe('SalesRepScoreboard', () => {
       signedUp: 15,
       conversionRate: 60,
       avgInterestLevel: 4.2,
+      totalInterestScore: 105,
       packageSeen: 20,
       packageSeenRate: 80
     },
@@ -19,6 +20,7 @@ describe('SalesRepScoreboard', () => {
       signedUp: 10,
       conversionRate: 50,
       avgInterestLevel: 3.8,
+      totalInterestScore: 76,
       packageSeen: 15,
       packageSeenRate: 75
     },
@@ -28,16 +30,17 @@ describe('SalesRepScoreboard', () => {
       signedUp: 8,
       conversionRate: 44.4,
       avgInterestLevel: 3.5,
+      totalInterestScore: 63,
       packageSeen: 12,
       packageSeenRate: 66.7
     },
   ];
 
   test('renders scoreboard with rep stats', () => {
-    render(<SalesRepScoreboard repStats={mockRepStats} isLoading={false} />);
+    render(<SalesRepScoreboard data={mockRepStats} isLoading={false} />);
     
     // Check if title is rendered
-    expect(screen.getByText('Sales Rep Leaderboard')).toBeInTheDocument();
+    expect(screen.getByText('Sales Rep Scoreboard')).toBeInTheDocument();
     
     // Check if all reps are displayed
     expect(screen.getByText('johndoe')).toBeInTheDocument();
@@ -47,14 +50,14 @@ describe('SalesRepScoreboard', () => {
     // Check if metrics are displayed
     expect(screen.getByText('25')).toBeInTheDocument(); // total submissions for johndoe
     expect(screen.getByText('10')).toBeInTheDocument(); // signups for janedoe
-    expect(screen.getByText('44.4%')).toBeInTheDocument(); // conversion rate for bobsmith
+    expect(screen.getByText('44%')).toBeInTheDocument(); // conversion rate for bobsmith (rounded)
   });
 
   test('renders loading state', () => {
-    render(<SalesRepScoreboard repStats={[]} isLoading={true} />);
+    render(<SalesRepScoreboard data={[]} isLoading={true} />);
     
     // Check if loading state is rendered
-    expect(screen.getByText('Sales Rep Leaderboard')).toBeInTheDocument();
+    expect(screen.getByText('Sales Rep Scoreboard')).toBeInTheDocument();
     expect(screen.queryByText('johndoe')).not.toBeInTheDocument(); // should not be rendered
     
     // Check for elements that indicate loading state
@@ -63,9 +66,12 @@ describe('SalesRepScoreboard', () => {
   });
   
   test('renders empty state when no data', () => {
-    render(<SalesRepScoreboard repStats={[]} isLoading={false} />);
+    render(<SalesRepScoreboard data={[]} isLoading={false} />);
     
-    // Check if empty state message is rendered
-    expect(screen.getByText('No sales rep data available')).toBeInTheDocument();
+    // Check if table headers are still rendered
+    expect(screen.getByText('Sales Rep Scoreboard')).toBeInTheDocument();
+    
+    // Check if the table is empty (no data rows)
+    expect(screen.queryByText('johndoe')).not.toBeInTheDocument();
   });
 });
