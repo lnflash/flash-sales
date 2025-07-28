@@ -5,9 +5,14 @@ import {
   CheckCircleIcon, 
   ChevronDownIcon, 
   ChevronUpIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  TrophyIcon
 } from '@heroicons/react/24/outline';
 import { SalesRepStats } from '@/utils/rep-stats-calculator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface SignupLeaderboardProps {
   repStats: SalesRepStats[];
@@ -47,111 +52,104 @@ export default function SignupLeaderboard({ repStats, isLoading = false }: Signu
   // Helper to render header cell with sort icons
   const renderHeaderCell = (label: string, column: keyof SalesRepStats) => (
     <th 
-      className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap cursor-pointer"
+      className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary uppercase tracking-wider whitespace-nowrap cursor-pointer hover:text-light-text-primary transition-colors"
       onClick={() => handleSort(column)}
     >
       <div className="flex items-center">
         {label}
-        {sortBy === column ? (
-          sortDirection === 'desc' ? (
-            <ChevronDownIcon className="w-4 h-4 ml-1" />
-          ) : (
-            <ChevronUpIcon className="w-4 h-4 ml-1" />
-          )
-        ) : (
-          <ChevronUpIcon className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-50" />
+        {sortBy === column && (
+          sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
         )}
       </div>
     </th>
   );
 
-  // Get medal color based on rank
-  const getMedalColor = (index: number) => {
-    if (index === 0) return 'text-yellow-500'; // Gold
-    if (index === 1) return 'text-gray-300'; // Silver
-    if (index === 2) return 'text-amber-700'; // Bronze
-    return 'text-gray-600'; // Others
+  // Get medal icon based on rank
+  const getMedalIcon = (index: number) => {
+    if (index === 0) return <TrophyIcon className="w-5 h-5 text-yellow-500" />;
+    if (index === 1) return <TrophyIcon className="w-5 h-5 text-gray-400" />;
+    if (index === 2) return <TrophyIcon className="w-5 h-5 text-amber-600" />;
+    return <span className="w-5 h-5 flex items-center justify-center text-sm font-medium text-light-text-secondary">{index + 1}</span>;
   };
 
   if (isLoading) {
     return (
-      <div className="bg-flash-dark-3 rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="p-4 border-b border-flash-dark-2">
-          <h2 className="text-lg font-medium text-white flex items-center">
-            <CheckCircleIcon className="h-5 w-5 mr-2 text-flash-green" />
-            Signup Leaderboard
-          </h2>
-        </div>
-        <div className="animate-pulse">
-          <div className="h-12 bg-flash-dark-2"></div>
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-14 border-t border-flash-dark-2"></div>
-          ))}
-        </div>
-      </div>
+      <Card className="bg-white border-light-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-light-text-primary">Signup Leaderboard</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="flex items-center space-x-4">
+                <div className="w-8 h-8 bg-light-bg-tertiary rounded-full"></div>
+                <div className="flex-1">
+                  <div className="bg-light-bg-tertiary h-4 w-1/3 rounded mb-2"></div>
+                  <div className="bg-light-bg-tertiary h-3 w-1/2 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-flash-dark-3 rounded-lg shadow-md overflow-hidden mb-8">
-      <div className="p-4 border-b border-flash-dark-2">
-        <h2 className="text-lg font-medium text-white flex items-center">
-          <CheckCircleIcon className="h-5 w-5 mr-2 text-flash-green" />
-          Signup Leaderboard
-        </h2>
-      </div>
-      
-      {repStats.length === 0 ? (
-        <div className="py-12 text-center text-gray-400">
-          <p>No signup data available</p>
+    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircleIcon className="h-5 w-5 text-flash-green" />
+            <CardTitle className="text-lg font-semibold text-light-text-primary">Signup Leaderboard</CardTitle>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="text-light-text-secondary hover:text-flash-green hover:bg-light-bg-secondary"
+          >
+            <ArrowPathIcon className="w-4 h-4 mr-1" />
+            Refresh
+          </Button>
         </div>
-      ) : (
+      </CardHeader>
+      <CardContent>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-flash-dark-2">
-            <thead className="bg-flash-dark-2">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Rank
-                </th>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-light-border">
+                <th className="w-12 px-2 py-3 text-center text-xs font-medium text-light-text-secondary uppercase">Rank</th>
                 {renderHeaderCell('Rep', 'username')}
                 {renderHeaderCell('Signups', 'signedUp')}
                 {renderHeaderCell('Conv. Rate', 'conversionRate')}
-                {renderHeaderCell('Total Subs', 'totalSubmissions')}
               </tr>
             </thead>
-            <tbody className="divide-y divide-flash-dark-2">
-              {sortedData.map((rep, index) => (
-                <tr key={rep.username} className="hover:bg-flash-dark-2 transition-colors">
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className={`flex items-center ${getMedalColor(index)}`}>
-                      {index < 3 ? (
-                        <CheckCircleIcon className="h-5 w-5 mr-1" />
-                      ) : null}
-                      {index + 1}
-                    </div>
+            <tbody>
+              {sortedData.slice(0, 5).map((rep, index) => (
+                <tr key={rep.username} className="border-b border-light-border last:border-0 hover:bg-light-bg-secondary transition-colors">
+                  <td className="px-2 py-3 text-center">
+                    {getMedalIcon(index)}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap font-medium">
-                    {rep.username}
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-light-text-primary">{rep.username}</p>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-bold text-flash-green text-lg">
-                      {rep.signedUp}
-                    </span>
+                  <td className="px-4 py-3">
+                    <span className="text-lg font-semibold text-flash-green">{rep.signedUp}</span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`font-medium ${rep.conversionRate > 0 ? 'text-flash-yellow' : 'text-gray-400'}`}>
+                  <td className="px-4 py-3">
+                    <Badge 
+                      variant={rep.conversionRate >= 20 ? 'success' : 'warning'}
+                      className="text-xs"
+                    >
                       {rep.conversionRate.toFixed(1)}%
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-gray-300">
-                    {rep.totalSubmissions}
+                    </Badge>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

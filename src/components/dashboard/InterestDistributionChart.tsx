@@ -11,6 +11,8 @@ import {
   Legend 
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SparklesIcon } from '@heroicons/react/24/outline';
 
 ChartJS.register(
   CategoryScale, 
@@ -48,32 +50,55 @@ export default function InterestDistributionChart({
         const gradient = ctx.createLinearGradient(0, 0, 0, 300);
         
         // Green to yellow gradient based on interest level
-        const r = Math.round(0 + ratio * 255);
-        const g = Math.round(168 - ratio * 25);
-        const b = Math.round(107 - ratio * 107);
-        
-        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.8)`);
-        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.5)`);
+        if (ratio < 0.3) {
+          // Low interest - red to orange
+          gradient.addColorStop(0, '#EF4444');
+          gradient.addColorStop(1, '#F59E0B');
+        } else if (ratio < 0.7) {
+          // Medium interest - yellow
+          gradient.addColorStop(0, '#F59E0B');
+          gradient.addColorStop(1, '#84CC16');
+        } else {
+          // High interest - green
+          gradient.addColorStop(0, '#84CC16');
+          gradient.addColorStop(1, '#00A86B');
+        }
         
         return gradient;
       });
-      
-      if (chart.data && chart.data.datasets && chart.data.datasets[0]) {
-        chart.data.datasets[0].backgroundColor = gradients;
-        chart.update();
+
+      // Update chart data with gradients
+      if (chart.chart) {
+        chart.chart.data.datasets[0].backgroundColor = gradients;
+        chart.chart.update();
       }
     }
   }, [distribution]);
 
-  const chartData = {
+  if (isLoading) {
+    return (
+      <Card className="bg-white border-light-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-light-text-primary">Interest Level Distribution</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse">
+            <div className="h-64 bg-light-bg-tertiary rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const data = {
     labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5'],
     datasets: [
       {
-        label: 'Submissions',
+        label: 'Count',
         data: distribution,
-        borderWidth: 0,
-        borderRadius: 5,
-        maxBarThickness: 50,
+        backgroundColor: '#00A86B',
+        borderRadius: 6,
+        maxBarThickness: 40,
       },
     ],
   };
@@ -85,69 +110,68 @@ export default function InterestDistributionChart({
       legend: {
         display: false,
       },
+      title: {
+        display: false,
+      },
       tooltip: {
-        backgroundColor: '#1E293B',
-        titleColor: '#ffffff',
-        bodyColor: '#ffffff',
-        borderColor: '#00A86B',
-        borderWidth: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         padding: 12,
-        displayColors: false,
-        callbacks: {
-          title: (tooltipItems: any) => {
-            return `${tooltipItems[0].label}`;
-          },
-          label: (context: any) => {
-            return `Submissions: ${context.raw}`;
-          },
+        cornerRadius: 8,
+        titleFont: {
+          size: 14,
+          weight: 600,
         },
+        bodyFont: {
+          size: 13,
+        },
+        callbacks: {
+          label: function(context: any) {
+            return `${context.parsed.y} submissions`;
+          }
+        }
       },
     },
     scales: {
       x: {
         grid: {
           display: false,
-          drawBorder: false,
         },
         ticks: {
           color: '#6B7280',
+          font: {
+            size: 12,
+          },
         },
       },
       y: {
-        beginAtZero: true,
         grid: {
-          color: 'rgba(107, 114, 128, 0.1)',
-          drawBorder: false,
+          color: '#F3F4F6',
         },
         ticks: {
           color: '#6B7280',
-          precision: 0,
+          font: {
+            size: 12,
+          },
         },
       },
     },
   };
 
-  if (isLoading) {
-    return (
-      <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md h-80 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-flash-green"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-medium text-white">Interest Level Distribution</h3>
-      </div>
-      
-      <div className="h-64">
-        <Bar 
-          ref={chartRef} 
-          data={chartData} 
-          options={options as any} 
-        />
-      </div>
-    </div>
+    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <SparklesIcon className="h-5 w-5 text-flash-green" />
+          <CardTitle className="text-lg font-semibold text-light-text-primary">
+            Interest Level Distribution
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64">
+          <Bar ref={chartRef} data={data} options={options} />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
