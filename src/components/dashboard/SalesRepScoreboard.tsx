@@ -109,10 +109,10 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
                     variant="ghost"
                     size="sm"
                     className="font-medium text-xs uppercase tracking-wider"
-                    onClick={() => handleSort('repName')}
+                    onClick={() => handleSort('username')}
                   >
                     Sales Rep
-                    {sortBy === 'repName' && (
+                    {sortBy === 'username' && (
                       sortDirection === 'desc' ? 
                         <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
                         <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
@@ -139,10 +139,10 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
                     variant="ghost"
                     size="sm"
                     className="font-medium text-xs uppercase tracking-wider"
-                    onClick={() => handleSort('conversions')}
+                    onClick={() => handleSort('signedUp')}
                   >
                     Conversions
-                    {sortBy === 'conversions' && (
+                    {sortBy === 'signedUp' && (
                       sortDirection === 'desc' ? 
                         <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
                         <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
@@ -169,7 +169,7 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
             <tbody className="divide-y divide-gray-700">
               {sortedData.map((rep, index) => (
                 <tr 
-                  key={rep.repName}
+                  key={rep.username}
                   className={cn(
                     "hover:bg-gray-700/30 transition-colors",
                     index < 3 && "bg-gray-700/20"
@@ -179,7 +179,7 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
                     <div className="flex items-center gap-2">
                       {getMedalIcon(index)}
                       <div>
-                        <div className="font-medium text-white">{rep.repName}</div>
+                        <div className="font-medium text-white">{rep.username}</div>
                         <div className="text-xs text-muted-foreground">
                           Avg Interest: {rep.avgInterestLevel.toFixed(1)}/10
                         </div>
@@ -202,16 +202,16 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
                     <div className="space-y-1">
                       <div className="flex items-center justify-center gap-1">
                         <span className="text-xl font-bold text-flash-green">
-                          {rep.conversions}
+                          {rep.signedUp}
                         </span>
-                        {rep.conversions >= 5 && (
+                        {rep.signedUp >= 5 && (
                           <FireIcon className="w-4 h-4 text-orange-500" />
                         )}
                       </div>
-                      {rep.totalInterest > 30 && (
+                      {rep.totalInterestScore > 30 && (
                         <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                           <SparklesIcon className="w-3 h-3" />
-                          {rep.totalInterest} interest pts
+                          {rep.totalInterestScore} interest pts
                         </div>
                       )}
                     </div>
