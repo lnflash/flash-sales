@@ -144,7 +144,7 @@ async function migrateSubmission(submission: LegacySubmission): Promise<{ succes
       if (!existingOrg) {
         throw new Error(`Failed to create organization: ${orgError.message}`);
       }
-      org.id = existingOrg.id;
+      org!.id = existingOrg.id;
     }
 
     // 2. Create contact if phone number exists
