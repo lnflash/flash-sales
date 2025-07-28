@@ -5,16 +5,23 @@ import {
   TrophyIcon, 
   ChevronDownIcon, 
   ChevronUpIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  FireIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import { SalesRepStats } from '@/utils/rep-stats-calculator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 interface SalesRepScoreboardProps {
-  repStats: SalesRepStats[];
+  data: SalesRepStats[];
   isLoading?: boolean;
 }
 
-export default function SalesRepScoreboard({ repStats, isLoading = false }: SalesRepScoreboardProps) {
+export default function SalesRepScoreboard({ data, isLoading = false }: SalesRepScoreboardProps) {
   const [sortBy, setSortBy] = useState<keyof SalesRepStats>('totalSubmissions');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -27,7 +34,7 @@ export default function SalesRepScoreboard({ repStats, isLoading = false }: Sale
     }
   };
 
-  const sortedData = [...repStats].sort((a, b) => {
+  const sortedData = [...data].sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
     
@@ -44,118 +51,177 @@ export default function SalesRepScoreboard({ repStats, isLoading = false }: Sale
     return 0;
   });
 
-  // Helper to render header cell with sort icons
-  const renderHeaderCell = (label: string, column: keyof SalesRepStats) => (
-    <th 
-      className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap cursor-pointer"
-      onClick={() => handleSort(column)}
-    >
-      <div className="flex items-center">
-        {label}
-        {sortBy === column ? (
-          sortDirection === 'desc' ? (
-            <ChevronDownIcon className="w-4 h-4 ml-1" />
-          ) : (
-            <ChevronUpIcon className="w-4 h-4 ml-1" />
-          )
-        ) : (
-          <ChevronUpIcon className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-50" />
-        )}
-      </div>
-    </th>
-  );
+  // Get medal icon based on rank
+  const getMedalIcon = (index: number) => {
+    if (index === 0) return <TrophyIcon className="w-5 h-5 text-flash-yellow" />;
+    if (index === 1) return <TrophyIcon className="w-5 h-5 text-gray-400" />;
+    if (index === 2) return <TrophyIcon className="w-5 h-5 text-amber-600" />;
+    return null;
+  };
 
-  // Get medal color based on rank
-  const getMedalColor = (index: number) => {
-    if (index === 0) return 'text-yellow-500'; // Gold
-    if (index === 1) return 'text-gray-300'; // Silver
-    if (index === 2) return 'text-amber-700'; // Bronze
-    return 'text-gray-600'; // Others
+  const getPerformanceBadge = (conversionRate: number) => {
+    if (conversionRate >= 50) return <Badge variant="success">Top Performer</Badge>;
+    if (conversionRate >= 30) return <Badge variant="warning">Strong</Badge>;
+    if (conversionRate >= 20) return <Badge>Average</Badge>;
+    return <Badge variant="secondary">Needs Coaching</Badge>;
   };
 
   if (isLoading) {
     return (
-      <div className="bg-flash-dark-3 rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="p-4 border-b border-flash-dark-2">
-          <h2 className="text-lg font-medium text-white flex items-center">
-            <TrophyIcon className="h-5 w-5 mr-2 text-flash-yellow" />
-            Sales Rep Leaderboard
-          </h2>
-        </div>
-        <div className="animate-pulse">
-          <div className="h-12 bg-flash-dark-2"></div>
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-14 border-t border-flash-dark-2"></div>
-          ))}
-        </div>
-      </div>
+      <Card className="bg-gray-800/50 border-gray-700">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrophyIcon className="w-5 h-5 text-flash-yellow" />
+            Sales Rep Scoreboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="p-3 bg-gray-700/50 rounded-lg">
+                <div className="h-5 bg-gray-600 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-600 rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
+  const maxSubmissions = Math.max(...sortedData.map(rep => rep.totalSubmissions));
+
   return (
-    <div className="bg-flash-dark-3 rounded-lg shadow-md overflow-hidden mb-8">
-      <div className="p-4 border-b border-flash-dark-2">
-        <h2 className="text-lg font-medium text-white flex items-center">
-          <TrophyIcon className="h-5 w-5 mr-2 text-flash-yellow" />
-          Activity Leaderboard
-        </h2>
-      </div>
-      
-      {repStats.length === 0 ? (
-        <div className="py-12 text-center text-gray-400">
-          <p>No sales rep data available</p>
-        </div>
-      ) : (
+    <Card className="bg-gray-800/50 border-gray-700">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrophyIcon className="w-5 h-5 text-flash-yellow" />
+          Sales Rep Scoreboard
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-flash-dark-2">
-            <thead className="bg-flash-dark-2">
+          <table className="w-full">
+            <thead className="bg-gray-900/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Rank
+                <th className="px-4 py-3 text-left">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-medium text-xs uppercase tracking-wider"
+                    onClick={() => handleSort('repName')}
+                  >
+                    Sales Rep
+                    {sortBy === 'repName' && (
+                      sortDirection === 'desc' ? 
+                        <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
+                        <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
+                    )}
+                  </Button>
                 </th>
-                {renderHeaderCell('Rep', 'username')}
-                {renderHeaderCell('Submissions', 'totalSubmissions')}
-                {renderHeaderCell('Signups', 'signedUp')}
-                {renderHeaderCell('Conv. Rate', 'conversionRate')}
-                {renderHeaderCell('Avg. Interest', 'avgInterestLevel')}
+                <th className="px-4 py-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-medium text-xs uppercase tracking-wider"
+                    onClick={() => handleSort('totalSubmissions')}
+                  >
+                    Leads
+                    {sortBy === 'totalSubmissions' && (
+                      sortDirection === 'desc' ? 
+                        <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
+                        <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
+                    )}
+                  </Button>
+                </th>
+                <th className="px-4 py-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-medium text-xs uppercase tracking-wider"
+                    onClick={() => handleSort('conversions')}
+                  >
+                    Conversions
+                    {sortBy === 'conversions' && (
+                      sortDirection === 'desc' ? 
+                        <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
+                        <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
+                    )}
+                  </Button>
+                </th>
+                <th className="px-4 py-3 hidden md:table-cell">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-medium text-xs uppercase tracking-wider"
+                    onClick={() => handleSort('conversionRate')}
+                  >
+                    Rate
+                    {sortBy === 'conversionRate' && (
+                      sortDirection === 'desc' ? 
+                        <ChevronDownIcon className="w-3 h-3 ml-1 inline" /> : 
+                        <ChevronUpIcon className="w-3 h-3 ml-1 inline" />
+                    )}
+                  </Button>
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-flash-dark-2">
+            <tbody className="divide-y divide-gray-700">
               {sortedData.map((rep, index) => (
-                <tr key={rep.username} className="hover:bg-flash-dark-2 transition-colors">
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className={`flex items-center ${getMedalColor(index)}`}>
-                      {index < 3 ? (
-                        <TrophyIcon className="h-5 w-5 mr-1" />
-                      ) : null}
-                      {index + 1}
+                <tr 
+                  key={rep.repName}
+                  className={cn(
+                    "hover:bg-gray-700/30 transition-colors",
+                    index < 3 && "bg-gray-700/20"
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {getMedalIcon(index)}
+                      <div>
+                        <div className="font-medium text-white">{rep.repName}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Avg Interest: {rep.avgInterestLevel.toFixed(1)}/10
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap font-medium">
-                    {rep.username}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-bold text-flash-yellow text-lg">
-                      {rep.totalSubmissions}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-medium text-flash-green">
-                      {rep.signedUp}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {rep.conversionRate.toFixed(1)}%
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-1/2 bg-flash-dark-2 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-flash-green to-flash-yellow h-2 rounded-full"
-                          style={{ width: `${(rep.avgInterestLevel / 5) * 100}%` }}
-                        ></div>
+                  <td className="px-4 py-3 text-center">
+                    <div className="space-y-1">
+                      <div className="text-2xl font-bold text-white">
+                        {rep.totalSubmissions}
                       </div>
-                      <span className="ml-2 text-sm">{rep.avgInterestLevel.toFixed(1)}/5</span>
+                      <Progress 
+                        value={rep.totalSubmissions} 
+                        max={maxSubmissions}
+                        className="h-1.5"
+                      />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-xl font-bold text-flash-green">
+                          {rep.conversions}
+                        </span>
+                        {rep.conversions >= 5 && (
+                          <FireIcon className="w-4 h-4 text-orange-500" />
+                        )}
+                      </div>
+                      {rep.totalInterest > 30 && (
+                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                          <SparklesIcon className="w-3 h-3" />
+                          {rep.totalInterest} interest pts
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-center hidden md:table-cell">
+                    <div className="space-y-1">
+                      <div className="text-lg font-semibold">
+                        {rep.conversionRate.toFixed(0)}%
+                      </div>
+                      {getPerformanceBadge(rep.conversionRate)}
                     </div>
                   </td>
                 </tr>
@@ -163,7 +229,7 @@ export default function SalesRepScoreboard({ repStats, isLoading = false }: Sale
             </tbody>
           </table>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
