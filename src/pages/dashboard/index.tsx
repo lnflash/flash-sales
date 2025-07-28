@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { 
   ArrowUpIcon, 
   UsersIcon, 
@@ -7,17 +8,43 @@ import {
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatsCard from '@/components/dashboard/StatsCard';
-import SubmissionTrends from '@/components/dashboard/SubmissionTrends';
-import InterestDistributionChart from '@/components/dashboard/InterestDistributionChart';
-import RecentSubmissions from '@/components/dashboard/RecentSubmissions';
-import SalesRepScoreboard from '@/components/dashboard/SalesRepScoreboard';
-import SignupLeaderboard from '@/components/dashboard/SignupLeaderboard';
-import InterestLeaderboard from '@/components/dashboard/InterestLeaderboard';
-import { PerformanceReview } from '@/components/dashboard/PerformanceReview';
 import { useSubmissionStats } from '@/hooks/useSubmissionStats';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
 import { calculateRepStats, calculateSignupLeaderboard, calculateInterestLeaderboard } from '@/utils/rep-stats-calculator';
+import { useRealtimeSubscriptions } from '@/hooks/useRealtimeDeals';
+
+// Lazy load heavy components
+const SubmissionTrends = lazy(() => import('@/components/dashboard/SubmissionTrends'));
+const InterestDistributionChart = lazy(() => import('@/components/dashboard/InterestDistributionChart'));
+const RecentSubmissions = lazy(() => import('@/components/dashboard/RecentSubmissions'));
+const SalesRepScoreboard = lazy(() => import('@/components/dashboard/SalesRepScoreboard'));
+const SignupLeaderboard = lazy(() => import('@/components/dashboard/SignupLeaderboard'));
+const InterestLeaderboard = lazy(() => import('@/components/dashboard/InterestLeaderboard'));
+const PerformanceReview = lazy(() => 
+  import('@/components/dashboard/PerformanceReview').then(module => ({ 
+    default: module.PerformanceReview 
+  }))
+);
+
+// Loading component for suspense
+const ChartSkeleton = () => (
+  <div className="bg-gray-800 rounded-lg p-6 animate-pulse">
+    <div className="h-6 bg-gray-700 rounded w-1/3 mb-4"></div>
+    <div className="h-48 bg-gray-700 rounded"></div>
+  </div>
+);
+
+const TableSkeleton = () => (
+  <div className="bg-gray-800 rounded-lg p-6 animate-pulse">
+    <div className="h-6 bg-gray-700 rounded w-1/3 mb-4"></div>
+    <div className="space-y-3">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="h-12 bg-gray-700 rounded"></div>
+      ))}
+    </div>
+  </div>
+);
 
 export default function Dashboard() {
   const { stats, isLoading: isLoadingStats } = useSubmissionStats();
@@ -27,6 +54,14 @@ export default function Dashboard() {
     { pageIndex: 0, pageSize: 1000 }, // Get all submissions for accurate rep stats
     [{ id: 'timestamp', desc: true }] // Sort by most recent
   );
+
+  // Enable real-time updates
+  useRealtimeSubscriptions({
+    enableDeals: true,
+    enableOrganizations: true,
+    enableActivities: false,
+    enableNotifications: true
+  });
 
   const interestDistribution = calculateInterestDistribution(submissions);
   const repStats = calculateRepStats(submissions);
@@ -48,71 +83,52 @@ export default function Dashboard() {
           value={stats?.signedUp || 0}
           icon={<CheckCircleIcon className="h-6 w-6" />}
           change={{ value: 8, positive: true }}
-          color="yellow"
-        />
-        <StatsCard
-          title="Avg. Interest Level"
-          value={stats?.avgInterestLevel ? stats.avgInterestLevel.toFixed(1) : '0.0'}
-          icon={<SparklesIcon className="h-6 w-6" />}
-          change={{ value: 5, positive: true }}
           color="blue"
         />
         <StatsCard
-          title="Package Seen"
-          value={`${stats?.packageSeenPercentage ? stats.packageSeenPercentage.toFixed(1) : 0}%`}
-          icon={<ArrowTrendingUpIcon className="h-6 w-6" />}
-          change={{ value: 3, positive: true }}
+          title="Average Interest"
+          value={stats?.avgInterestLevel?.toFixed(1) || '0.0'}
+          icon={<SparklesIcon className="h-6 w-6" />}
+          subtitle="/10"
           color="purple"
+        />
+        <StatsCard
+          title="Package Views"
+          value={`${stats?.packageSeenPercentage?.toFixed(0) || 0}%`}
+          icon={<ArrowTrendingUpIcon className="h-6 w-6" />}
+          change={{ value: 5, positive: true }}
+          color="yellow"
         />
       </section>
 
-      {/* Second row: Three leaderboards */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div>
-          <SalesRepScoreboard
-            repStats={repStats}
-            isLoading={isLoadingSubmissions}
-          />
-        </div>
-        <div>
-          <SignupLeaderboard
-            repStats={signupLeaderboard}
-            isLoading={isLoadingSubmissions}
-          />
-        </div>
-        <div>
-          <InterestLeaderboard
-            repStats={interestLeaderboard}
-            isLoading={isLoadingSubmissions}
-          />
-        </div>
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <Suspense fallback={<ChartSkeleton />}>
+          <SubmissionTrends interestedByMonth={stats?.interestedByMonth || []} />
+        </Suspense>
+        <Suspense fallback={<ChartSkeleton />}>
+          <InterestDistributionChart data={interestDistribution} />
+        </Suspense>
       </section>
 
-      {/* Third row: Submission Trends, Recent Submissions, Interest Distribution */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div>
-          <SubmissionTrends 
-            submissions={submissions || []}
-            isLoading={isLoadingSubmissions}
-          />
-        </div>
-        <div>
-          <RecentSubmissions 
-            submissions={submissions}
-            isLoading={isLoadingSubmissions}
-          />
-        </div>
-        <div>
-          <InterestDistributionChart 
-            distribution={interestDistribution}
-            isLoading={isLoadingSubmissions}
-          />
-        </div>
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <Suspense fallback={<TableSkeleton />}>
+          <SalesRepScoreboard data={repStats} />
+        </Suspense>
+        <Suspense fallback={<TableSkeleton />}>
+          <SignupLeaderboard data={signupLeaderboard} />
+        </Suspense>
+        <Suspense fallback={<TableSkeleton />}>
+          <InterestLeaderboard data={interestLeaderboard} />
+        </Suspense>
       </section>
 
-      {/* Fourth row: Performance Review */}
-      <section className="mb-8">
-        <PerformanceReview />
+      <section className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+        <Suspense fallback={<TableSkeleton />}>
+          <RecentSubmissions submissions={submissions.slice(0, 10)} isLoading={isLoadingSubmissions} />
+        </Suspense>
+        <Suspense fallback={<TableSkeleton />}>
+          <PerformanceReview />
+        </Suspense>
       </section>
     </DashboardLayout>
   );
