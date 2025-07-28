@@ -118,7 +118,9 @@ async function findOrCreateUser(username?: string): Promise<string | null> {
 async function migrateSubmission(submission: LegacySubmission): Promise<{ success: boolean; error?: string }> {
   try {
     // 1. Create or find organization
-    const { data: org, error: orgError } = await supabase
+    let orgId: string;
+    
+    const { data: newOrg, error: orgError } = await supabase
       .from('organizations')
       .insert({
         name: submission.ownerName,
@@ -144,7 +146,9 @@ async function migrateSubmission(submission: LegacySubmission): Promise<{ succes
       if (!existingOrg) {
         throw new Error(`Failed to create organization: ${orgError.message}`);
       }
-      org!.id = existingOrg.id;
+      orgId = existingOrg.id;
+    } else {
+      orgId = newOrg.id;
     }
 
     // 2. Create contact if phone number exists
@@ -157,7 +161,7 @@ async function migrateSubmission(submission: LegacySubmission): Promise<{ succes
       const { data: contact, error: contactError } = await supabase
         .from('contacts')
         .insert({
-          organization_id: org.id,
+          organization_id: orgId,
           first_name: firstName,
           last_name: lastName,
           phone_primary: submission.phoneNumber,
@@ -182,7 +186,7 @@ async function migrateSubmission(submission: LegacySubmission): Promise<{ succes
     const { data: deal, error: dealError } = await supabase
       .from('deals')
       .insert({
-        organization_id: org.id,
+        organization_id: orgId,
         primary_contact_id: contactId,
         owner_id: userId,
         name: `${submission.ownerName} - Deal`,
@@ -213,7 +217,7 @@ async function migrateSubmission(submission: LegacySubmission): Promise<{ succes
       .from('activities')
       .insert({
         deal_id: deal.id,
-        organization_id: org.id,
+        organization_id: orgId,
         contact_id: contactId,
         owner_id: userId,
         type: 'note',
