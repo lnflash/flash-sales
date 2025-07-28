@@ -1,6 +1,6 @@
 # Use multi-stage build for efficiency
 # Stage 1: Build the application
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN mkdir -p public
 RUN npm run build
 
 # Stage 2: Run the application
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 WORKDIR /app
 
