@@ -2,6 +2,7 @@ import { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import QueryProvider from '@/lib/query-provider';
+import { ApolloProviderWrapper } from '@/lib/apollo-provider';
 import AuthGuard from '@/components/auth/AuthGuard';
 import '@/styles/globals.css';
 
@@ -20,15 +21,17 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <QueryProvider>
-        {isPublicRoute ? (
-          <Component {...pageProps} />
-        ) : (
-          <AuthGuard>
+      <ApolloProviderWrapper>
+        <QueryProvider>
+          {isPublicRoute ? (
             <Component {...pageProps} />
-          </AuthGuard>
-        )}
-      </QueryProvider>
+          ) : (
+            <AuthGuard>
+              <Component {...pageProps} />
+            </AuthGuard>
+          )}
+        </QueryProvider>
+      </ApolloProviderWrapper>
     </>
   );
 }

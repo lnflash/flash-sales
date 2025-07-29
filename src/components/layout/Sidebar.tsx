@@ -15,6 +15,7 @@ import {
   ClipboardDocumentCheckIcon,
   DocumentTextIcon,
   ArrowRightOnRectangleIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -25,10 +26,11 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Intake Form', href: '/intake', icon: DocumentTextIcon },
-  { name: 'Dynamic Intake', href: '/intake-dynamic', icon: DocumentTextIcon },
+  { name: 'Canvas Form', href: '/intake', icon: DocumentTextIcon },
+  { name: 'Dynamic Canvas', href: '/intake-dynamic', icon: DocumentTextIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
   { name: 'Submissions', href: '/dashboard/submissions', icon: TableCellsIcon },
+  { name: 'Lead Management', href: '/dashboard/leads', icon: UserGroupIcon },
   { name: 'Rep Tracking', href: '/dashboard/rep-tracking', icon: ClipboardDocumentCheckIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
 ];

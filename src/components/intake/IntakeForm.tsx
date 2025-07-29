@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ExclamationCircleIcon, UserIcon } from '@heroicons/react/24/outline';
 import { createSubmission } from '@/lib/api';
 
 interface FormData {
@@ -106,18 +106,30 @@ export default function IntakeForm() {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <Card className="bg-white shadow-lg border-light-border">
-        <CardHeader className="text-center border-b border-light-border pb-6">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-flash-green rounded-full flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">F</span>
+        <CardHeader className="border-b border-light-border pb-6">
+          <div className="relative">
+            {/* Username display in top right */}
+            {formData.username && (
+              <div className="absolute top-0 right-0 flex items-center text-sm text-light-text-secondary bg-light-bg-secondary px-3 py-1 rounded-full">
+                <UserIcon className="w-4 h-4 mr-2" />
+                <span className="font-medium text-light-text-primary">{formData.username}</span>
+              </div>
+            )}
+            
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-flash-green rounded-full flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">F</span>
+                </div>
+              </div>
+              <CardTitle className="text-2xl font-bold text-light-text-primary">
+                Flash Sales Canvas Form
+              </CardTitle>
+              <p className="text-light-text-secondary mt-2">
+                Capture lead information quickly and efficiently
+              </p>
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-light-text-primary">
-            Flash Sales Intake Form
-          </CardTitle>
-          <p className="text-light-text-secondary mt-2">
-            Capture lead information quickly and efficiently
-          </p>
         </CardHeader>
         
         <CardContent className="p-6">

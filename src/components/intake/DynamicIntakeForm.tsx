@@ -20,7 +20,8 @@ import {
   CalendarIcon,
   CreditCardIcon,
   TruckIcon,
-  ShoppingBagIcon
+  ShoppingBagIcon,
+  UserIcon
 } from '@heroicons/react/24/outline';
 import { createSubmission } from '@/lib/api';
 import { calculateLeadScore } from '@/utils/lead-scoring';
@@ -131,7 +132,7 @@ const PAIN_POINTS = [
   'Complex pricing'
 ];
 
-export default function DynamicIntakeForm() {
+export default function DynamicCanvasForm() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -728,20 +729,30 @@ export default function DynamicIntakeForm() {
     <div className="max-w-4xl mx-auto p-6">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>Flash Sales Intake Form</CardTitle>
-              <CardDescription>
-                Capture lead information with intelligent field adaptation
-              </CardDescription>
-            </div>
-            <div className="text-right">
-              <div className={`text-2xl font-bold ${getLeadScoreColor(formData.leadScore)}`}>
-                {formData.leadScore}
+          <div className="relative">
+            {/* Username display in top right */}
+            {formData.username && (
+              <div className="absolute top-0 right-0 flex items-center text-sm text-light-text-secondary bg-light-bg-secondary px-3 py-1 rounded-full">
+                <UserIcon className="w-4 h-4 mr-2" />
+                <span className="font-medium text-light-text-primary">{formData.username}</span>
               </div>
-              <Badge variant="outline" className="mt-1">
-                {getLeadScoreLabel(formData.leadScore)}
-              </Badge>
+            )}
+            
+            <div className="flex justify-between items-start mt-6">
+              <div>
+                <CardTitle>Flash Sales Canvas Form</CardTitle>
+                <CardDescription>
+                  Capture lead information with intelligent field adaptation
+                </CardDescription>
+              </div>
+              <div className="text-right">
+                <div className={`text-2xl font-bold ${getLeadScoreColor(formData.leadScore)}`}>
+                  {formData.leadScore}
+                </div>
+                <Badge variant="outline" className="mt-1">
+                  {getLeadScoreLabel(formData.leadScore)}
+                </Badge>
+              </div>
             </div>
           </div>
           <div className="mt-4">

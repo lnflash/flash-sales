@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { gql, useApolloClient } from '@apollo/client';
 import { saveUserToStorage } from '@/lib/auth';
 import { checkUsernameSimulated } from '@/lib/graphql';
 import { Button } from '@/components/ui/button';
@@ -9,11 +10,23 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
+// Define the GraphQL query
+const CHECK_USERNAME_QUERY = gql`
+  query accountDefaultWallet($username: Username!) {
+    accountDefaultWallet(username: $username, walletCurrency: USD) {
+      __typename
+      id
+      walletCurrency
+    }
+  }
+`;
+
 export default function LoginForm() {
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const client = useApolloClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,24 +40,68 @@ export default function LoginForm() {
     setError('');
     
     try {
-      console.log("Checking username:", username.trim());
+      console.log("Checking username:", username.trim(), "Environment:", process.env.NODE_ENV);
       
-      // Use simulated auth for now
-      const result = await checkUsernameSimulated(username.trim());
-      console.log("Auth result:", result);
+      // Force simulated mode with environment variable
+      const forceSimulated = process.env.NEXT_PUBLIC_USE_SIMULATED_AUTH === 'true';
       
-      if (result.exists && result.userId) {
-        saveUserToStorage({
-          username: username.trim(),
-          userId: result.userId,
-          loggedInAt: Date.now(),
+      // Use simulated auth in development or if forced
+      if (forceSimulated || process.env.NODE_ENV !== 'production') {
+        console.log('Using simulated authentication in development mode');
+        const result = await checkUsernameSimulated(username.trim());
+        console.log("Auth result:", result);
+        
+        if (result.exists && result.userId) {
+          saveUserToStorage({
+            username: username.trim(),
+            userId: result.userId,
+            loggedInAt: Date.now(),
+          });
+          router.push('/dashboard');
+        } else {
+          setError('Username not found. Please try again.');
+        }
+      } 
+      // Use real GraphQL in production
+      else {
+        console.log('Using real GraphQL authentication in production mode');
+        const { data } = await client.query({
+          query: CHECK_USERNAME_QUERY,
+          variables: { username: username.trim() },
+          fetchPolicy: 'network-only',
         });
-        router.push('/dashboard');
-      } else {
-        setError('Username not found. Please try again.');
+        
+        console.log("GraphQL result:", data);
+        
+        if (data?.accountDefaultWallet?.id) {
+          saveUserToStorage({
+            username: username.trim(),
+            userId: data.accountDefaultWallet.id,
+            loggedInAt: Date.now(),
+          });
+          router.push('/dashboard');
+        } else {
+          setError('Username not found. Please try again.');
+        }
       }
     } catch (err: any) {
-      setError('An error occurred. Please try again.');
+      // Provide more specific error message
+      let errorMessage = 'An error occurred. Please try again.';
+      
+      // Check for specific error types and provide better messages
+      if (err && typeof err === 'object') {
+        if (err.graphQLErrors && Array.isArray(err.graphQLErrors) && err.graphQLErrors.length > 0) {
+          // Handle GraphQL validation errors
+          errorMessage = 'The API could not verify this username. Please try again.';
+          console.error('GraphQL errors:', err.graphQLErrors);
+        } else if (err.networkError) {
+          // Handle network connectivity errors
+          errorMessage = 'Could not connect to the authentication service. Please check your connection.';
+          console.error('Network error:', err.networkError);
+        }
+      }
+      
+      setError(errorMessage);
       console.error('Login error:', err);
     } finally {
       setIsLoading(false);
@@ -107,8 +164,8 @@ export default function LoginForm() {
           </Button>
           
           <div className="text-center text-sm text-light-text-secondary">
-            <p className="mb-1">Test usernames for development:</p>
-            <p className="font-mono text-xs">flash, sales, admin, demo, test</p>
+            <p>In development mode: Use one of these test usernames: flash, sales, admin, demo, test</p>
+            <p>In production: Enter your Flash account username</p>
           </div>
         </form>
       </CardContent>

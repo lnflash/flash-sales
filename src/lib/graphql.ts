@@ -1,20 +1,191 @@
-// Simulated authentication for development mode
-const VALID_USERNAMES = ['flash', 'sales', 'admin', 'demo', 'test'];
+// GraphQL client and utilities
+import { ApolloClient, ApolloLink, concat, HttpLink, InMemoryCache, gql } from '@apollo/client';
 
+// Default GraphQL endpoint URI
+const DEFAULT_GRAPHQL_URI = 'https://api.flashapp.me/graphql';
+
+// GraphQL endpoint URI - priority order:
+// 1. Environment variable (NEXT_PUBLIC_GRAPHQL_URI)
+// 2. Default fallback for known hosting platforms
+// 3. Dynamic determination from current host (only if safe)
+// 4. Absolute default fallback
+let GRAPHQL_URI = process.env.NEXT_PUBLIC_GRAPHQL_URI || DEFAULT_GRAPHQL_URI;
+
+// Log the initial URI from environment if available
+if (process.env.NEXT_PUBLIC_GRAPHQL_URI) {
+  console.log('Using GraphQL URI from environment variable:', GRAPHQL_URI);
+}
+
+// For development or if we need to determine the host dynamically
+if (!process.env.NEXT_PUBLIC_GRAPHQL_URI && typeof window !== 'undefined') {
+  try {
+    const host = window.location.host;
+    const hostParts = host.split('.');
+    
+    // Blocklist of domains where dynamic determination should be avoided
+    // These domains should use the default or environment variable instead
+    const blockedDomains = [
+      'ondigitalocean.app',
+      'vercel.app',
+      'netlify.app',
+      'github.io'
+    ];
+    
+    // Check if we're on a blocked domain
+    const isBlockedDomain = blockedDomains.some(domain => host.includes(domain));
+    
+    if (isBlockedDomain) {
+      // Use the default GraphQL URI for hosting platforms
+      console.log(`Detected hosting platform (${host}). Using default GraphQL URI: ${DEFAULT_GRAPHQL_URI}`);
+      GRAPHQL_URI = DEFAULT_GRAPHQL_URI;
+    } 
+    // Only attempt dynamic determination if not on a blocked domain
+    else if (hostParts[0] !== 'api') {
+      hostParts[0] = 'api';
+      const apiHost = hostParts.join('.');
+      // Override the default URI if we can determine it from the host
+      const dynamicURI = `https://${apiHost}/graphql`;
+      console.log('Using dynamically determined GraphQL URI:', dynamicURI);
+      GRAPHQL_URI = dynamicURI;
+    }
+  } catch (e) {
+    console.warn('Failed to determine dynamic API endpoint, using default:', e);
+    GRAPHQL_URI = DEFAULT_GRAPHQL_URI;
+  }
+}
+
+// IP forwarding middleware to preserve client IP
+const ipForwardingMiddleware = new ApolloLink((operation, forward) => {
+  operation.setContext(({ headers = {} }) => ({
+    headers: {
+      ...headers,
+      "x-real-ip": operation.getContext()["x-real-ip"],
+      "x-forwarded-for": operation.getContext()["x-forwarded-for"],
+    },
+  }));
+
+  return forward(operation);
+});
+
+// Create a GraphQL client instance
+export const graphQLClient = new ApolloClient({
+  link: concat(
+    ipForwardingMiddleware,
+    new HttpLink({
+      uri: GRAPHQL_URI,
+    }),
+  ),
+  cache: new InMemoryCache(),
+});
+
+// Query to check if username exists
+export const CHECK_USERNAME_QUERY = gql`
+  query accountDefaultWallet($username: Username!) {
+    accountDefaultWallet(username: $username, walletCurrency: USD) {
+      __typename
+      id
+      walletCurrency
+    }
+  }
+`;
+
+// Simulated version for development without making actual API calls
+export async function checkUsernameSimulated(username: string): Promise<{ exists: boolean, userId?: string }> {
+  // For development purposes, we'll consider these usernames valid
+  const validUsernames = ['flash', 'sales', 'admin', 'demo', 'test'];
+  
+  // Simulate API request delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  return {
+    exists: validUsernames.includes(username.toLowerCase()),
+    userId: validUsernames.includes(username.toLowerCase()) ? `user_${Date.now()}` : undefined
+  };
+}
+
+// Function to check if username exists - this tries to use the real endpoint
+// but falls back to simulation if there's an error
+export async function checkUsername(username: string, req?: any): Promise<{ exists: boolean, userId?: string }> {
+  try {
+    // Force simulated mode with NEXT_PUBLIC_USE_SIMULATED_AUTH env var
+    const forceSimulated = process.env.NEXT_PUBLIC_USE_SIMULATED_AUTH === 'true';
+    
+    // Force real API mode with NEXT_PUBLIC_USE_REAL_AUTH env var (overrides other settings)
+    const forceRealAuth = process.env.NEXT_PUBLIC_USE_REAL_AUTH === 'true';
+    
+    // In development mode or if forced, use the simulated version
+    // We'll use the real API in production even without a request object
+    if (forceSimulated || (process.env.NODE_ENV !== 'production' && !forceRealAuth)) {
+      console.log(
+        `🔧 Using simulated username check for: ${username} ` +
+        `(Reason: ${forceSimulated 
+          ? "forced by NEXT_PUBLIC_USE_SIMULATED_AUTH" 
+          : "development environment"})`
+      );
+      return await checkUsernameSimulated(username);
+    }
+    
+    console.log(`🔍 Checking username '${username}' against API at: ${GRAPHQL_URI}`);
+    
+    // Try to use the real GraphQL API
+    // Define query options with proper typing for Apollo Client
+    const queryOptions: {
+      query: typeof CHECK_USERNAME_QUERY;
+      variables: { username: string };
+      context?: {
+        "x-real-ip"?: string;
+        "x-forwarded-for"?: string;
+      };
+    } = {
+      query: CHECK_USERNAME_QUERY,
+      variables: { username },
+    };
+    
+    // Only add IP headers if we have a request object (server-side)
+    if (req && req.headers) {
+      queryOptions.context = {
+        "x-real-ip": req.headers["x-real-ip"] as string,
+        "x-forwarded-for": req.headers["x-forwarded-for"] as string,
+      };
+    }
+    
+    // Execute the query
+    const { data } = await graphQLClient.query(queryOptions);
+    
+    // Log API response with clear indication of success or failure
+    if (data?.accountDefaultWallet) {
+      console.log(`✅ Authentication successful for user '${username}' with ID: ${data.accountDefaultWallet.id}`);
+    } else {
+      console.log(`❌ Authentication failed - user '${username}' not found in API response:`, data);
+    }
+    
+    // If we get a valid response, the username exists
+    return { 
+      exists: !!data?.accountDefaultWallet,
+      userId: data?.accountDefaultWallet?.id || `user_${Date.now()}`,
+    };
+  } catch (error: any) {
+    // Log more detailed error information to help with debugging
+    if (error && typeof error === 'object') {
+      if (error.graphQLErrors && Array.isArray(error.graphQLErrors)) {
+        error.graphQLErrors.forEach((err: any) => {
+          console.error('GraphQL error:', err?.message, err?.path);
+        });
+      }
+      if (error.networkError) {
+        console.error('Network error:', error.networkError);
+      }
+    }
+    console.error('Error checking username with API:', error);
+    
+    // Fallback to simulated check on error
+    console.log("Falling back to simulated username check");
+    return await checkUsernameSimulated(username);
+  }
+}
+
+// Export for backward compatibility
 export interface AuthResult {
   exists: boolean;
   userId?: string;
-}
-
-export async function checkUsernameSimulated(username: string): Promise<AuthResult> {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const normalizedUsername = username.toLowerCase().trim();
-  const exists = VALID_USERNAMES.includes(normalizedUsername);
-  
-  return {
-    exists,
-    userId: exists ? `sim_${normalizedUsername}_${Date.now()}` : undefined
-  };
 }

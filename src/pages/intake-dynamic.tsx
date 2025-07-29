@@ -1,10 +1,10 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import DynamicIntakeForm from '@/components/intake/DynamicIntakeForm';
+import DynamicCanvasForm from '@/components/intake/DynamicIntakeForm';
 
-export default function DynamicIntakePage() {
+export default function DynamicCanvasPage() {
   return (
-    <DashboardLayout title="Dynamic Intake Form">
-      <DynamicIntakeForm />
+    <DashboardLayout title="Dynamic Canvas Form">
+      <DynamicCanvasForm />
     </DashboardLayout>
   );
 }
