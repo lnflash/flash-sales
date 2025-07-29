@@ -7,14 +7,32 @@ export interface UserProfile {
   id: string;
   username: string;
   phone: string;
+  language?: string;
   email?: {
     address: string;
     verified: boolean;
   };
+  quizQuestions?: Array<{
+    question: {
+      id: string;
+      earnAmount: number;
+    };
+    completed: boolean;
+  }>;
+  contacts?: Array<{
+    id: string;
+    username: string;
+    alias?: string;
+    transactionsCount: number;
+  }>;
   defaultAccount?: {
     id: string;
-    walletCurrency: string;
-    displayCurrency: string;
+    defaultWalletId?: string;
+    wallets?: Array<{
+      id: string;
+      walletCurrency: string;
+      balance: number;
+    }>;
   };
   createdAt: string;
   defaultTerritory?: string; // Stored locally

@@ -94,18 +94,36 @@ export const ME_QUERY = gql`
   query me {
     me {
       id
-      username
       phone
+      username
+      language
       email {
         address
         verified
       }
-      defaultAccount {
+      quizQuestions {
+        question {
+          id
+          earnAmount
+        }
+        completed
+      }
+      contacts {
         id
-        walletCurrency
-        displayCurrency
+        username
+        alias
+        transactionsCount
       }
       createdAt
+      defaultAccount {
+        id
+        defaultWalletId
+        wallets {
+          id
+          walletCurrency
+          balance
+        }
+      }
     }
   }
 `;

@@ -181,15 +181,19 @@ export default function ProfilePage() {
             </div>
 
             {/* Default Account */}
-            {profile?.defaultAccount && (
+            {profile?.defaultAccount && profile.defaultAccount.wallets && profile.defaultAccount.wallets.length > 0 && (
               <div>
                 <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
                   <CurrencyDollarIcon className="w-4 h-4 mr-1" />
-                  Default Account
+                  Wallets
                 </label>
-                <p className="text-light-text-primary">
-                  {profile.defaultAccount.walletCurrency} / {profile.defaultAccount.displayCurrency}
-                </p>
+                <div className="space-y-1">
+                  {profile.defaultAccount.wallets.map((wallet) => (
+                    <p key={wallet.id} className="text-light-text-primary">
+                      {wallet.walletCurrency}: {wallet.balance.toLocaleString()}
+                    </p>
+                  ))}
+                </div>
               </div>
             )}
           </div>
