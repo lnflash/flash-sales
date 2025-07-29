@@ -43,7 +43,13 @@ export default function IntakeForm() {
   useEffect(() => {
     const user = getUserFromStorage();
     if (user) {
-      setFormData(prev => ({ ...prev, username: user.username }));
+      // Get default territory from localStorage
+      const defaultTerritory = localStorage.getItem(`defaultTerritory_${user.username}`) || '';
+      setFormData(prev => ({ 
+        ...prev, 
+        username: user.username,
+        territory: defaultTerritory
+      }));
     }
   }, []);
 

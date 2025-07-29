@@ -89,6 +89,27 @@ export const CHECK_USERNAME_QUERY = gql`
   }
 `;
 
+// Query to get current user profile
+export const ME_QUERY = gql`
+  query me {
+    me {
+      id
+      username
+      phone
+      email {
+        address
+        verified
+      }
+      defaultAccount {
+        id
+        walletCurrency
+        displayCurrency
+      }
+      createdAt
+    }
+  }
+`;
+
 
 // Function to check if username exists - this tries to use the real endpoint
 // but falls back to simulation if there's an error
