@@ -67,12 +67,23 @@ const ipForwardingMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
+// Determine if we should use the proxy
+const shouldUseProxy = typeof window !== 'undefined' && 
+  window.location.hostname.includes('ondigitalocean.app');
+
+// Use proxy endpoint for DigitalOcean deployments to avoid CORS issues
+const graphqlEndpoint = shouldUseProxy ? '/api/graphql-proxy' : GRAPHQL_URI;
+
+if (shouldUseProxy) {
+  console.log('Using GraphQL proxy to avoid CORS issues');
+}
+
 // Create a GraphQL client instance
 export const graphQLClient = new ApolloClient({
   link: concat(
     ipForwardingMiddleware,
     new HttpLink({
-      uri: GRAPHQL_URI,
+      uri: graphqlEndpoint,
     }),
   ),
   cache: new InMemoryCache(),
