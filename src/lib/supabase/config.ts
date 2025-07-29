@@ -9,8 +9,8 @@ export function getSupabaseConfig() {
     console.log('Supabase config:', { 
       hasUrl: !!url, 
       hasKey: !!key,
-      urlLength: url.length,
-      keyLength: key.length 
+      urlLength: url ? url.length : 0,
+      keyLength: key ? key.length : 0 
     });
   }
 

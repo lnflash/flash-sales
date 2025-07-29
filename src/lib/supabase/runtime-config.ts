@@ -1,12 +1,12 @@
 // Runtime configuration helper for Supabase
 // This helps avoid hydration mismatches by ensuring consistent behavior between server and client
 
-let cachedUrl: string | null = null;
-let cachedKey: string | null = null;
+let cachedUrl: string = '';
+let cachedKey: string = '';
 
-export function getSupabaseEnvVars() {
-  // Return cached values if available
-  if (cachedUrl !== null && cachedKey !== null) {
+export function getSupabaseEnvVars(): { url: string; key: string } {
+  // Return cached values if available and not empty
+  if (cachedUrl && cachedKey) {
     return { url: cachedUrl, key: cachedKey };
   }
 
@@ -20,8 +20,8 @@ export function getSupabaseEnvVars() {
   // Client-side: check multiple sources
   // First check if values were injected by _document.tsx
   if ((window as any).NEXT_PUBLIC_SUPABASE_URL && (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    cachedUrl = (window as any).NEXT_PUBLIC_SUPABASE_URL;
-    cachedKey = (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    cachedUrl = (window as any).NEXT_PUBLIC_SUPABASE_URL || '';
+    cachedKey = (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
     return { url: cachedUrl, key: cachedKey };
   }
 
