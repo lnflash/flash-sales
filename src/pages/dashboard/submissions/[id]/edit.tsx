@@ -176,6 +176,35 @@ export default function EditSubmissionPage() {
                 </div>
                 
                 <div>
+                  <label htmlFor="territory" className="block text-light-text-primary text-sm font-medium mb-2">
+                    Territory
+                  </label>
+                  <select
+                    id="territory"
+                    name="territory"
+                    value={formState.territory || ''}
+                    onChange={handleInputChange}
+                    className="w-full bg-white border border-light-border rounded-md px-3 py-2 text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  >
+                    <option value="">Select Territory</option>
+                    <option value="Kingston">Kingston</option>
+                    <option value="St. Andrew">St. Andrew</option>
+                    <option value="St. Thomas">St. Thomas</option>
+                    <option value="Portland">Portland</option>
+                    <option value="St. Mary">St. Mary</option>
+                    <option value="St. Ann">St. Ann</option>
+                    <option value="Trelawny">Trelawny</option>
+                    <option value="St. James">St. James</option>
+                    <option value="Hanover">Hanover</option>
+                    <option value="Westmoreland">Westmoreland</option>
+                    <option value="St. Elizabeth">St. Elizabeth</option>
+                    <option value="Manchester">Manchester</option>
+                    <option value="Clarendon">Clarendon</option>
+                    <option value="St. Catherine">St. Catherine</option>
+                  </select>
+                </div>
+                
+                <div>
                   <label htmlFor="interestLevel" className="block text-light-text-primary text-sm font-medium mb-2">
                     Interest Level
                   </label>

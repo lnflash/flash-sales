@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { SalesRep, JamaicaParish, JAMAICA_PARISHES } from '@/types/lead-routing';
 import { assignLeadToRep, calculateRepWorkload, getParishRegion } from '@/utils/lead-routing';
+import { useSubmissions } from '@/hooks/useSubmissions';
 import { 
   UserGroupIcon, 
   MapPinIcon,
@@ -19,100 +20,6 @@ interface LeadAssignmentProps {
   onCancel: () => void;
 }
 
-// Mock sales reps data - in production this would come from API
-const mockSalesReps: SalesRep[] = [
-  {
-    id: 'rep1',
-    name: 'John Brown',
-    email: 'john.brown@flash.com',
-    territories: ['Kingston', 'St. Andrew'],
-    currentLoad: 12,
-    maxCapacity: 20,
-    specializations: ['Restaurant', 'Retail'],
-    performance: {
-      conversionRate: 0.35,
-      avgDealSize: 45000,
-      avgTimeToClose: 14
-    },
-    availability: 'available'
-  },
-  {
-    id: 'rep2',
-    name: 'Sarah Campbell',
-    email: 'sarah.campbell@flash.com',
-    territories: ['St. Catherine', 'Clarendon'],
-    currentLoad: 8,
-    maxCapacity: 20,
-    specializations: ['Services', 'E-commerce'],
-    performance: {
-      conversionRate: 0.42,
-      avgDealSize: 38000,
-      avgTimeToClose: 12
-    },
-    availability: 'available'
-  },
-  {
-    id: 'rep3',
-    name: 'Michael Thompson',
-    email: 'michael.thompson@flash.com',
-    territories: ['St. James', 'Hanover', 'Westmoreland'],
-    currentLoad: 15,
-    maxCapacity: 20,
-    specializations: ['Restaurant'],
-    performance: {
-      conversionRate: 0.38,
-      avgDealSize: 52000,
-      avgTimeToClose: 16
-    },
-    availability: 'busy'
-  },
-  {
-    id: 'rep4',
-    name: 'Patricia Williams',
-    email: 'patricia.williams@flash.com',
-    territories: ['Manchester', 'St. Elizabeth'],
-    currentLoad: 6,
-    maxCapacity: 20,
-    specializations: ['Retail', 'Services'],
-    performance: {
-      conversionRate: 0.45,
-      avgDealSize: 41000,
-      avgTimeToClose: 11
-    },
-    availability: 'available'
-  },
-  {
-    id: 'rep5',
-    name: 'David Miller',
-    email: 'david.miller@flash.com',
-    territories: ['St. Ann', 'Trelawny', 'St. Mary'],
-    currentLoad: 10,
-    maxCapacity: 20,
-    specializations: ['E-commerce'],
-    performance: {
-      conversionRate: 0.33,
-      avgDealSize: 35000,
-      avgTimeToClose: 15
-    },
-    availability: 'available'
-  },
-  {
-    id: 'rep6',
-    name: 'Lisa Johnson',
-    email: 'lisa.johnson@flash.com',
-    territories: ['Portland', 'St. Thomas'],
-    currentLoad: 4,
-    maxCapacity: 15,
-    specializations: ['Restaurant', 'Retail'],
-    performance: {
-      conversionRate: 0.40,
-      avgDealSize: 43000,
-      avgTimeToClose: 13
-    },
-    availability: 'available'
-  }
-];
-
 export default function LeadAssignment({
   leadId,
   currentTerritory,
@@ -125,6 +32,62 @@ export default function LeadAssignment({
   const [selectedRep, setSelectedRep] = useState<string>('');
   const [assignmentMode, setAssignmentMode] = useState<'auto' | 'manual'>('auto');
 
+  // Get all submissions to build sales rep data
+  const { submissions } = useSubmissions({});
+
+  // Create sales rep data from submissions
+  const salesReps = useMemo(() => {
+    const repMap = new Map<string, SalesRep>();
+
+    // Group submissions by username and territory
+    submissions.forEach(submission => {
+      if (!submission.username || !submission.territory) return;
+
+      const repId = submission.username;
+      if (!repMap.has(repId)) {
+        repMap.set(repId, {
+          id: repId,
+          name: submission.username,
+          email: `${submission.username.toLowerCase()}@flash.com`,
+          territories: [],
+          currentLoad: 0,
+          maxCapacity: 20,
+          specializations: ['General'],
+          performance: {
+            conversionRate: 0,
+            avgDealSize: 0,
+            avgTimeToClose: 14
+          },
+          availability: 'available' as const
+        });
+      }
+
+      const rep = repMap.get(repId)!;
+      
+      // Add territory if not already included
+      const territory = submission.territory as JamaicaParish;
+      if (!rep.territories.includes(territory)) {
+        rep.territories.push(territory);
+      }
+
+      // Update stats
+      rep.currentLoad += 1;
+      if (submission.signedUp) {
+        rep.performance.conversionRate = (rep.performance.conversionRate * (rep.currentLoad - 1) + 1) / rep.currentLoad;
+        rep.performance.avgDealSize = (rep.performance.avgDealSize * (rep.currentLoad - 1) + 5000) / rep.currentLoad;
+      }
+
+      // Update availability based on load
+      if (rep.currentLoad >= rep.maxCapacity * 0.8) {
+        rep.availability = 'busy';
+      } else if (rep.currentLoad >= rep.maxCapacity) {
+        rep.availability = 'unavailable';
+      }
+    });
+
+    return Array.from(repMap.values());
+  }, [submissions]);
+
   const handleAutoAssign = () => {
     if (!selectedTerritory) return;
 
@@ -133,7 +96,7 @@ export default function LeadAssignment({
       urgency: 'medium' as const,
     };
 
-    const assignment = assignLeadToRep(leadContext, mockSalesReps);
+    const assignment = assignLeadToRep(leadContext, salesReps);
     
     if (assignment) {
       setSelectedRep(assignment.assignedTo);
@@ -147,10 +110,10 @@ export default function LeadAssignment({
   };
 
   const getRepsByTerritory = (territory: JamaicaParish) => {
-    return mockSalesReps.filter(rep => rep.territories.includes(territory));
+    return salesReps.filter(rep => rep.territories.includes(territory));
   };
 
-  const selectedRepData = mockSalesReps.find(rep => rep.id === selectedRep);
+  const selectedRepData = salesReps.find(rep => rep.id === selectedRep);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 border border-light-border max-w-4xl mx-auto">

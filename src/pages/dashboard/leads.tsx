@@ -22,114 +22,117 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 
-// Mock workflow data - in production this would come from API
-const mockWorkflows: LeadWorkflow[] = [
-  {
-    id: 1,
-    submissionId: 1,
-    currentStage: 'qualified',
-    qualificationScore: 75,
+// Helper function to determine lead stage based on submission data
+const getLeadStage = (submission: Submission): LeadStage => {
+  if (submission.signedUp) return 'customer';
+  if (submission.interestLevel >= 4 && submission.packageSeen) return 'opportunity';
+  if (submission.interestLevel >= 3) return 'qualified';
+  if (submission.phoneNumber) return 'contacted';
+  return 'new';
+};
+
+// Helper function to calculate qualification score
+const calculateQualificationScore = (submission: Submission): number => {
+  let score = 0;
+  
+  // Interest level (0-50 points)
+  score += (submission.interestLevel / 5) * 50;
+  
+  // Package seen (20 points)
+  if (submission.packageSeen) score += 20;
+  
+  // Has decision makers (10 points)
+  if (submission.decisionMakers) score += 10;
+  
+  // Signed up (20 points)
+  if (submission.signedUp) score += 20;
+  
+  return Math.round(score);
+};
+
+// Helper function to convert submission to workflow
+const submissionToWorkflow = (submission: Submission): LeadWorkflow => {
+  const stage = getLeadStage(submission);
+  const score = calculateQualificationScore(submission);
+  
+  const workflow: LeadWorkflow = {
+    id: submission.id,
+    submissionId: submission.id,
+    currentStage: stage,
+    qualificationScore: score,
     criteria: {
-      hasbudget: true,
-      hasAuthority: true,
-      hasNeed: true,
-      hasTimeline: false,
-    },
-    stageHistory: [
-      { fromStage: 'new', toStage: 'contacted', transitionDate: '2024-01-15', performedBy: 'John Doe' },
-      { fromStage: 'contacted', toStage: 'qualified', transitionDate: '2024-01-18', performedBy: 'John Doe' },
-    ],
-    nextActions: ['Schedule product demo', 'Prepare custom proposal'],
-    assignedTo: 'John Doe',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-18',
-  },
-  {
-    id: 2,
-    submissionId: 2,
-    currentStage: 'opportunity',
-    qualificationScore: 85,
-    criteria: {
-      hasbudget: true,
-      hasAuthority: true,
-      hasNeed: true,
-      hasTimeline: true,
-      budgetRange: { min: 10000, max: 50000 },
-      timelineMonths: 3,
-    },
-    stageHistory: [
-      { fromStage: 'new', toStage: 'contacted', transitionDate: '2024-01-10', performedBy: 'Jane Smith' },
-      { fromStage: 'contacted', toStage: 'qualified', transitionDate: '2024-01-12', performedBy: 'Jane Smith' },
-      { fromStage: 'qualified', toStage: 'opportunity', transitionDate: '2024-01-16', performedBy: 'Jane Smith' },
-    ],
-    nextActions: ['Finalize proposal', 'Get stakeholder buy-in'],
-    assignedTo: 'Jane Smith',
-    createdAt: '2024-01-10',
-    updatedAt: '2024-01-16',
-  },
-  {
-    id: 3,
-    submissionId: 3,
-    currentStage: 'new',
-    qualificationScore: 40,
-    criteria: {
-      hasbudget: false,
-      hasAuthority: false,
-      hasNeed: true,
-      hasTimeline: false,
+      hasbudget: submission.interestLevel >= 3,
+      hasAuthority: !!submission.decisionMakers,
+      hasNeed: submission.interestLevel >= 2,
+      hasTimeline: submission.interestLevel >= 4,
     },
     stageHistory: [],
-    nextActions: ['Make initial contact', 'Send introductory email'],
-    createdAt: '2024-01-19',
-    updatedAt: '2024-01-19',
-  },
-  {
-    id: 4,
-    submissionId: 4,
-    currentStage: 'customer',
-    qualificationScore: 95,
-    criteria: {
-      hasbudget: true,
-      hasAuthority: true,
-      hasNeed: true,
-      hasTimeline: true,
-      budgetRange: { min: 25000, max: 75000 },
-      timelineMonths: 2,
-    },
-    stageHistory: [
-      { fromStage: 'new', toStage: 'contacted', transitionDate: '2024-01-05', performedBy: 'Mike Johnson' },
-      { fromStage: 'contacted', toStage: 'qualified', transitionDate: '2024-01-07', performedBy: 'Mike Johnson' },
-      { fromStage: 'qualified', toStage: 'opportunity', transitionDate: '2024-01-10', performedBy: 'Mike Johnson' },
-      { fromStage: 'opportunity', toStage: 'customer', transitionDate: '2024-01-14', performedBy: 'Mike Johnson' },
-    ],
-    nextActions: ['Send onboarding materials', 'Schedule implementation'],
-    assignedTo: 'Mike Johnson',
-    createdAt: '2024-01-05',
-    updatedAt: '2024-01-14',
-  },
-  {
-    id: 5,
-    submissionId: 5,
-    currentStage: 'contacted',
-    qualificationScore: 55,
-    criteria: {
-      hasbudget: false,
-      hasAuthority: true,
-      hasNeed: true,
-      hasTimeline: false,
-    },
-    stageHistory: [
-      { fromStage: 'new', toStage: 'contacted', transitionDate: '2024-01-17', performedBy: 'Sarah Lee' },
-    ],
-    nextActions: ['Determine budget range', 'Establish timeline'],
-    assignedTo: 'Sarah Lee',
-    createdAt: '2024-01-17',
-    updatedAt: '2024-01-17',
-  },
-];
+    nextActions: [],
+    assignedTo: submission.username || 'Unassigned',
+    createdAt: submission.timestamp,
+    updatedAt: submission.timestamp,
+  };
+  
+  // Add stage history based on current stage
+  if (stage !== 'new') {
+    workflow.stageHistory.push({
+      fromStage: 'new',
+      toStage: 'contacted',
+      transitionDate: submission.timestamp,
+      performedBy: submission.username || 'System',
+    });
+  }
+  
+  if (stage === 'qualified' || stage === 'opportunity' || stage === 'customer') {
+    workflow.stageHistory.push({
+      fromStage: 'contacted',
+      toStage: 'qualified',
+      transitionDate: submission.timestamp,
+      performedBy: submission.username || 'System',
+    });
+  }
+  
+  if (stage === 'opportunity' || stage === 'customer') {
+    workflow.stageHistory.push({
+      fromStage: 'qualified',
+      toStage: 'opportunity',
+      transitionDate: submission.timestamp,
+      performedBy: submission.username || 'System',
+    });
+  }
+  
+  if (stage === 'customer') {
+    workflow.stageHistory.push({
+      fromStage: 'opportunity',
+      toStage: 'customer',
+      transitionDate: submission.timestamp,
+      performedBy: submission.username || 'System',
+    });
+  }
+  
+  // Add next actions based on stage
+  switch (stage) {
+    case 'new':
+      workflow.nextActions = ['Make initial contact', 'Send introductory email'];
+      break;
+    case 'contacted':
+      workflow.nextActions = ['Schedule discovery call', 'Send product information'];
+      break;
+    case 'qualified':
+      workflow.nextActions = ['Schedule product demo', 'Prepare custom proposal'];
+      break;
+    case 'opportunity':
+      workflow.nextActions = ['Finalize proposal', 'Get stakeholder buy-in'];
+      break;
+    case 'customer':
+      workflow.nextActions = ['Send onboarding materials', 'Schedule implementation'];
+      break;
+  }
+  
+  return workflow;
+};
 
 export default function LeadsPage() {
-  const [workflows] = useState<LeadWorkflow[]>(mockWorkflows);
   const [selectedStage, setSelectedStage] = useState<LeadStage | null>(null);
   const [showQualificationWizard, setShowQualificationWizard] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
@@ -138,6 +141,7 @@ export default function LeadsPage() {
   const [showLeadAssignment, setShowLeadAssignment] = useState(false);
   const [leadToAssign, setLeadToAssign] = useState<number | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [selectedTerritory, setSelectedTerritory] = useState<string>('');
   
   useEffect(() => {
     const currentUser = getUserFromStorage();
@@ -154,7 +158,10 @@ export default function LeadsPage() {
     return {};
   };
   
-  const { submissions } = useSubmissions(getFilters());
+  const { submissions, isLoading } = useSubmissions(getFilters());
+  
+  // Convert submissions to workflows
+  const workflows = submissions.map(submissionToWorkflow);
 
   // Filter workflows by selected stage
   const filteredWorkflows = selectedStage
@@ -239,8 +246,16 @@ export default function LeadsPage() {
       {/* Territory Dashboard */}
       <div className="mb-8">
         <TerritoryDashboard 
-          salesReps={[]} // Using mock data in component
+          salesReps={submissions.map(sub => ({
+            id: sub.id.toString(),
+            name: sub.username || 'Unassigned',
+            territory: (sub.territory || 'Unassigned') as JamaicaParish | 'Unassigned',
+            activeLeads: 1,
+            totalRevenue: sub.signedUp ? 5000 : 0,
+            conversionRate: sub.signedUp ? 100 : 0,
+          }))}
           onTerritoryClick={(parish) => {
+            setSelectedTerritory(parish);
             console.log(`Selected territory: ${parish}`);
           }}
         />

@@ -150,6 +150,11 @@ export default function SubmissionDetail({
             </div>
 
             <div>
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Territory</h3>
+              <p className="text-light-text-primary">{submission.territory || 'N/A'}</p>
+            </div>
+
+            <div>
               <h3 className="text-light-text-secondary text-sm font-medium mb-1">Submission Date</h3>
               <p className="text-light-text-primary flex items-center">
                 <CalendarIcon className="h-4 w-4 mr-2 text-flash-green" />

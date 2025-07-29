@@ -90,6 +90,12 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
           <span className="text-light-text-primary">{info.getValue() || 'N/A'}</span>
         ),
       }),
+      columnHelper.accessor('territory', {
+        header: 'Territory',
+        cell: (info) => (
+          <span className="text-light-text-primary">{info.getValue() || 'N/A'}</span>
+        ),
+      }),
       columnHelper.accessor('timestamp', {
         header: 'Date',
         cell: (info) => <span className="text-light-text-primary">{formatDate(info.getValue())}</span>,

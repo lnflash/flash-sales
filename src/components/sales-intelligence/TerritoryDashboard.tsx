@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { JamaicaParish, JAMAICA_PARISHES, SalesRep } from '@/types/lead-routing';
-import { getParishRegion, calculateRepWorkload } from '@/utils/lead-routing';
+import { useState, useMemo } from 'react';
+import { JamaicaParish, JAMAICA_PARISHES } from '@/types/lead-routing';
+import { getParishRegion } from '@/utils/lead-routing';
 import { 
   MapIcon, 
   UserGroupIcon, 
@@ -21,19 +21,17 @@ interface TerritoryStats {
   topPerformer?: string;
 }
 
-// Mock territory data - in production this would come from API
-const mockTerritoryStats: TerritoryStats[] = JAMAICA_PARISHES.map(parish => ({
-  parish,
-  totalLeads: Math.floor(Math.random() * 100) + 20,
-  activeLeads: Math.floor(Math.random() * 30) + 5,
-  conversionRate: Math.random() * 0.3 + 0.2,
-  avgDealSize: Math.floor(Math.random() * 30000) + 20000,
-  assignedReps: Math.floor(Math.random() * 3) + 1,
-  topPerformer: ['John Brown', 'Sarah Campbell', 'Michael Thompson'][Math.floor(Math.random() * 3)]
-}));
+interface SimpleSalesRep {
+  id: string;
+  name: string;
+  territory: JamaicaParish | 'Unassigned';
+  activeLeads: number;
+  totalRevenue: number;
+  conversionRate: number;
+}
 
 interface TerritoryDashboardProps {
-  salesReps: SalesRep[];
+  salesReps: SimpleSalesRep[];
   onTerritoryClick?: (parish: JamaicaParish) => void;
 }
 
@@ -46,7 +44,55 @@ export default function TerritoryDashboard({
 
   const regions = ['All', 'Eastern', 'Central', 'Western'] as const;
 
-  const filteredStats = mockTerritoryStats.filter(stat => {
+  // Calculate territory stats from real sales rep data
+  const territoryStats = useMemo(() => {
+    const statsMap = new Map<JamaicaParish, TerritoryStats>();
+
+    // Initialize stats for all parishes
+    JAMAICA_PARISHES.forEach(parish => {
+      statsMap.set(parish, {
+        parish,
+        totalLeads: 0,
+        activeLeads: 0,
+        conversionRate: 0,
+        avgDealSize: 0,
+        assignedReps: 0,
+        topPerformer: undefined
+      });
+    });
+
+    // Group reps by territory and calculate stats
+    salesReps.forEach(rep => {
+      const territory = rep.territory;
+      if (territory && territory !== 'Unassigned' && JAMAICA_PARISHES.includes(territory as JamaicaParish)) {
+        const stats = statsMap.get(territory as JamaicaParish)!;
+        stats.totalLeads += 1;
+        stats.activeLeads += rep.activeLeads || 0;
+        stats.assignedReps += 1;
+        
+        // Track top performer by revenue
+        if (!stats.topPerformer || rep.totalRevenue > (salesReps.find(r => r.name === stats.topPerformer)?.totalRevenue || 0)) {
+          stats.topPerformer = rep.name;
+        }
+      }
+    });
+
+    // Calculate averages
+    statsMap.forEach((stats, parish) => {
+      if (stats.assignedReps > 0) {
+        const repsInTerritory = salesReps.filter(rep => rep.territory === parish);
+        const totalRevenue = repsInTerritory.reduce((sum, rep) => sum + (rep.totalRevenue || 0), 0);
+        const conversions = repsInTerritory.filter(rep => rep.conversionRate > 0).length;
+        
+        stats.conversionRate = conversions / stats.assignedReps;
+        stats.avgDealSize = stats.activeLeads > 0 ? totalRevenue / stats.activeLeads : 0;
+      }
+    });
+
+    return Array.from(statsMap.values());
+  }, [salesReps]);
+
+  const filteredStats = territoryStats.filter(stat => {
     if (selectedRegion === 'All') return true;
     return getParishRegion(stat.parish) === selectedRegion;
   });
@@ -67,9 +113,9 @@ export default function TerritoryDashboard({
   };
 
   const regionStats = {
-    Eastern: mockTerritoryStats.filter(s => getParishRegion(s.parish) === 'Eastern'),
-    Central: mockTerritoryStats.filter(s => getParishRegion(s.parish) === 'Central'),
-    Western: mockTerritoryStats.filter(s => getParishRegion(s.parish) === 'Western'),
+    Eastern: territoryStats.filter(s => getParishRegion(s.parish) === 'Eastern'),
+    Central: territoryStats.filter(s => getParishRegion(s.parish) === 'Central'),
+    Western: territoryStats.filter(s => getParishRegion(s.parish) === 'Western'),
   };
 
   return (
@@ -137,12 +183,9 @@ export default function TerritoryDashboard({
       <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
         {filteredStats.map(stat => {
           const repsInTerritory = salesReps.filter(rep => 
-            rep.territories.includes(stat.parish)
+            rep.territory === stat.parish
           );
-          const hasCapacityIssue = repsInTerritory.some(rep => {
-            const workload = calculateRepWorkload(rep);
-            return workload.status === 'overloaded' || workload.status === 'busy';
-          });
+          const hasCapacityIssue = stat.assignedReps > 5; // Simple check: more than 5 reps per territory might be an issue
 
           return (
             <div
@@ -219,7 +262,7 @@ export default function TerritoryDashboard({
       </div>
 
       {/* Territory Coverage Warning */}
-      {mockTerritoryStats.filter(s => s.assignedReps === 0).length > 0 && (
+      {territoryStats.filter(s => s.assignedReps === 0).length > 0 && (
         <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
           <div className="flex items-start">
             <ExclamationCircleIcon className="w-5 h-5 text-red-600 mr-2 flex-shrink-0" />
@@ -228,7 +271,7 @@ export default function TerritoryDashboard({
                 Territory Coverage Gap
               </p>
               <p className="text-sm text-red-700 mt-1">
-                {mockTerritoryStats.filter(s => s.assignedReps === 0).length} territories have no assigned reps
+                {territoryStats.filter(s => s.assignedReps === 0).length} territories have no assigned reps
               </p>
             </div>
           </div>
