@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getSupabase } from "@/lib/supabase/client";
 import { getUserFromStorage } from "@/lib/auth";
 import { getSupabaseConfig } from "@/lib/supabase/runtime-config";
@@ -35,18 +35,11 @@ export function useSupabaseProfile() {
 
   const user = getUserFromStorage();
 
-  // Fetch profile from Supabase
-  useEffect(() => {
+  const fetchProfile = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
     }
-
-    fetchProfile();
-  }, [user]);
-
-  const fetchProfile = async () => {
-    if (!user) return;
 
     try {
       setLoading(true);
@@ -134,7 +127,12 @@ export function useSupabaseProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  // Fetch profile from Supabase
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const createNewUser = async (username: string) => {
     try {
@@ -288,6 +286,6 @@ export function useSupabaseProfile() {
     error,
     isSaving,
     updateProfile,
-    refetch: fetchProfile,
+    refetch: fetchProfile as () => Promise<void>,
   };
 }
