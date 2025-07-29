@@ -259,6 +259,7 @@ export function useSupabaseProfile() {
         }
       }
 
+      const supabase = getSupabase();
       const { data, error: updateError } = await supabase.from("users").update(updateData).eq("id", profile.id).select().single();
 
       if (updateError) {
