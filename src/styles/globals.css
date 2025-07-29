@@ -152,3 +152,42 @@
 .badge-info {
   @apply bg-blue-100 text-blue-800 border-blue-200;
 }
+
+/* Custom range slider */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-track {
+  @apply w-full h-2 bg-light-bg-tertiary rounded-lg;
+}
+
+.slider::-moz-range-track {
+  @apply w-full h-2 bg-light-bg-tertiary rounded-lg;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  @apply w-5 h-5 bg-flash-green rounded-full cursor-pointer shadow-md;
+  margin-top: -6px;
+}
+
+.slider::-moz-range-thumb {
+  @apply w-5 h-5 bg-flash-green rounded-full cursor-pointer shadow-md border-0;
+}
+
+.slider:focus {
+  outline: none;
+}
+
+.slider:focus::-webkit-slider-thumb {
+  @apply ring-2 ring-flash-green ring-offset-2;
+}
+
+.slider:focus::-moz-range-thumb {
+  @apply ring-2 ring-flash-green ring-offset-2;
+}

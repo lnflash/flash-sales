@@ -100,6 +100,22 @@ export async function getSubmissionById(id: number): Promise<Submission> {
   }
 }
 
+export async function createSubmission(data: Omit<Submission, 'id' | 'timestamp'>): Promise<Submission> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/submissions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Submission>(response);
+  } catch (error) {
+    console.error('Error creating submission:', error);
+    throw error;
+  }
+}
+
 export async function updateSubmission(id: number, data: Partial<Submission>): Promise<Submission> {
   try {
     const response = await fetch(`${API_BASE_URL}/submissions/${id}`, {
