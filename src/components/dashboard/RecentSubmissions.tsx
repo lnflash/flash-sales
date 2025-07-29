@@ -99,6 +99,11 @@ export default function RecentSubmissions({
                     <p className="text-sm text-light-text-secondary truncate">
                       {submission.phoneNumber || 'No phone'}
                     </p>
+                    {submission.territory && (
+                      <p className="text-xs text-light-text-tertiary">
+                        {submission.territory}
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col items-end gap-1 ml-4">
                     <Badge 

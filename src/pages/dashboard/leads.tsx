@@ -246,14 +246,46 @@ export default function LeadsPage() {
       {/* Territory Dashboard */}
       <div className="mb-8">
         <TerritoryDashboard 
-          salesReps={submissions.map(sub => ({
-            id: sub.id.toString(),
-            name: sub.username || 'Unassigned',
-            territory: (sub.territory || 'Unassigned') as JamaicaParish | 'Unassigned',
-            activeLeads: 1,
-            totalRevenue: sub.signedUp ? 5000 : 0,
-            conversionRate: sub.signedUp ? 100 : 0,
-          }))}
+          salesReps={(() => {
+            // Group submissions by rep and territory
+            const repMap = new Map<string, any>();
+            
+            submissions.forEach(sub => {
+              const repName = sub.username || 'Unassigned';
+              const key = `${repName}-${sub.territory || 'Unassigned'}`;
+              
+              if (!repMap.has(key)) {
+                repMap.set(key, {
+                  id: key,
+                  name: repName,
+                  territory: (sub.territory || 'Unassigned') as JamaicaParish | 'Unassigned',
+                  activeLeads: 0,
+                  totalRevenue: 0,
+                  conversionRate: 0,
+                });
+              }
+              
+              const rep = repMap.get(key)!;
+              rep.activeLeads += 1;
+              if (sub.signedUp) {
+                rep.totalRevenue += 5000; // Assuming $5000 per conversion
+              }
+            });
+            
+            // Calculate conversion rates
+            repMap.forEach(rep => {
+              const repSubmissions = submissions.filter(s => 
+                (s.username || 'Unassigned') === rep.name && 
+                (s.territory || 'Unassigned') === rep.territory
+              );
+              const conversions = repSubmissions.filter(s => s.signedUp).length;
+              rep.conversionRate = repSubmissions.length > 0 
+                ? (conversions / repSubmissions.length) * 100 
+                : 0;
+            });
+            
+            return Array.from(repMap.values());
+          })()}
           onTerritoryClick={(parish) => {
             setSelectedTerritory(parish);
             console.log(`Selected territory: ${parish}`);

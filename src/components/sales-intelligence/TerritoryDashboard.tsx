@@ -66,9 +66,12 @@ export default function TerritoryDashboard({
       const territory = rep.territory;
       if (territory && territory !== 'Unassigned' && JAMAICA_PARISHES.includes(territory as JamaicaParish)) {
         const stats = statsMap.get(territory as JamaicaParish)!;
-        stats.totalLeads += 1;
+        stats.totalLeads += rep.activeLeads || 0; // Changed from += 1
         stats.activeLeads += rep.activeLeads || 0;
-        stats.assignedReps += 1;
+        
+        // Count unique reps
+        const uniqueReps = new Set(salesReps.filter(r => r.territory === territory).map(r => r.name));
+        stats.assignedReps = uniqueReps.size;
         
         // Track top performer by revenue
         if (!stats.topPerformer || rep.totalRevenue > (salesReps.find(r => r.name === stats.topPerformer)?.totalRevenue || 0)) {

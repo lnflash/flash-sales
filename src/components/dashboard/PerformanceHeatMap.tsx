@@ -9,7 +9,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 
 interface HeatMapData {
-  rep: string;
+  territory: string;
   periods: {
     period: string;
     value: number;
@@ -38,20 +38,20 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
       weeks.push(weekLabel);
     }
 
-    // Group submissions by rep
-    const repSubmissions = new Map<string, any[]>();
+    // Group submissions by territory
+    const territorySubmissions = new Map<string, any[]>();
     submissions.forEach(submission => {
-      const username = submission.username || 'Unknown';
-      if (!repSubmissions.has(username)) {
-        repSubmissions.set(username, []);
+      const territory = submission.territory || 'Unknown';
+      if (!territorySubmissions.has(territory)) {
+        territorySubmissions.set(territory, []);
       }
-      repSubmissions.get(username)!.push(submission);
+      territorySubmissions.get(territory)!.push(submission);
     });
 
-    // Calculate performance for each rep across time periods
+    // Calculate performance for each territory across time periods
     const heatMapData: HeatMapData[] = [];
     
-    repSubmissions.forEach((repSubs, rep) => {
+    territorySubmissions.forEach((territorySubs, territory) => {
       const periods = weeks.map(week => {
         // Find submissions for this week
         const [month, day] = week.split('/').map(Number);
@@ -59,7 +59,7 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
 
-        const weekSubmissions = repSubs.filter(sub => {
+        const weekSubmissions = territorySubs.filter(sub => {
           const subDate = new Date(sub.timestamp);
           return subDate >= weekStart && subDate <= weekEnd;
         });
@@ -78,20 +78,20 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
       });
 
       heatMapData.push({
-        rep,
+        territory,
         periods
       });
     });
 
     // Sort by total performance
     return heatMapData
-      .filter(rep => rep.periods.some(p => p.submissions > 0))
+      .filter(territory => territory.periods.some(p => p.submissions > 0))
       .sort((a, b) => {
         const aTotal = a.periods.reduce((sum, p) => sum + p.value, 0);
         const bTotal = b.periods.reduce((sum, p) => sum + p.value, 0);
         return bTotal - aTotal;
       })
-      .slice(0, 10); // Top 10 reps
+      .slice(0, 10); // Top 10 territories
   }, [submissions]);
 
   const getHeatMapColor = (value: number): string => {
@@ -141,7 +141,7 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
             <FireIcon className="h-5 w-5 mr-2 text-flash-green" />
             Performance Heat Map
           </h3>
-          <p className="text-sm text-light-text-secondary mt-1">Conversion rates by rep over time</p>
+          <p className="text-sm text-light-text-secondary mt-1">Conversion rates by territory over time</p>
         </div>
         <div className="flex items-center space-x-4 text-xs text-light-text-tertiary">
           <div className="flex items-center space-x-2">
@@ -176,23 +176,23 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
 
           {/* Heat Map Rows */}
           <div className="space-y-1">
-            {heatMapData.map(rep => (
-              <div key={rep.rep} className="grid grid-cols-9 gap-1">
-                {/* Rep Name */}
+            {heatMapData.map(item => (
+              <div key={item.territory} className="grid grid-cols-9 gap-1">
+                {/* Territory Name */}
                 <div className="text-sm text-light-text-primary font-medium p-3 bg-light-bg-secondary border border-light-border rounded flex items-center">
-                  <span className="truncate">{rep.rep}</span>
+                  <span className="truncate">{item.territory}</span>
                 </div>
                 
                 {/* Performance Cells */}
-                {rep.periods.map(period => (
+                {item.periods.map(period => (
                   <div
-                    key={`${rep.rep}-${period.period}`}
+                    key={`${item.territory}-${period.period}`}
                     className={`
                       p-3 rounded text-center transition-colors group cursor-pointer
                       ${getHeatMapColor(period.value)}
                       hover:ring-2 hover:ring-flash-green hover:ring-opacity-50
                     `}
-                    title={`${rep.rep} - ${period.period}: ${period.value.toFixed(1)}% (${period.conversions}/${period.submissions})`}
+                    title={`${item.territory} - ${period.period}: ${period.value.toFixed(1)}% (${period.conversions}/${period.submissions})`}
                   >
                     <div className={`text-xs font-bold ${getTextColor(period.value)}`}>
                       {period.value > 0 ? period.value.toFixed(0) + '%' : '-'}
@@ -217,7 +217,7 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
               Top Performer
             </div>
             <div className="text-lg font-bold text-flash-green">
-              {heatMapData[0]?.rep || 'N/A'}
+              {heatMapData[0]?.territory || 'N/A'}
             </div>
             <div className="text-sm text-light-text-primary">
               {heatMapData[0] ? 
@@ -233,8 +233,8 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
             </div>
             <div className="text-lg font-bold text-amber-600">
               {heatMapData.length > 0 ? 
-                (heatMapData.reduce((sum, rep) => 
-                  sum + rep.periods.reduce((periodSum, p) => periodSum + p.value, 0) / rep.periods.length, 0
+                (heatMapData.reduce((sum, territory) => 
+                  sum + territory.periods.reduce((periodSum, p) => periodSum + p.value, 0) / territory.periods.length, 0
                 ) / heatMapData.length).toFixed(1) : '0.0'
               }%
             </div>
@@ -245,7 +245,7 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
 
           <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
             <div className="text-xs text-light-text-secondary uppercase tracking-wide mb-1">
-              Active Reps
+              Active Territories
             </div>
             <div className="text-lg font-bold text-blue-600">
               {heatMapData.length}
