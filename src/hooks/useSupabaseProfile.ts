@@ -59,14 +59,28 @@ export function useSupabaseProfile() {
       console.log('First query result:', { data, error: fetchError });
 
       if (fetchError || !data) {
-        // If not found, try by email (assuming username@flashbitcoin.com)
-        const email = `${user.username}@flashbitcoin.com`;
+        // If not found, try by email (assuming username@getflash.io)
+        const email = `${user.username}@getflash.io`;
         console.log('Trying with email:', email);
         const result = await supabase.from("users").select("*").eq("email", email).single();
 
         data = result.data;
         fetchError = result.error;
         console.log('Email query result:', { data, error: fetchError });
+      }
+
+      // If still not found, try a case-insensitive search
+      if (fetchError || !data) {
+        console.log('Trying case-insensitive search for username:', user.username);
+        const { data: searchData, error: searchError } = await supabase
+          .from("users")
+          .select("*")
+          .or(`username.ilike.${user.username},email.ilike.${user.username}@getflash.io`)
+          .single();
+        
+        data = searchData;
+        fetchError = searchError;
+        console.log('Case-insensitive search result:', { data: searchData, error: searchError });
       }
 
       if (fetchError) {
@@ -96,7 +110,7 @@ export function useSupabaseProfile() {
 
   const createNewUser = async (username: string) => {
     try {
-      const email = `${username}@flashbitcoin.com`;
+      const email = `${username}@getflash.io`;
       const nameParts = username.split("_");
       const firstName = nameParts[0] || username;
       const lastName = nameParts[1] || "User";
@@ -105,7 +119,7 @@ export function useSupabaseProfile() {
         .from("users")
         .insert({
           email,
-          username,
+          username: username.toLowerCase(), // Ensure lowercase for consistency
           first_name: firstName,
           last_name: lastName,
           role: "sales_rep",

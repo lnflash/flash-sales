@@ -147,7 +147,7 @@ export default function ProfilePage() {
               </div>
               <div className="ml-6">
                 <h1 className="text-2xl font-bold text-light-text-primary">{profile?.full_name || profile?.username || "Unknown User"}</h1>
-                <p className="text-light-text-secondary">{profile?.email || `${user.username}@flashbitcoin.com`}</p>
+                <p className="text-light-text-secondary">{profile?.email || `${user.username}@getflash.io`}</p>
               </div>
             </div>
 
@@ -233,7 +233,7 @@ export default function ProfilePage() {
                 <EnvelopeIcon className="w-4 h-4 mr-1" />
                 Email
               </label>
-              <p className="text-light-text-primary">{profile?.email || `${user.username}@flashbitcoin.com`}</p>
+              <p className="text-light-text-primary">{profile?.email || `${user.username}@getflash.io`}</p>
             </div>
 
             {/* Phone */}
