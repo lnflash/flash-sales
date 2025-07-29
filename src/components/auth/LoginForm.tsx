@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { gql, useApolloClient } from '@apollo/client';
 import { saveUserToStorage } from '@/lib/auth';
-import { checkUsernameSimulated } from '@/lib/graphql';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,49 +39,25 @@ export default function LoginForm() {
     setError('');
     
     try {
-      console.log("Checking username:", username.trim(), "Environment:", process.env.NODE_ENV);
+      console.log("Checking username:", username.trim());
       
-      // Force simulated mode with environment variable
-      const forceSimulated = process.env.NEXT_PUBLIC_USE_SIMULATED_AUTH === 'true';
+      const { data } = await client.query({
+        query: CHECK_USERNAME_QUERY,
+        variables: { username: username.trim() },
+        fetchPolicy: 'network-only',
+      });
       
-      // Use simulated auth in development or if forced
-      if (forceSimulated || process.env.NODE_ENV !== 'production') {
-        console.log('Using simulated authentication in development mode');
-        const result = await checkUsernameSimulated(username.trim());
-        console.log("Auth result:", result);
-        
-        if (result.exists && result.userId) {
-          saveUserToStorage({
-            username: username.trim(),
-            userId: result.userId,
-            loggedInAt: Date.now(),
-          });
-          router.push('/dashboard');
-        } else {
-          setError('Username not found. Please try again.');
-        }
-      } 
-      // Use real GraphQL in production
-      else {
-        console.log('Using real GraphQL authentication in production mode');
-        const { data } = await client.query({
-          query: CHECK_USERNAME_QUERY,
-          variables: { username: username.trim() },
-          fetchPolicy: 'network-only',
+      console.log("GraphQL result:", data);
+      
+      if (data?.accountDefaultWallet?.id) {
+        saveUserToStorage({
+          username: username.trim(),
+          userId: data.accountDefaultWallet.id,
+          loggedInAt: Date.now(),
         });
-        
-        console.log("GraphQL result:", data);
-        
-        if (data?.accountDefaultWallet?.id) {
-          saveUserToStorage({
-            username: username.trim(),
-            userId: data.accountDefaultWallet.id,
-            loggedInAt: Date.now(),
-          });
-          router.push('/dashboard');
-        } else {
-          setError('Username not found. Please try again.');
-        }
+        router.push('/dashboard');
+      } else {
+        setError('Username not found. Please try again.');
       }
     } catch (err: any) {
       // Provide more specific error message
@@ -164,8 +139,7 @@ export default function LoginForm() {
           </Button>
           
           <div className="text-center text-sm text-light-text-secondary">
-            <p>In development mode: Use one of these test usernames: flash, sales, admin, demo, test</p>
-            <p>In production: Enter your Flash account username</p>
+            <p>Enter your Flash account username</p>
           </div>
         </form>
       </CardContent>

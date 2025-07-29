@@ -228,16 +228,18 @@ export function calculateDaysInStage(
   stageTransitions.forEach(transition => {
     if (transition.toStage === stage && !entryDate) {
       entryDate = new Date(transition.transitionDate);
-    } else if (transition.fromStage === stage && entryDate) {
+    } else if (transition.fromStage === stage && entryDate !== null) {
       const exitDate = new Date(transition.transitionDate);
-      totalDays += Math.floor((exitDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+      const entryDateValue = entryDate as Date;
+      totalDays += Math.floor((exitDate.getTime() - entryDateValue.getTime()) / (1000 * 60 * 60 * 24));
       entryDate = null;
     }
   });
 
   // If still in stage, calculate from entry to now
-  if (entryDate) {
-    totalDays += Math.floor((new Date().getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+  if (entryDate !== null) {
+    const entryDateValue = entryDate as Date;
+    totalDays += Math.floor((new Date().getTime() - entryDateValue.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   return totalDays;

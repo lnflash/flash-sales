@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useApolloClient } from '@apollo/client';
 import LoginForm from './LoginForm';
 import { saveUserToStorage } from '@/lib/auth';
-import { checkUsernameSimulated } from '@/lib/graphql';
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -21,9 +20,6 @@ jest.mock('@/lib/auth', () => ({
   saveUserToStorage: jest.fn(),
 }));
 
-jest.mock('@/lib/graphql', () => ({
-  checkUsernameSimulated: jest.fn(),
-}));
 
 describe('LoginForm', () => {
   const mockPush = jest.fn();
@@ -41,8 +37,6 @@ describe('LoginForm', () => {
     (useApolloClient as jest.Mock).mockReturnValue({
       query: mockQuery,
     });
-    // Set to development mode by default
-    process.env.NODE_ENV = 'development';
   });
 
   afterEach(() => {
@@ -59,7 +53,6 @@ describe('LoginForm', () => {
   });
 
   it.skip('shows error when username is empty', async () => {
-    // Skipping this test due to form validation preventing submit
     render(<LoginForm />);
     
     const submitButton = screen.getByRole('button', { name: 'Continue' });
@@ -74,54 +67,8 @@ describe('LoginForm', () => {
     });
   });
 
-  it('handles successful login with simulated auth in development', async () => {
-    (checkUsernameSimulated as jest.Mock).mockResolvedValue({
-      exists: true,
-      userId: 'test_user_123',
-    });
 
-    render(<LoginForm />);
-    
-    const usernameInput = screen.getByLabelText('Username');
-    const submitButton = screen.getByRole('button', { name: 'Continue' });
-
-    fireEvent.change(usernameInput, { target: { value: 'flash' } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(checkUsernameSimulated).toHaveBeenCalledWith('flash');
-      expect(saveUserToStorage).toHaveBeenCalledWith({
-        username: 'flash',
-        userId: 'test_user_123',
-        loggedInAt: expect.any(Number),
-      });
-      expect(mockPush).toHaveBeenCalledWith('/dashboard');
-    });
-  });
-
-  it('handles failed login with simulated auth', async () => {
-    (checkUsernameSimulated as jest.Mock).mockResolvedValue({
-      exists: false,
-      userId: undefined,
-    });
-
-    render(<LoginForm />);
-    
-    const usernameInput = screen.getByLabelText('Username');
-    const submitButton = screen.getByRole('button', { name: 'Continue' });
-
-    fireEvent.change(usernameInput, { target: { value: 'invalid' } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText('Username not found. Please try again.')).toBeInTheDocument();
-      expect(saveUserToStorage).not.toHaveBeenCalled();
-      expect(mockPush).not.toHaveBeenCalled();
-    });
-  });
-
-  it('handles successful login with real GraphQL in production', async () => {
-    process.env.NODE_ENV = 'production';
+  it('handles successful login with GraphQL', async () => {
     
     mockQuery.mockResolvedValue({
       data: {
@@ -205,8 +152,14 @@ describe('LoginForm', () => {
   });
 
   it('shows loading state during authentication', async () => {
-    (checkUsernameSimulated as jest.Mock).mockImplementation(
-      () => new Promise(resolve => setTimeout(() => resolve({ exists: true, userId: 'test' }), 100))
+    mockQuery.mockImplementation(
+      () => new Promise(resolve => setTimeout(() => resolve({
+        data: {
+          accountDefaultWallet: {
+            id: 'test_user_123',
+          },
+        },
+      }), 100))
     );
 
     render(<LoginForm />);
@@ -227,9 +180,12 @@ describe('LoginForm', () => {
   });
 
   it('trims whitespace from username', async () => {
-    (checkUsernameSimulated as jest.Mock).mockResolvedValue({
-      exists: true,
-      userId: 'test_user_123',
+    mockQuery.mockResolvedValue({
+      data: {
+        accountDefaultWallet: {
+          id: 'test_user_123',
+        },
+      },
     });
 
     render(<LoginForm />);
@@ -241,7 +197,11 @@ describe('LoginForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(checkUsernameSimulated).toHaveBeenCalledWith('flash');
+      expect(mockQuery).toHaveBeenCalledWith({
+        query: expect.anything(),
+        variables: { username: 'flash' },
+        fetchPolicy: 'network-only',
+      });
       expect(saveUserToStorage).toHaveBeenCalledWith({
         username: 'flash',
         userId: 'test_user_123',

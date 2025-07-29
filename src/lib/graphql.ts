@@ -89,41 +89,11 @@ export const CHECK_USERNAME_QUERY = gql`
   }
 `;
 
-// Simulated version for development without making actual API calls
-export async function checkUsernameSimulated(username: string): Promise<{ exists: boolean, userId?: string }> {
-  // For development purposes, we'll consider these usernames valid
-  const validUsernames = ['flash', 'sales', 'admin', 'demo', 'test'];
-  
-  // Simulate API request delay
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  return {
-    exists: validUsernames.includes(username.toLowerCase()),
-    userId: validUsernames.includes(username.toLowerCase()) ? `user_${Date.now()}` : undefined
-  };
-}
 
 // Function to check if username exists - this tries to use the real endpoint
 // but falls back to simulation if there's an error
 export async function checkUsername(username: string, req?: any): Promise<{ exists: boolean, userId?: string }> {
   try {
-    // Force simulated mode with NEXT_PUBLIC_USE_SIMULATED_AUTH env var
-    const forceSimulated = process.env.NEXT_PUBLIC_USE_SIMULATED_AUTH === 'true';
-    
-    // Force real API mode with NEXT_PUBLIC_USE_REAL_AUTH env var (overrides other settings)
-    const forceRealAuth = process.env.NEXT_PUBLIC_USE_REAL_AUTH === 'true';
-    
-    // In development mode or if forced, use the simulated version
-    // We'll use the real API in production even without a request object
-    if (forceSimulated || (process.env.NODE_ENV !== 'production' && !forceRealAuth)) {
-      console.log(
-        `🔧 Using simulated username check for: ${username} ` +
-        `(Reason: ${forceSimulated 
-          ? "forced by NEXT_PUBLIC_USE_SIMULATED_AUTH" 
-          : "development environment"})`
-      );
-      return await checkUsernameSimulated(username);
-    }
     
     console.log(`🔍 Checking username '${username}' against API at: ${GRAPHQL_URI}`);
     
@@ -178,9 +148,11 @@ export async function checkUsername(username: string, req?: any): Promise<{ exis
     }
     console.error('Error checking username with API:', error);
     
-    // Fallback to simulated check on error
-    console.log("Falling back to simulated username check");
-    return await checkUsernameSimulated(username);
+    // Return error response
+    return { 
+      exists: false,
+      userId: undefined
+    };
   }
 }
 

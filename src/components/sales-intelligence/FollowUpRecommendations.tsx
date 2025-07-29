@@ -40,7 +40,7 @@ export default function FollowUpRecommendations({
   );
 
   const handleMarkComplete = (recommendation: FollowUpRecommendation) => {
-    setCompletedActions(prev => new Set([...prev, recommendation.id]));
+    setCompletedActions(prev => new Set(Array.from(prev).concat(recommendation.id)));
     onActionTaken?.(recommendation);
   };
 
