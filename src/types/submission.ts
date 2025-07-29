@@ -10,6 +10,7 @@ export interface Submission {
   specificNeeds?: string;
   timestamp: string;
   username?: string;
+  territory?: string;
 }
 
 // Types for stats and metrics

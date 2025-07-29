@@ -41,6 +41,7 @@ interface DynamicFormData {
   city: string;
   state: string;
   zipCode: string;
+  territory: string;
 
   // Business Details
   monthlyRevenue: string;
@@ -154,6 +155,7 @@ export default function DynamicCanvasForm() {
     city: "",
     state: "",
     zipCode: "",
+    territory: "",
     monthlyRevenue: "",
     numberOfEmployees: "",
     currentProcessor: "",
@@ -329,6 +331,7 @@ export default function DynamicCanvasForm() {
         decisionMakers: formData.decisionMakers,
         interestLevel: formData.interestLevel,
         signedUp: formData.signedUp,
+        territory: formData.territory,
         specificNeeds: `${formData.specificNeeds}\n\nPain Points: ${formData.painPoints.join(", ")}\n\nBusiness Details: ${JSON.stringify(
           {
             email: formData.email,
@@ -389,6 +392,44 @@ export default function DynamicCanvasForm() {
               <div>
                 <label className="block text-sm font-medium text-light-text-primary mb-1">Email *</label>
                 <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" required />
+              </div>
+            </div>
+            <div className="mt-4">
+              <h4 className="text-md font-medium text-light-text-primary mb-3">Location</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-light-text-primary mb-1">Address</label>
+                  <Input name="address" value={formData.address} onChange={handleInputChange} placeholder="123 Main Street" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-light-text-primary mb-1">City</label>
+                  <Input name="city" value={formData.city} onChange={handleInputChange} placeholder="Kingston" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-light-text-primary mb-1">Territory</label>
+                  <select
+                    name="territory"
+                    value={formData.territory}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                  >
+                    <option value="">Select Territory</option>
+                    <option value="Kingston">Kingston</option>
+                    <option value="St. Andrew">St. Andrew</option>
+                    <option value="St. Thomas">St. Thomas</option>
+                    <option value="Portland">Portland</option>
+                    <option value="St. Mary">St. Mary</option>
+                    <option value="St. Ann">St. Ann</option>
+                    <option value="Trelawny">Trelawny</option>
+                    <option value="St. James">St. James</option>
+                    <option value="Hanover">Hanover</option>
+                    <option value="Westmoreland">Westmoreland</option>
+                    <option value="St. Elizabeth">St. Elizabeth</option>
+                    <option value="Manchester">Manchester</option>
+                    <option value="Clarendon">Clarendon</option>
+                    <option value="St. Catherine">St. Catherine</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

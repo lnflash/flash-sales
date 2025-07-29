@@ -30,7 +30,7 @@ const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
   { name: "Canvas Form", href: "/intake", icon: DocumentTextIcon },
   { name: "Intake Form ", href: "/intake-dynamic", icon: DocumentTextIcon },
-  { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon },
+  { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, requiresPermission: 'canViewAnalytics' },
   { name: "Submissions", href: "/dashboard/submissions", icon: TableCellsIcon },
   { name: "Lead Management", href: "/dashboard/leads", icon: UserGroupIcon },
   { name: "Rep Tracking", href: "/dashboard/rep-tracking", icon: ClipboardDocumentCheckIcon },

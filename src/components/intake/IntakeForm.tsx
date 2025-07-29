@@ -19,6 +19,7 @@ interface FormData {
   signedUp: boolean;
   specificNeeds: string;
   username: string;
+  territory: string;
 }
 
 export default function IntakeForm() {
@@ -35,7 +36,8 @@ export default function IntakeForm() {
     interestLevel: 3,
     signedUp: false,
     specificNeeds: '',
-    username: ''
+    username: '',
+    territory: ''
   });
 
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function IntakeForm() {
     }
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
@@ -87,7 +89,8 @@ export default function IntakeForm() {
         interestLevel: 3,
         signedUp: false,
         specificNeeds: '',
-        username: 'Flash Rep'
+        username: 'Flash Rep',
+        territory: ''
       });
 
       // Redirect to submissions page after success
@@ -185,6 +188,36 @@ export default function IntakeForm() {
                 placeholder="e.g., 876-555-1234"
                 className="w-full"
               />
+            </div>
+
+            {/* Territory */}
+            <div>
+              <label htmlFor="territory" className="block text-sm font-medium text-light-text-secondary mb-2">
+                Territory
+              </label>
+              <select
+                id="territory"
+                name="territory"
+                value={formData.territory}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+              >
+                <option value="">Select Territory</option>
+                <option value="Kingston">Kingston</option>
+                <option value="St. Andrew">St. Andrew</option>
+                <option value="St. Thomas">St. Thomas</option>
+                <option value="Portland">Portland</option>
+                <option value="St. Mary">St. Mary</option>
+                <option value="St. Ann">St. Ann</option>
+                <option value="Trelawny">Trelawny</option>
+                <option value="St. James">St. James</option>
+                <option value="Hanover">Hanover</option>
+                <option value="Westmoreland">Westmoreland</option>
+                <option value="St. Elizabeth">St. Elizabeth</option>
+                <option value="Manchester">Manchester</option>
+                <option value="Clarendon">Clarendon</option>
+                <option value="St. Catherine">St. Catherine</option>
+              </select>
             </div>
 
             {/* Package Seen */}
