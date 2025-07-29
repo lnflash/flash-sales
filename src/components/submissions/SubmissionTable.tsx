@@ -115,13 +115,17 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
             </Link>
             {onDelete && (
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const submissionId = Number(info.getValue());
                   if (window.confirm('Are you sure you want to delete this submission?')) {
-                    onDelete(Number(info.getValue()));
+                    onDelete(submissionId);
                   }
                 }}
                 className="p-1 text-light-text-secondary hover:text-red-600 rounded-md transition-colors"
                 title="Delete"
+                type="button"
               >
                 <TrashIcon className="h-5 w-5" />
               </button>
@@ -130,7 +134,7 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
         ),
       }),
     ],
-    [columnHelper]
+    [columnHelper, onDelete]
   );
 
   const table = useReactTable({

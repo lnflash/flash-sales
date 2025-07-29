@@ -34,14 +34,19 @@ export default function SubmissionsPage() {
     }
   }, [search]);
 
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
   const handleDelete = async (id: number) => {
+    setDeletingId(id);
     try {
       await deleteSubmission(id);
       // Refresh the submissions list
-      refetch();
+      await refetch();
     } catch (error) {
       console.error('Failed to delete submission:', error);
       alert('Failed to delete submission. Please try again.');
+    } finally {
+      setDeletingId(null);
     }
   };
 
