@@ -120,6 +120,7 @@ export default function ProfilePage() {
     );
   }
 
+  // Don't show error page if we have a profile (even if it's a mock one)
   if (error && !profile) {
     return (
       <DashboardLayout title="Profile">

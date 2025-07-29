@@ -20,6 +20,12 @@ const nextConfig = {
     // Explicitly set NEXT_PUBLIC_APP_ENV to 'production' in production
     NEXT_PUBLIC_APP_ENV: process.env.NODE_ENV === 'production' ? 'production' : process.env.NODE_ENV,
   },
+  // This ensures environment variables are available at runtime
+  publicRuntimeConfig: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_USE_SUPABASE: process.env.NEXT_PUBLIC_USE_SUPABASE,
+  },
 };
 
 module.exports = nextConfig;
