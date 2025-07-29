@@ -32,11 +32,13 @@ export function useSupabaseProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
 
   const user = getUserFromStorage();
+  const username = user?.username || null;
 
   const fetchProfile = useCallback(async () => {
-    if (!user) {
+    if (!username || hasFetched) {
       setLoading(false);
       return;
     }
@@ -72,16 +74,16 @@ export function useSupabaseProfile() {
         return;
       }
 
-      console.log('Fetching profile for username:', user.username);
+      console.log('Fetching profile for username:', username);
 
       // First, try to get the user by username
-      let { data, error: fetchError } = await supabase.from("users").select("*").eq("username", user.username).single();
+      let { data, error: fetchError } = await supabase.from("users").select("*").eq("username", username).single();
 
       console.log('First query result:', { data, error: fetchError });
 
       if (fetchError || !data) {
         // If not found, try by email (assuming username@getflash.io)
-        const email = `${user.username}@getflash.io`;
+        const email = `${username}@getflash.io`;
         console.log('Trying with email:', email);
         const result = await supabase.from("users").select("*").eq("email", email).single();
 
@@ -92,11 +94,11 @@ export function useSupabaseProfile() {
 
       // If still not found, try a case-insensitive search by username only
       if (fetchError || !data) {
-        console.log('Trying case-insensitive search for username:', user.username);
+        console.log('Trying case-insensitive search for username:', username);
         const { data: searchData, error: searchError } = await supabase
           .from("users")
           .select("*")
-          .ilike("username", user.username)
+          .ilike("username", username)
           .single();
         
         data = searchData;
@@ -109,7 +111,7 @@ export function useSupabaseProfile() {
 
         // If user doesn't exist, create a new one
         if (fetchError.code === "PGRST116") {
-          const newUser = await createNewUser(user.username);
+          const newUser = await createNewUser(username);
           if (newUser) {
             setProfile(formatProfile(newUser));
           } else {
@@ -126,13 +128,18 @@ export function useSupabaseProfile() {
       setError("Failed to load profile");
     } finally {
       setLoading(false);
+      setHasFetched(true);
     }
-  }, [user]);
+  }, [username, hasFetched]);
 
   // Fetch profile from Supabase
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (username && !hasFetched) {
+      fetchProfile();
+    } else if (!username) {
+      setLoading(false);
+    }
+  }, [username, hasFetched, fetchProfile]);
 
   const createNewUser = async (username: string) => {
     try {
@@ -252,8 +259,8 @@ export function useSupabaseProfile() {
         };
 
         // Also save to localStorage for backward compatibility
-        if (user) {
-          localStorage.setItem(`defaultTerritory_${user.username}`, updates.default_territory);
+        if (username) {
+          localStorage.setItem(`defaultTerritory_${username}`, updates.default_territory);
         }
       }
 
@@ -286,6 +293,9 @@ export function useSupabaseProfile() {
     error,
     isSaving,
     updateProfile,
-    refetch: fetchProfile as () => Promise<void>,
+    refetch: async () => {
+      setHasFetched(false);
+      await fetchProfile();
+    },
   };
 }
