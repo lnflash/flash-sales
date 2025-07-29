@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
-import { getSupabaseEnvVars } from './runtime-config';
+import { getSupabaseConfig } from './runtime-config';
 
 // Create a dummy client for build time when env vars are not available
 const createSupabaseClient = () => {
-  const { url: finalUrl, key: finalKey } = getSupabaseEnvVars();
+  const { url: finalUrl, key: finalKey } = getSupabaseConfig();
   
   if (!finalUrl || !finalKey) {
     console.warn('Supabase environment variables not found. Using placeholder client.');

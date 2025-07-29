@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getSupabase } from "@/lib/supabase/client";
 import { getUserFromStorage } from "@/lib/auth";
-import { getSupabaseEnvVars } from "@/lib/supabase/runtime-config";
+import { getSupabaseConfig } from "@/lib/supabase/runtime-config";
 
 export interface SupabaseUserProfile {
   id: string;
@@ -56,7 +56,7 @@ export function useSupabaseProfile() {
       const supabase = getSupabase();
       
       // Check if we have valid environment variables
-      const envVars = getSupabaseEnvVars();
+      const envVars = getSupabaseConfig();
       if (!envVars.url || !envVars.key) {
         console.log('Supabase environment variables not available, using mock profile');
         // Instead of showing an error, create a mock profile
@@ -198,7 +198,7 @@ export function useSupabaseProfile() {
       setError(null);
 
       // Check if we have valid environment variables
-      const envVars = getSupabaseEnvVars();
+      const envVars = getSupabaseConfig();
       if (!envVars.url || !envVars.key) {
         // Update the mock profile
         const updatedProfile = { ...profile, ...updates };

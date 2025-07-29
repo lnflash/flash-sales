@@ -1,6 +1,12 @@
 // Runtime configuration helper for Supabase
 // This helps avoid hydration mismatches by ensuring consistent behavior between server and client
 
+// Fallback configuration for when environment variables are not available
+const FALLBACK_CONFIG = {
+  url: 'https://pgsxczfkjbtgzcauxuur.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnc3hjemZramJ0Z3pjYXV4dXVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2OTkzMzcsImV4cCI6MjA2OTI3NTMzN30.Wivrr3OfYUcaa4RoTak7oBwjnUSC0QwebVpFSvq5PcU'
+};
+
 let cachedUrl: string = '';
 let cachedKey: string = '';
 let configFetched = false;
@@ -33,8 +39,8 @@ export function getSupabaseEnvVars(): { url: string; key: string } {
     return { url: cachedUrl, key: cachedKey };
   }
   
-  // Return empty strings if nothing found
-  return { url: '', key: '' };
+  // Return fallback config if nothing found
+  return { url: FALLBACK_CONFIG.url, key: FALLBACK_CONFIG.anonKey };
 }
 
 // Async function to fetch config from API
@@ -64,4 +70,18 @@ export async function fetchRuntimeConfig() {
 export function isSupabaseConfigured(): boolean {
   const { url, key } = getSupabaseEnvVars();
   return !!(url && key);
+}
+
+// Force use of fallback config on DigitalOcean if env vars are not working
+export function getSupabaseConfig() {
+  const config = getSupabaseEnvVars();
+  
+  // If we're on DigitalOcean and don't have proper config, use fallback
+  if (typeof window !== 'undefined' && 
+      window.location.hostname.includes('ondigitalocean.app') &&
+      (!config.url || config.url === FALLBACK_CONFIG.url)) {
+    return { url: FALLBACK_CONFIG.url, key: FALLBACK_CONFIG.anonKey };
+  }
+  
+  return config;
 }
