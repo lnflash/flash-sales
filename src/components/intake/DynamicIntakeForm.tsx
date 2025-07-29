@@ -195,8 +195,34 @@ export default function DynamicCanvasForm() {
         username: user.username,
         territory: defaultTerritory
       }));
+      
+      // Also try to load from Supabase profile
+      loadUserProfile(user.username);
     }
   }, []);
+
+  const loadUserProfile = async (username: string) => {
+    try {
+      const { supabase } = await import('@/lib/supabase/client');
+      
+      // Try to get user profile from Supabase
+      const { data } = await supabase
+        .from('users')
+        .select('dashboard_preferences')
+        .or(`username.eq.${username},email.eq.${username}@flashbitcoin.com`)
+        .single();
+
+      if (data?.dashboard_preferences?.default_territory) {
+        setFormData(prev => ({ 
+          ...prev, 
+          territory: data.dashboard_preferences.default_territory
+        }));
+      }
+    } catch (error) {
+      // Silently fail - localStorage fallback is already in place
+      console.log('Could not load profile from Supabase:', error);
+    }
+  };
 
   // Calculate lead score in real-time
   useEffect(() => {
