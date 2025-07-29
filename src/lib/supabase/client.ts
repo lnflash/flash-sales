@@ -48,7 +48,8 @@ const createSupabaseClient = () => {
           or: () => ({
             single: () => Promise.resolve({ data: null, error: null }),
             maybeSingle: () => Promise.resolve({ data: null, error: null })
-          })
+          }),
+          limit: () => Promise.resolve({ data: null, error: { message: 'placeholder client' } })
         }),
         insert: () => ({
           select: () => ({
@@ -61,9 +62,6 @@ const createSupabaseClient = () => {
               single: () => Promise.resolve({ data: null, error: null })
             })
           })
-        }),
-        select: () => ({
-          limit: () => Promise.resolve({ data: null, error: { message: 'placeholder client' } })
         })
       }),
       channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
