@@ -1,9 +1,17 @@
 import { AppProps } from 'next/app';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import QueryProvider from '@/lib/query-provider';
+import AuthGuard from '@/components/auth/AuthGuard';
 import '@/styles/globals.css';
 
+// List of public routes that don't require authentication
+const publicRoutes = ['/login', '/'];
+
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  const isPublicRoute = publicRoutes.includes(router.pathname);
+
   return (
     <>
       <Head>
@@ -13,7 +21,13 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
       <QueryProvider>
-        <Component {...pageProps} />
+        {isPublicRoute ? (
+          <Component {...pageProps} />
+        ) : (
+          <AuthGuard>
+            <Component {...pageProps} />
+          </AuthGuard>
+        )}
       </QueryProvider>
     </>
   );

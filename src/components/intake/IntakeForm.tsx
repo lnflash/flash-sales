@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { getUserFromStorage } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,8 +35,15 @@ export default function IntakeForm() {
     interestLevel: 3,
     signedUp: false,
     specificNeeds: '',
-    username: 'Flash Rep' // This would come from auth context in production
+    username: ''
   });
+
+  useEffect(() => {
+    const user = getUserFromStorage();
+    if (user) {
+      setFormData(prev => ({ ...prev, username: user.username }));
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;

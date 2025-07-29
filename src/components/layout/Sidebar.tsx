@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { getUserFromStorage, logout } from '@/lib/auth';
 import {
   ChartBarIcon,
   TableCellsIcon,
@@ -12,6 +14,7 @@ import {
   HomeIcon,
   ClipboardDocumentCheckIcon,
   DocumentTextIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -31,7 +34,21 @@ const navigation: NavItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [user, setUser] = useState<{ username: string } | null>(null);
+
+  useEffect(() => {
+    const userData = getUserFromStorage();
+    if (userData) {
+      setUser({ username: userData.username });
+    }
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   return (
     <div
@@ -86,22 +103,34 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-light-border">
+      <div className="p-4 border-t border-light-border space-y-3">
         <div
           className={`flex items-center ${
             collapsed ? 'justify-center' : 'justify-start'
           }`}
         >
           <div className="h-9 w-9 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold shadow-sm">
-            F
+            {user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
           {!collapsed && (
             <div className="ml-3">
-              <p className="text-sm font-medium text-light-text-primary">Admin User</p>
-              <p className="text-xs text-light-text-secondary">admin@flash.com</p>
+              <p className="text-sm font-medium text-light-text-primary capitalize">
+                {user?.username || 'User'}
+              </p>
+              <p className="text-xs text-light-text-secondary">Flash Sales Rep</p>
             </div>
           )}
         </div>
+        <button
+          onClick={handleLogout}
+          className={`w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors ${
+            collapsed ? 'justify-center' : 'justify-start'
+          }`}
+          title="Logout"
+        >
+          <ArrowRightOnRectangleIcon className={`h-5 w-5 ${collapsed ? '' : 'mr-3'}`} />
+          {!collapsed && <span>Logout</span>}
+        </button>
       </div>
     </div>
   );
