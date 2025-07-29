@@ -51,6 +51,14 @@ export function useSupabaseProfile() {
       setLoading(true);
       setError(null);
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error('Supabase environment variables are not configured');
+        setError('Database connection not configured. Please contact support.');
+        setLoading(false);
+        return;
+      }
+
       console.log('Fetching profile for username:', user.username);
 
       // First, try to get the user by username
@@ -69,13 +77,13 @@ export function useSupabaseProfile() {
         console.log('Email query result:', { data, error: fetchError });
       }
 
-      // If still not found, try a case-insensitive search
+      // If still not found, try a case-insensitive search by username only
       if (fetchError || !data) {
         console.log('Trying case-insensitive search for username:', user.username);
         const { data: searchData, error: searchError } = await supabase
           .from("users")
           .select("*")
-          .or(`username.ilike.${user.username},email.ilike.${user.username}@getflash.io`)
+          .ilike("username", user.username)
           .single();
         
         data = searchData;
