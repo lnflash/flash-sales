@@ -1,7 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { Submission } from '@/types/submission';
 import { formatDate } from '@/utils/date-formatter';
+import { getUserFromStorage } from '@/lib/auth';
+import { getUserRole, hasPermission } from '@/types/roles';
 import Link from 'next/link';
 import { 
   PhoneIcon, 
@@ -10,7 +14,8 @@ import {
   UserGroupIcon,
   ClipboardDocumentListIcon,
   ChevronLeftIcon,
-  PencilSquareIcon
+  PencilSquareIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 interface SubmissionDetailProps {
@@ -22,6 +27,38 @@ export default function SubmissionDetail({
   submission, 
   isLoading = false 
 }: SubmissionDetailProps) {
+  const router = useRouter();
+  const [userPermissions, setUserPermissions] = useState({
+    canEdit: false,
+    canDelete: false
+  });
+
+  useEffect(() => {
+    const user = getUserFromStorage();
+    if (user) {
+      const role = getUserRole(user.username);
+      setUserPermissions({
+        canEdit: hasPermission(role, 'canEditSubmissions'),
+        canDelete: hasPermission(role, 'canDeleteSubmissions')
+      });
+    }
+  }, []);
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this submission?')) return;
+    
+    try {
+      const response = await fetch(`/api/submissions/${submission.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        router.push('/dashboard/submissions');
+      }
+    } catch (error) {
+      console.error('Error deleting submission:', error);
+    }
+  };
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto">
@@ -68,13 +105,25 @@ export default function SubmissionDetail({
                 {submission.signedUp ? 'Signed Up' : 'Prospect'}
               </span>
 
-              <Link
-                href={`/dashboard/submissions/${submission.id}/edit`}
-                className="ml-4 inline-flex items-center px-3 py-1 border border-amber-500 text-amber-600 rounded-md hover:bg-amber-50 transition-colors"
-              >
-                <PencilSquareIcon className="h-4 w-4 mr-1" />
-                Edit
-              </Link>
+              {userPermissions.canEdit && (
+                <Link
+                  href={`/dashboard/submissions/${submission.id}/edit`}
+                  className="ml-4 inline-flex items-center px-3 py-1 border border-amber-500 text-amber-600 rounded-md hover:bg-amber-50 transition-colors"
+                >
+                  <PencilSquareIcon className="h-4 w-4 mr-1" />
+                  Edit
+                </Link>
+              )}
+              
+              {userPermissions.canDelete && (
+                <button
+                  onClick={handleDelete}
+                  className="ml-2 inline-flex items-center px-3 py-1 border border-red-500 text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                >
+                  <TrashIcon className="h-4 w-4 mr-1" />
+                  Delete
+                </button>
+              )}
             </div>
           </div>
 

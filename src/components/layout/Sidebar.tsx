@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { getUserFromStorage, logout } from "@/lib/auth";
+import { getUserFromStorage, logout, User } from "@/lib/auth";
+import { hasPermission, ROLE_PERMISSIONS } from "@/types/roles";
 import {
   ChartBarIcon,
   TableCellsIcon,
@@ -22,6 +23,7 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement>>;
+  requiresPermission?: keyof typeof ROLE_PERMISSIONS['Flash Admin'];
 }
 
 const navigation: NavItem[] = [
@@ -32,19 +34,20 @@ const navigation: NavItem[] = [
   { name: "Submissions", href: "/dashboard/submissions", icon: TableCellsIcon },
   { name: "Lead Management", href: "/dashboard/leads", icon: UserGroupIcon },
   { name: "Rep Tracking", href: "/dashboard/rep-tracking", icon: ClipboardDocumentCheckIcon },
-  { name: "Settings", href: "/dashboard/settings", icon: Cog6ToothIcon },
+  { name: "Settings", href: "/dashboard/settings", icon: Cog6ToothIcon, requiresPermission: 'canViewSettings' },
+  { name: "Role Management", href: "/dashboard/roles", icon: UserGroupIcon, requiresPermission: 'canAssignRoles' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const userData = getUserFromStorage();
     if (userData) {
-      setUser({ username: userData.username });
+      setUser(userData);
     }
   }, []);
 
@@ -70,22 +73,29 @@ export default function Sidebar() {
 
       <nav className="flex-1 p-3 overflow-y-auto">
         <ul className="space-y-1">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-            return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center px-3 py-2.5 rounded-lg transition-all font-medium ${
-                    isActive ? "bg-flash-green text-white shadow-sm" : "text-light-text-secondary hover:bg-light-bg-secondary hover:text-light-text-primary"
-                  }`}
-                >
-                  <item.icon className={`h-5 w-5 ${collapsed ? "mx-auto" : "mr-3"} ${isActive ? "text-white" : ""}`} aria-hidden="true" />
-                  {!collapsed && <span className="text-sm">{item.name}</span>}
-                </Link>
-              </li>
-            );
-          })}
+          {navigation
+            .filter((item) => {
+              // Show all items if no permission required
+              if (!item.requiresPermission) return true;
+              // Check permission based on user role
+              return user?.role && hasPermission(user.role, item.requiresPermission);
+            })
+            .map((item) => {
+              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+              return (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center px-3 py-2.5 rounded-lg transition-all font-medium ${
+                      isActive ? "bg-flash-green text-white shadow-sm" : "text-light-text-secondary hover:bg-light-bg-secondary hover:text-light-text-primary"
+                    }`}
+                  >
+                    <item.icon className={`h-5 w-5 ${collapsed ? "mx-auto" : "mr-3"} ${isActive ? "text-white" : ""}`} aria-hidden="true" />
+                    {!collapsed && <span className="text-sm">{item.name}</span>}
+                  </Link>
+                </li>
+              );
+            })}
         </ul>
       </nav>
 
@@ -97,7 +107,7 @@ export default function Sidebar() {
           {!collapsed && (
             <div className="ml-3">
               <p className="text-sm font-medium text-light-text-primary capitalize">{user?.username || "User"}</p>
-              <p className="text-xs text-light-text-secondary">Flash Sales Rep</p>
+              <p className="text-xs text-light-text-secondary">{user?.role || "Flash Sales Rep"}</p>
             </div>
           )}
         </div>

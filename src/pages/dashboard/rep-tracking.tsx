@@ -3,11 +3,28 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import { RepTrackingForm } from '../../components/rep-tracking/RepTrackingForm';
 import { RepTrackingTable } from '../../components/rep-tracking/RepTrackingTable';
 import { useRepTracking } from '../../hooks/useRepTracking';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getUserFromStorage } from '@/lib/auth';
+import { getUserRole, hasPermission } from '@/types/roles';
 
 const RepTrackingPage: NextPage = () => {
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<{ repName?: string }>({});
+  const [canViewAllReps, setCanViewAllReps] = useState(false);
   const { data: trackingData = [], isLoading } = useRepTracking(filters);
+
+  useEffect(() => {
+    const user = getUserFromStorage();
+    if (user) {
+      const role = getUserRole(user.username);
+      const canViewAll = hasPermission(role, 'canViewAllReps');
+      setCanViewAllReps(canViewAll);
+      
+      // If user can only view their own data, filter by their username
+      if (!canViewAll) {
+        setFilters({ repName: user.username });
+      }
+    }
+  }, []);
 
   return (
     <DashboardLayout title="Rep Performance Tracking">
@@ -28,9 +45,16 @@ const RepTrackingPage: NextPage = () => {
         {/* Table Section */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg p-6 shadow-sm border border-light-border">
-            <h2 className="text-xl font-semibold text-light-text-primary mb-6">
-              Performance History
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-light-text-primary">
+                Performance History
+              </h2>
+              {canViewAllReps && (
+                <span className="text-sm text-light-text-secondary bg-light-bg-secondary px-3 py-1 rounded-full">
+                  Viewing: All Reps
+                </span>
+              )}
+            </div>
             
             {isLoading ? (
               <div className="text-center py-8">

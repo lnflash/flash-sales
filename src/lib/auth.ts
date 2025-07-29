@@ -1,17 +1,25 @@
 "use client";
 
+import { UserRole, getUserRole } from '@/types/roles';
+
 // Simple authentication using localStorage
 const USER_STORAGE_KEY = 'flash_dashboard_user';
 
 export interface User {
   username: string;
   userId: string;
+  role: UserRole;
   loggedInAt: number;
 }
 
-export function saveUserToStorage(user: User): void {
+export function saveUserToStorage(user: Omit<User, 'role'>): void {
   if (typeof window !== 'undefined') {
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    // Add role based on username
+    const userWithRole: User = {
+      ...user,
+      role: getUserRole(user.username),
+    };
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userWithRole));
   }
 }
 
@@ -26,6 +34,11 @@ export function getUserFromStorage(): User | null {
         if (!user.username) {
           console.error("Invalid user data in localStorage: missing username");
           return null;
+        }
+        
+        // Ensure user has a role (for backward compatibility)
+        if (!user.role) {
+          user.role = getUserRole(user.username);
         }
         
         // Check if session is still valid
