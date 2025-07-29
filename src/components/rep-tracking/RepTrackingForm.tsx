@@ -54,15 +54,15 @@ export function RepTrackingForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-gray-800 p-6 rounded-lg">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow-sm border border-light-border">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-light-text-secondary mb-2">
           Week Selection
         </label>
         <select
           value={selectedWeek}
           onChange={(e) => setSelectedWeek(Number(e.target.value))}
-          className="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
         >
           {[...Array(12)].map((_, i) => (
             <option key={i} value={i}>
@@ -73,13 +73,13 @@ export function RepTrackingForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-light-text-secondary mb-2">
           Sales Rep Name
         </label>
         <input
           type="text"
           {...register('repName', { required: true })}
-          className="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
           placeholder="Enter rep name"
         />
       </div>
@@ -90,9 +90,9 @@ export function RepTrackingForm() {
             type="checkbox"
             id="mondayUpdate"
             {...register('submittedMondayUpdate')}
-            className="h-4 w-4 text-green-500 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+            className="h-4 w-4 text-flash-green bg-white border-light-border rounded focus:ring-flash-green"
           />
-          <label htmlFor="mondayUpdate" className="ml-2 text-sm text-gray-300">
+          <label htmlFor="mondayUpdate" className="ml-2 text-sm text-light-text-primary">
             Submitted Monday Update
           </label>
         </div>
@@ -102,9 +102,9 @@ export function RepTrackingForm() {
             type="checkbox"
             id="tuesdayCall"
             {...register('attendedTuesdayCall')}
-            className="h-4 w-4 text-green-500 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+            className="h-4 w-4 text-flash-green bg-white border-light-border rounded focus:ring-flash-green"
           />
-          <label htmlFor="tuesdayCall" className="ml-2 text-sm text-gray-300">
+          <label htmlFor="tuesdayCall" className="ml-2 text-sm text-light-text-primary">
             Attended Tuesday Call
           </label>
         </div>
@@ -113,7 +113,7 @@ export function RepTrackingForm() {
       <button
         type="submit"
         disabled={createRepTracking.isPending}
-        className="w-full py-2 px-4 bg-green-500 text-white font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+        className="w-full py-2 px-4 bg-flash-green text-white font-medium rounded-md hover:bg-flash-green-dark focus:outline-none focus:ring-2 focus:ring-flash-green disabled:opacity-50 transition-colors"
       >
         {createRepTracking.isPending ? 'Saving...' : 'Save Rep Data'}
       </button>

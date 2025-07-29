@@ -6,6 +6,7 @@ import {
   CalendarDaysIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface HeatMapData {
   rep: string;
@@ -94,62 +95,65 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
   }, [submissions]);
 
   const getHeatMapColor = (value: number): string => {
-    if (value === 0) return 'bg-gray-800';
-    if (value < 10) return 'bg-red-900';
-    if (value < 20) return 'bg-red-700';
-    if (value < 30) return 'bg-yellow-700';
-    if (value < 40) return 'bg-yellow-500';
-    if (value < 50) return 'bg-green-700';
-    return 'bg-green-500';
+    if (value === 0) return 'bg-gray-100';
+    if (value < 10) return 'bg-red-100';
+    if (value < 20) return 'bg-red-200';
+    if (value < 30) return 'bg-yellow-100';
+    if (value < 40) return 'bg-yellow-200';
+    if (value < 50) return 'bg-green-100';
+    return 'bg-green-200';
   };
 
   const getTextColor = (value: number): string => {
-    return value > 30 ? 'text-white' : 'text-gray-300';
+    return value > 30 ? 'text-gray-800' : 'text-gray-600';
   };
 
   if (isLoading) {
     return (
-      <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-        <div className="animate-pulse">
-          <div className="h-6 bg-flash-dark-2 rounded w-1/3 mb-6"></div>
-          <div className="h-96 bg-flash-dark-2 rounded"></div>
-        </div>
-      </div>
+      <Card className="bg-white border-light-border">
+        <CardContent className="p-6">
+          <div className="animate-pulse">
+            <div className="h-6 bg-light-bg-tertiary rounded w-1/3 mb-6"></div>
+            <div className="h-96 bg-light-bg-tertiary rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (heatMapData.length === 0) {
     return (
-      <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-        <div className="flex items-center justify-center h-96 text-gray-400">
-          <p>No performance data available</p>
-        </div>
-      </div>
+      <Card className="bg-white border-light-border">
+        <CardContent className="flex items-center justify-center h-96 p-6">
+          <p className="text-light-text-tertiary">No performance data available</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+      <CardContent className="p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-medium text-white flex items-center">
-            <FireIcon className="h-5 w-5 mr-2 text-orange-500" />
+          <h3 className="text-lg font-semibold text-light-text-primary flex items-center">
+            <FireIcon className="h-5 w-5 mr-2 text-flash-green" />
             Performance Heat Map
           </h3>
-          <p className="text-sm text-gray-400 mt-1">Conversion rates by rep over time</p>
+          <p className="text-sm text-light-text-secondary mt-1">Conversion rates by rep over time</p>
         </div>
-        <div className="flex items-center space-x-4 text-xs text-gray-400">
+        <div className="flex items-center space-x-4 text-xs text-light-text-tertiary">
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-900 rounded"></div>
+            <div className="w-3 h-3 bg-red-200 rounded"></div>
             <span>0-10%</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-yellow-700 rounded"></div>
+            <div className="w-3 h-3 bg-yellow-200 rounded"></div>
             <span>20-30%</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded"></div>
+            <div className="w-3 h-3 bg-green-200 rounded"></div>
             <span>50%+</span>
           </div>
         </div>
@@ -160,11 +164,11 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
         <div className="min-w-full">
           {/* Column Headers */}
           <div className="grid grid-cols-9 gap-1 mb-2">
-            <div className="text-xs text-gray-400 font-medium p-2">
+            <div className="text-xs text-light-text-tertiary font-medium p-2">
               <UserIcon className="h-4 w-4" />
             </div>
             {heatMapData[0]?.periods.map(period => (
-              <div key={period.period} className="text-xs text-gray-400 font-medium p-2 text-center">
+              <div key={period.period} className="text-xs text-light-text-tertiary font-medium p-2 text-center">
                 {period.period}
               </div>
             ))}
@@ -175,7 +179,7 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
             {heatMapData.map(rep => (
               <div key={rep.rep} className="grid grid-cols-9 gap-1">
                 {/* Rep Name */}
-                <div className="text-sm text-white font-medium p-3 bg-flash-dark-2 rounded flex items-center">
+                <div className="text-sm text-light-text-primary font-medium p-3 bg-light-bg-secondary border border-light-border rounded flex items-center">
                   <span className="truncate">{rep.rep}</span>
                 </div>
                 
@@ -186,7 +190,7 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
                     className={`
                       p-3 rounded text-center transition-colors group cursor-pointer
                       ${getHeatMapColor(period.value)}
-                      hover:ring-2 hover:ring-white hover:ring-opacity-50
+                      hover:ring-2 hover:ring-flash-green hover:ring-opacity-50
                     `}
                     title={`${rep.rep} - ${period.period}: ${period.value.toFixed(1)}% (${period.conversions}/${period.submissions})`}
                   >
@@ -206,51 +210,52 @@ export default function PerformanceHeatMap({ submissions, isLoading = false }: P
         </div>
       </div>
 
-      {/* Summary Stats */}
-      <div className="mt-6 grid grid-cols-3 gap-4">
-        <div className="bg-flash-dark-2 rounded-lg p-4">
-          <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-            Top Performer
+        {/* Summary Stats */}
+        <div className="mt-6 grid grid-cols-3 gap-4">
+          <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
+            <div className="text-xs text-light-text-secondary uppercase tracking-wide mb-1">
+              Top Performer
+            </div>
+            <div className="text-lg font-bold text-flash-green">
+              {heatMapData[0]?.rep || 'N/A'}
+            </div>
+            <div className="text-sm text-light-text-primary">
+              {heatMapData[0] ? 
+                `${(heatMapData[0].periods.reduce((sum, p) => sum + p.value, 0) / heatMapData[0].periods.length).toFixed(1)}% avg` 
+                : 'No data'
+              }
+            </div>
           </div>
-          <div className="text-lg font-bold text-flash-green">
-            {heatMapData[0]?.rep || 'N/A'}
-          </div>
-          <div className="text-sm text-gray-300">
-            {heatMapData[0] ? 
-              `${(heatMapData[0].periods.reduce((sum, p) => sum + p.value, 0) / heatMapData[0].periods.length).toFixed(1)}% avg` 
-              : 'No data'
-            }
-          </div>
-        </div>
 
-        <div className="bg-flash-dark-2 rounded-lg p-4">
-          <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-            Team Average
+          <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
+            <div className="text-xs text-light-text-secondary uppercase tracking-wide mb-1">
+              Team Average
+            </div>
+            <div className="text-lg font-bold text-amber-600">
+              {heatMapData.length > 0 ? 
+                (heatMapData.reduce((sum, rep) => 
+                  sum + rep.periods.reduce((periodSum, p) => periodSum + p.value, 0) / rep.periods.length, 0
+                ) / heatMapData.length).toFixed(1) : '0.0'
+              }%
+            </div>
+            <div className="text-sm text-light-text-primary">
+              Conversion rate
+            </div>
           </div>
-          <div className="text-lg font-bold text-flash-yellow">
-            {heatMapData.length > 0 ? 
-              (heatMapData.reduce((sum, rep) => 
-                sum + rep.periods.reduce((periodSum, p) => periodSum + p.value, 0) / rep.periods.length, 0
-              ) / heatMapData.length).toFixed(1) : '0.0'
-            }%
-          </div>
-          <div className="text-sm text-gray-300">
-            Conversion rate
-          </div>
-        </div>
 
-        <div className="bg-flash-dark-2 rounded-lg p-4">
-          <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-            Active Reps
-          </div>
-          <div className="text-lg font-bold text-blue-400">
-            {heatMapData.length}
-          </div>
-          <div className="text-sm text-gray-300">
-            This period
+          <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
+            <div className="text-xs text-light-text-secondary uppercase tracking-wide mb-1">
+              Active Reps
+            </div>
+            <div className="text-lg font-bold text-blue-600">
+              {heatMapData.length}
+            </div>
+            <div className="text-sm text-light-text-primary">
+              This period
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

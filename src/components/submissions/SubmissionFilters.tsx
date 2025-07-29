@@ -70,7 +70,7 @@ export default function SubmissionFiltersComponent({
   );
 
   return (
-    <div className="bg-flash-dark-3 rounded-lg p-4 shadow-md mb-4">
+    <div className="bg-white rounded-lg p-4 shadow-sm mb-4 border border-light-border">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <form 
           onSubmit={handleSearchSubmit}
@@ -79,15 +79,15 @@ export default function SubmissionFiltersComponent({
           <input
             type="text"
             placeholder="Search submissions..."
-            className="w-full pl-10 pr-4 py-2 bg-flash-dark-2 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-flash-green"
+            className="w-full pl-10 pr-4 py-2 bg-light-bg-secondary rounded-md text-light-text-primary placeholder-light-text-tertiary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+          <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary absolute left-3 top-1/2 transform -translate-y-1/2" />
           {searchInput && (
             <button
               type="button"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-light-text-tertiary hover:text-light-text-secondary"
               onClick={() => {
                 setSearchInput('');
                 if (filters.search) {
@@ -106,7 +106,7 @@ export default function SubmissionFiltersComponent({
             className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
               isFilterActive
                 ? 'bg-flash-green text-white'
-                : 'bg-flash-dark-2 text-gray-300 hover:bg-flash-dark-1'
+                : 'bg-white text-light-text-primary border border-light-border hover:bg-light-bg-secondary'
             }`}
             onClick={() => setShowFilters(!showFilters)}
           >
@@ -121,7 +121,7 @@ export default function SubmissionFiltersComponent({
           {isFilterActive && (
             <button
               type="button"
-              className="flex items-center px-3 py-2 rounded-md text-sm font-medium bg-flash-dark-2 text-gray-300 hover:bg-flash-dark-1"
+              className="flex items-center px-3 py-2 rounded-md text-sm font-medium bg-white text-light-text-primary border border-light-border hover:bg-light-bg-secondary"
               onClick={onResetFilters}
             >
               <XMarkIcon className="h-5 w-5 mr-1" />
@@ -134,7 +134,7 @@ export default function SubmissionFiltersComponent({
       {showFilters && (
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary mb-2">
               Interest Level
             </label>
             <div className="flex flex-wrap gap-2">
@@ -145,7 +145,7 @@ export default function SubmissionFiltersComponent({
                   className={`px-3 py-1 rounded-md text-sm ${
                     (filters.interestLevel || []).includes(level)
                       ? 'bg-flash-green text-white'
-                      : 'bg-flash-dark-2 text-gray-300 hover:bg-flash-dark-1'
+                      : 'bg-white text-light-text-primary border border-light-border hover:bg-light-bg-secondary'
                   }`}
                   onClick={() => handleInterestLevelChange(level)}
                 >
@@ -156,7 +156,7 @@ export default function SubmissionFiltersComponent({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary mb-2">
               Status
             </label>
             <div className="flex flex-wrap gap-2">
@@ -186,7 +186,7 @@ export default function SubmissionFiltersComponent({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary mb-2">
               Package Seen
             </label>
             <div className="flex flex-wrap gap-2">
@@ -216,15 +216,15 @@ export default function SubmissionFiltersComponent({
           </div>
 
           <div className="md:col-span-3">
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary mb-2">
               Date Range
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">From</label>
+                <label className="block text-xs text-light-text-tertiary mb-1">From</label>
                 <input
                   type="date"
-                  className="w-full px-3 py-2 bg-flash-dark-2 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 bg-white rounded-md text-light-text-primary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
                   value={filters.dateRange?.start || ''}
                   onChange={(e) =>
                     onFilterChange({
@@ -238,10 +238,10 @@ export default function SubmissionFiltersComponent({
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">To</label>
+                <label className="block text-xs text-light-text-tertiary mb-1">To</label>
                 <input
                   type="date"
-                  className="w-full px-3 py-2 bg-flash-dark-2 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 bg-white rounded-md text-light-text-primary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
                   value={filters.dateRange?.end || ''}
                   onChange={(e) =>
                     onFilterChange({

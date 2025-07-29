@@ -16,6 +16,10 @@ import {
   ArrowRightIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 ChartJS.register(
   CategoryScale,
@@ -85,58 +89,52 @@ export default function SalesFunnelChart({ submissions, isLoading = false }: Sal
   }, [submissions]);
 
   const chartData = {
-    labels: funnelData.map(stage => stage.stage),
+    labels: funnelData.map(d => d.stage),
     datasets: [
       {
-        label: 'Count',
-        data: funnelData.map(stage => stage.count),
+        label: 'Prospects',
+        data: funnelData.map(d => d.count),
         backgroundColor: [
-          'rgba(34, 197, 94, 0.8)',   // flash-green
-          'rgba(59, 130, 246, 0.8)',  // blue
-          'rgba(168, 85, 247, 0.8)',  // purple
-          'rgba(245, 158, 11, 0.8)',  // amber
-          'rgba(239, 68, 68, 0.8)'    // red
+          '#00A86B', // Flash green
+          '#00C17D', // Light green
+          '#3B82F6', // Blue
+          '#8B5CF6', // Purple
+          '#F59E0B', // Amber
         ],
-        borderColor: [
-          'rgb(34, 197, 94)',
-          'rgb(59, 130, 246)',
-          'rgb(168, 85, 247)',
-          'rgb(245, 158, 11)',
-          'rgb(239, 68, 68)'
-        ],
-        borderWidth: 1,
         borderRadius: 6,
-        borderSkipped: false,
-      }
+      },
     ],
   };
 
-  const chartOptions = {
+  const options = {
     responsive: true,
     maintainAspectRatio: false,
-    indexAxis: 'y' as const,
     plugins: {
       legend: {
         display: false,
       },
+      title: {
+        display: false,
+      },
       tooltip: {
-        backgroundColor: 'rgba(17, 24, 39, 0.95)',
-        titleColor: '#ffffff',
-        bodyColor: '#ffffff',
-        borderColor: 'rgba(55, 65, 81, 1)',
-        borderWidth: 1,
-        cornerRadius: 6,
-        displayColors: false,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        cornerRadius: 8,
+        titleFont: {
+          size: 14,
+          weight: 600,
+        },
+        bodyFont: {
+          size: 13,
+        },
         callbacks: {
-          title: function(context: any) {
-            return context[0].label;
-          },
           label: function(context: any) {
-            const stage = funnelData[context.dataIndex];
+            const index = context.dataIndex;
+            const data = funnelData[index];
             return [
-              `Count: ${stage.count}`,
-              `Conversion Rate: ${stage.conversionRate.toFixed(1)}%`,
-              `Drop-off Rate: ${stage.dropoffRate.toFixed(1)}%`
+              `Count: ${data.count}`,
+              `Conversion: ${data.conversionRate.toFixed(1)}%`,
+              `Drop-off: ${data.dropoffRate.toFixed(1)}%`
             ];
           }
         }
@@ -144,26 +142,25 @@ export default function SalesFunnelChart({ submissions, isLoading = false }: Sal
     },
     scales: {
       x: {
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(55, 65, 81, 0.3)',
-        },
-        ticks: {
-          color: '#9CA3AF',
-          font: {
-            size: 12,
-          }
-        },
-      },
-      y: {
         grid: {
           display: false,
         },
         ticks: {
-          color: '#9CA3AF',
+          color: '#6B7280',
+          font: {
+            size: 11,
+          },
+        },
+      },
+      y: {
+        grid: {
+          color: '#F3F4F6',
+        },
+        ticks: {
+          color: '#6B7280',
           font: {
             size: 12,
-          }
+          },
         },
       },
     },
@@ -171,74 +168,100 @@ export default function SalesFunnelChart({ submissions, isLoading = false }: Sal
 
   if (isLoading) {
     return (
-      <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-        <div className="animate-pulse">
-          <div className="h-6 bg-flash-dark-2 rounded w-1/3 mb-6"></div>
-          <div className="h-80 bg-flash-dark-2 rounded"></div>
-        </div>
-      </div>
+      <Card className="bg-white border-light-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-light-text-primary">Sales Funnel Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse">
+            <div className="h-80 bg-light-bg-tertiary rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
+  // Calculate overall conversion rate
+  const overallConversion = funnelData.length > 0 && funnelData[0].count > 0
+    ? ((funnelData[funnelData.length - 1].count / funnelData[0].count) * 100).toFixed(1)
+    : '0';
+
   return (
-    <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-medium text-white flex items-center">
-            <FunnelIcon className="h-5 w-5 mr-2 text-flash-green" />
-            Sales Funnel Analysis
-          </h3>
-          <p className="text-sm text-gray-400 mt-1">Conversion rates and drop-off points</p>
-        </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-flash-green">
-            {funnelData.length > 0 ? funnelData[funnelData.length - 1].conversionRate.toFixed(1) : '0.0'}%
+    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FunnelIcon className="h-5 w-5 text-flash-green" />
+            <CardTitle className="text-lg font-semibold text-light-text-primary">
+              Sales Funnel Analysis
+            </CardTitle>
           </div>
-          <div className="text-xs text-gray-400">Overall Conversion</div>
+          <Badge 
+            variant="success"
+            className="text-xs"
+          >
+            {overallConversion}% Overall
+          </Badge>
         </div>
-      </div>
-
-      {/* Funnel Chart */}
-      {funnelData.length === 0 ? (
-        <div className="flex items-center justify-center h-80 text-gray-400">
-          <p>No data available</p>
-        </div>
-      ) : (
+      </CardHeader>
+      <CardContent>
         <div className="h-80 mb-6">
-          <Bar data={chartData} options={chartOptions} />
+          <Bar data={chartData} options={options} />
         </div>
-      )}
-
-      {/* Funnel Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {funnelData.slice(1).map((stage, index) => (
-          <div key={stage.stage} className="bg-flash-dark-2 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs text-gray-400 uppercase tracking-wide">
-                {stage.stage}
+        
+        {/* Funnel stages breakdown */}
+        <div className="space-y-3">
+          {funnelData.map((stage, index) => (
+            <div key={stage.stage} className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "w-2 h-2 rounded-full",
+                  index === 0 ? "bg-flash-green" :
+                  index === 1 ? "bg-flash-green-light" :
+                  index === 2 ? "bg-blue-500" :
+                  index === 3 ? "bg-purple-500" :
+                  "bg-amber-500"
+                )} />
+                <span className="text-sm text-light-text-secondary">{stage.stage}</span>
               </div>
-              {stage.dropoffRate > 50 && (
-                <div className="text-red-400">
-                  <ArrowTrendingUpIcon className="h-4 w-4 rotate-180" />
-                </div>
-              )}
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-light-text-primary">
+                  {stage.count}
+                </span>
+                {index < funnelData.length - 1 && (
+                  <ArrowRightIcon className="h-3 w-3 text-light-text-tertiary" />
+                )}
+              </div>
             </div>
-            <div className="text-xl font-bold text-white mb-1">
-              {stage.count}
+          ))}
+        </div>
+        
+        {/* Conversion insights */}
+        <div className="mt-6 p-4 bg-light-bg-secondary rounded-lg border border-light-border">
+          <div className="flex items-center gap-2 mb-2">
+            <ArrowTrendingUpIcon className="h-4 w-4 text-flash-green" />
+            <p className="text-sm font-medium text-light-text-primary">
+              Conversion Insights
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <p className="text-light-text-secondary">Best Performing Stage</p>
+              <p className="font-medium text-light-text-primary">
+                {funnelData.length > 1 ? funnelData[1].stage : 'N/A'}
+              </p>
             </div>
-            <div className="flex items-center text-sm">
-              <span className="text-gray-300">
-                {stage.conversionRate.toFixed(1)}% rate
-              </span>
-              <ArrowRightIcon className="h-3 w-3 mx-2 text-gray-400" />
-              <span className={`${stage.dropoffRate > 30 ? 'text-red-400' : 'text-gray-400'}`}>
-                {stage.dropoffRate.toFixed(1)}% drop
-              </span>
+            <div>
+              <p className="text-light-text-secondary">Biggest Drop-off</p>
+              <p className="font-medium text-light-text-primary">
+                {funnelData.reduce((max, stage, index) => 
+                  index > 0 && stage.dropoffRate > (max?.dropoffRate || 0) ? stage : max
+                , funnelData[0])?.stage || 'N/A'}
+              </p>
             </div>
           </div>
-        ))}
-      </div>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

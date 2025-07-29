@@ -13,6 +13,9 @@ import {
   LightBulbIcon
 } from '@heroicons/react/24/outline';
 import { AdvancedAnalytics } from '@/utils/advanced-analytics';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface ExecutiveDashboardProps {
   analytics: AdvancedAnalytics;
@@ -45,9 +48,9 @@ export default function ExecutiveDashboard({ analytics, isLoading = false }: Exe
   };
 
   const getMetricColor = (trend: number) => {
-    if (trend > 0) return 'text-flash-green';
-    if (trend < 0) return 'text-red-400';
-    return 'text-gray-400';
+    if (trend > 0) return 'text-green-600';
+    if (trend < 0) return 'text-red-600';
+    return 'text-light-text-tertiary';
   };
 
   const getTrendIcon = (trend: number) => {
@@ -62,18 +65,22 @@ export default function ExecutiveDashboard({ analytics, isLoading = false }: Exe
         {/* Loading state */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-flash-dark-3 rounded-lg p-6 shadow-md animate-pulse">
-              <div className="h-6 bg-flash-dark-2 rounded w-1/2 mb-4"></div>
-              <div className="h-8 bg-flash-dark-2 rounded w-3/4"></div>
-            </div>
+            <Card key={i} className="bg-white border-light-border animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-6 bg-light-bg-tertiary rounded w-1/2 mb-4"></div>
+                <div className="h-8 bg-light-bg-tertiary rounded w-3/4"></div>
+              </CardContent>
+            </Card>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="bg-flash-dark-3 rounded-lg p-6 shadow-md animate-pulse">
-              <div className="h-6 bg-flash-dark-2 rounded w-1/3 mb-4"></div>
-              <div className="h-32 bg-flash-dark-2 rounded"></div>
-            </div>
+            <Card key={i} className="bg-white border-light-border animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-6 bg-light-bg-tertiary rounded w-1/3 mb-4"></div>
+                <div className="h-32 bg-light-bg-tertiary rounded"></div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -85,239 +92,277 @@ export default function ExecutiveDashboard({ analytics, isLoading = false }: Exe
       {/* Executive KPIs */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {analytics.executiveSummary.keyMetrics.map((metric, index) => (
-          <div key={metric.label} className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`p-2 rounded-lg ${
-                index === 0 ? 'bg-flash-green bg-opacity-20 text-flash-green' :
-                index === 1 ? 'bg-blue-500 bg-opacity-20 text-blue-400' :
-                index === 2 ? 'bg-purple-500 bg-opacity-20 text-purple-400' :
-                'bg-amber-500 bg-opacity-20 text-amber-400'
-              }`}>
-                {getMetricIcon(metric.label)}
+          <Card key={metric.label} className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className={cn(
+                  "p-2 rounded-lg",
+                  index === 0 ? 'bg-green-100 text-green-600' :
+                  index === 1 ? 'bg-blue-100 text-blue-600' :
+                  index === 2 ? 'bg-purple-100 text-purple-600' :
+                  'bg-amber-100 text-amber-600'
+                )}>
+                  {getMetricIcon(metric.label)}
+                </div>
+                <div className={`flex items-center text-sm ${getMetricColor(metric.trend)}`}>
+                  {getTrendIcon(metric.trend)}
+                  <span className="ml-1">
+                    {metric.trend > 0 ? '+' : ''}{metric.trend.toFixed(1)}%
+                  </span>
+                </div>
               </div>
-              <div className={`flex items-center text-sm ${getMetricColor(metric.trend)}`}>
-                {getTrendIcon(metric.trend)}
-                <span className="ml-1">
-                  {metric.trend > 0 ? '+' : ''}{metric.trend.toFixed(1)}%
-                </span>
+              <div>
+                <p className="text-2xl font-bold text-light-text-primary">
+                  {metric.value}
+                </p>
+                <p className="text-sm text-light-text-secondary mt-1">
+                  {metric.label}
+                </p>
               </div>
-            </div>
-            <div className="text-2xl font-bold text-white mb-1">
-              {metric.value}
-            </div>
-            <div className="text-sm text-gray-400">
-              {metric.label}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
-      {/* Strategic Insights Row */}
+      {/* Executive Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pipeline Health */}
-        <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-          <div className="flex items-center mb-4">
-            <CurrencyDollarIcon className="h-5 w-5 mr-2 text-flash-green" />
-            <h3 className="text-lg font-medium text-white">Pipeline Health</h3>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-300">Total Pipeline</span>
-              <span className="text-xl font-bold text-white">
-                {analytics.pipelineHealth.totalPipeline}
-              </span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-gray-300">Qualified Leads</span>
-              <span className="text-lg font-semibold text-blue-400">
-                {analytics.pipelineHealth.qualifiedLeads}
-              </span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-gray-300">Hot Prospects</span>
-              <span className="text-lg font-semibold text-amber-400">
-                {analytics.pipelineHealth.hotProspects}
-              </span>
-            </div>
-            
-            <div className="pt-4 border-t border-flash-dark-2">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300">Predicted Conversions</span>
-                <span className="text-lg font-semibold text-flash-green">
-                  {analytics.pipelineHealth.predictedConversions}
-                </span>
+        <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-light-text-primary flex items-center">
+              <ChartBarIcon className="h-5 w-5 mr-2 text-flash-green" />
+              Pipeline Health
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-light-text-secondary">Total Pipeline</span>
+                  <span className="text-lg font-semibold text-light-text-primary">
+                    {analytics.pipelineHealth.totalPipeline}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-light-text-secondary">Qualified Leads</span>
+                  <span className="text-lg font-semibold text-light-text-primary">
+                    {analytics.pipelineHealth.qualifiedLeads}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-light-text-secondary">Hot Prospects</span>
+                  <span className="text-lg font-semibold text-flash-green">
+                    {analytics.pipelineHealth.hotProspects}
+                  </span>
+                </div>
               </div>
-              <div className="text-xs text-gray-400 mt-1">
-                Bottleneck: {analytics.pipelineHealth.bottleneckStage}
+              <div className="border-t border-light-border pt-4">
+                <p className="text-xs text-light-text-secondary">
+                  Predicted Conversions
+                </p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-2xl font-bold text-light-text-primary">
+                    {analytics.predictions.nextMonthProjections.expectedConversions}
+                  </span>
+                  <span className="text-sm text-light-text-secondary">
+                    / {analytics.predictions.nextMonthProjections.expectedSubmissions} submissions
+                  </span>
+                </div>
+                <Badge 
+                  variant={analytics.predictions.trend === 'increasing' ? 'success' : 'warning'}
+                  className="mt-2"
+                >
+                  {analytics.predictions.trend} trend
+                </Badge>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Sales Velocity */}
-        <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-          <div className="flex items-center mb-4">
-            <ClockIcon className="h-5 w-5 mr-2 text-purple-400" />
-            <h3 className="text-lg font-medium text-white">Sales Velocity</h3>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-300">Avg. Time to Convert</span>
-              <span className="text-xl font-bold text-white">
-                {analytics.salesVelocity.avgTimeToConversion.toFixed(0)} days
-              </span>
+        <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-light-text-primary flex items-center">
+              <ClockIcon className="h-5 w-5 mr-2 text-flash-green" />
+              Sales Velocity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-light-text-secondary mb-1">Avg. Time to Convert</p>
+                <p className="text-3xl font-bold text-light-text-primary">
+                  {analytics.salesVelocity.avgTimeToConvert} days
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-light-bg-secondary rounded-lg p-3 border border-light-border">
+                  <p className="text-xs text-light-text-secondary">0-7 days</p>
+                  <p className="text-lg font-semibold text-light-text-primary">
+                    {analytics.salesVelocity.velocityByTimeframe['0-7 days']}
+                  </p>
+                </div>
+                <div className="bg-light-bg-secondary rounded-lg p-3 border border-light-border">
+                  <p className="text-xs text-light-text-secondary">8-30 days</p>
+                  <p className="text-lg font-semibold text-light-text-primary">
+                    {analytics.salesVelocity.velocityByTimeframe['8-30 days']}
+                  </p>
+                </div>
+                <div className="bg-light-bg-secondary rounded-lg p-3 border border-light-border">
+                  <p className="text-xs text-light-text-secondary">31-60 days</p>
+                  <p className="text-lg font-semibold text-light-text-primary">
+                    {analytics.salesVelocity.velocityByTimeframe['31-60 days']}
+                  </p>
+                </div>
+                <div className="bg-light-bg-secondary rounded-lg p-3 border border-light-border">
+                  <p className="text-xs text-light-text-secondary">60+ days</p>
+                  <p className="text-lg font-semibold text-light-text-primary">
+                    {analytics.salesVelocity.velocityByTimeframe['60+ days']}
+                  </p>
+                </div>
+              </div>
+              <div className="pt-2 text-center">
+                <Badge 
+                  variant="outline"
+                  className="text-xs"
+                >
+                  <ClockIcon className="h-3 w-3 mr-1" />
+                  {analytics.salesVelocity.velocityTrend} velocity trend
+                </Badge>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="bg-flash-dark-2 rounded p-3">
-                <div className="text-gray-400">0-7 days</div>
-                <div className="text-flash-green font-semibold">
-                  {analytics.salesVelocity.conversionsByTimeframe['0-7days']}
-                </div>
-              </div>
-              <div className="bg-flash-dark-2 rounded p-3">
-                <div className="text-gray-400">8-30 days</div>
-                <div className="text-blue-400 font-semibold">
-                  {analytics.salesVelocity.conversionsByTimeframe['8-30days']}
-                </div>
-              </div>
-              <div className="bg-flash-dark-2 rounded p-3">
-                <div className="text-gray-400">31-90 days</div>
-                <div className="text-amber-400 font-semibold">
-                  {analytics.salesVelocity.conversionsByTimeframe['31-90days']}
-                </div>
-              </div>
-              <div className="bg-flash-dark-2 rounded p-3">
-                <div className="text-gray-400">90+ days</div>
-                <div className="text-red-400 font-semibold">
-                  {analytics.salesVelocity.conversionsByTimeframe['90+days']}
-                </div>
-              </div>
-            </div>
-            
-            <div className="pt-4 border-t border-flash-dark-2">
-              <div className={`flex items-center ${getMetricColor(analytics.salesVelocity.velocityTrend)}`}>
-                {getTrendIcon(analytics.salesVelocity.velocityTrend)}
-                <span className="ml-2 text-sm">
-                  {analytics.salesVelocity.velocityTrend > 0 ? '+' : ''}
-                  {analytics.salesVelocity.velocityTrend.toFixed(1)}% velocity trend
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Alerts and Recommendations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Smart Alerts */}
-        <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-          <div className="flex items-center mb-4">
-            <ExclamationTriangleIcon className="h-5 w-5 mr-2 text-amber-400" />
-            <h3 className="text-lg font-medium text-white">Smart Alerts</h3>
-          </div>
-          
+      {/* Smart Alerts */}
+      <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-light-text-primary flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 mr-2 text-flash-green" />
+            Smart Alerts
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-3">
-            {alertsByType.danger.map((alert, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 bg-red-900 bg-opacity-20 rounded-lg border border-red-800">
-                <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mt-0.5" />
-                <span className="text-red-200 text-sm">{alert.message}</span>
+            {alertsByType.danger.length > 0 && (
+              <div className="space-y-2">
+                {alertsByType.danger.map((alert, index) => (
+                  <div key={index} className="p-3 rounded-lg bg-red-50 border border-red-200">
+                    <div className="flex items-start">
+                      <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-red-800">{alert.message}</p>
+                        <p className="text-xs text-red-600 mt-1">{alert.recommendation}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
             
-            {alertsByType.warning.map((alert, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 bg-amber-900 bg-opacity-20 rounded-lg border border-amber-800">
-                <ExclamationTriangleIcon className="h-5 w-5 text-amber-400 mt-0.5" />
-                <span className="text-amber-200 text-sm">{alert.message}</span>
+            {alertsByType.warning.length > 0 && (
+              <div className="space-y-2">
+                {alertsByType.warning.map((alert, index) => (
+                  <div key={index} className="p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+                    <div className="flex items-start">
+                      <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-yellow-800">{alert.message}</p>
+                        <p className="text-xs text-yellow-600 mt-1">{alert.recommendation}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
             
-            {alertsByType.success.map((alert, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 bg-green-900 bg-opacity-20 rounded-lg border border-green-800">
-                <CheckCircleIcon className="h-5 w-5 text-green-400 mt-0.5" />
-                <span className="text-green-200 text-sm">{alert.message}</span>
-              </div>
-            ))}
-            
-            {analytics.executiveSummary.alerts.length === 0 && (
-              <div className="flex items-center justify-center py-6 text-gray-400">
-                <CheckCircleIcon className="h-5 w-5 mr-2" />
-                <span>All systems performing well</span>
+            {alertsByType.success.length > 0 && (
+              <div className="space-y-2">
+                {alertsByType.success.map((alert, index) => (
+                  <div key={index} className="p-3 rounded-lg bg-green-50 border border-green-200">
+                    <div className="flex items-start">
+                      <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-800">{alert.message}</p>
+                        <p className="text-xs text-green-600 mt-1">{alert.recommendation}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Strategic Recommendations */}
-        <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-          <div className="flex items-center mb-4">
-            <LightBulbIcon className="h-5 w-5 mr-2 text-flash-yellow" />
-            <h3 className="text-lg font-medium text-white">AI Recommendations</h3>
-          </div>
-          
-          <div className="space-y-4">
-            {analytics.predictions.recommendations.slice(0, 3).map((rec, index) => (
-              <div key={index} className="bg-flash-dark-2 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    rec.priority === 'high' ? 'bg-red-100 text-red-800' :
-                    rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-blue-100 text-blue-800'
-                  }`}>
-                    {rec.priority.toUpperCase()}
-                  </span>
-                  <span className="text-xs text-gray-400">{rec.category}</span>
-                </div>
-                
-                <div className="mb-2">
-                  <div className="text-sm font-medium text-white mb-1">
-                    {rec.insight}
-                  </div>
-                  <div className="text-sm text-gray-300">
-                    {rec.action}
-                  </div>
-                </div>
-                
-                <div className="text-xs text-flash-green">
-                  Expected: {rec.expectedImpact}
-                </div>
+      {/* AI Recommendations */}
+      <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-light-text-primary flex items-center">
+            <LightBulbIcon className="h-5 w-5 mr-2 text-flash-green" />
+            AI Recommendations
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {analytics.recommendations.map((rec, index) => (
+              <div key={index} className="p-4 rounded-lg bg-light-bg-secondary border border-light-border">
+                <Badge 
+                  variant={rec.priority === 'high' ? 'destructive' : rec.priority === 'medium' ? 'warning' : 'secondary'}
+                  className="mb-2 text-xs"
+                >
+                  {rec.type}
+                </Badge>
+                <p className="text-sm text-light-text-primary font-medium mb-1">
+                  {rec.action}
+                </p>
+                <p className="text-xs text-light-text-secondary">
+                  Impact: <span className="font-medium text-light-text-primary">{rec.impact}</span>
+                </p>
               </div>
             ))}
-            
-            {analytics.predictions.recommendations.length === 0 && (
-              <div className="text-center py-6 text-gray-400">
-                <LightBulbIcon className="h-8 w-8 mx-auto mb-2" />
-                <span>No recommendations at this time</span>
-              </div>
-            )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Next Actions */}
-      <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-        <div className="flex items-center mb-4">
-          <CheckCircleIcon className="h-5 w-5 mr-2 text-flash-green" />
-          <h3 className="text-lg font-medium text-white">Recommended Next Actions</h3>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {analytics.executiveSummary.nextActions.map((action, index) => (
-            <div key={index} className="bg-flash-dark-2 rounded-lg p-4 hover:bg-opacity-80 transition-colors cursor-pointer">
-              <div className="flex items-start space-x-3">
-                <div className="text-flash-green font-bold text-lg">
-                  {index + 1}
-                </div>
-                <span className="text-sm text-gray-300">{action}</span>
+      {/* Recommended Next Actions */}
+      <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-light-text-primary flex items-center">
+            <CheckCircleIcon className="h-5 w-5 mr-2 text-flash-green" />
+            Recommended Next Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 rounded-lg bg-light-bg-secondary border border-light-border hover:border-flash-green transition-colors cursor-pointer">
+              <div className="flex items-center mb-2">
+                <span className="text-2xl mr-2">📊</span>
+                <h4 className="font-medium text-light-text-primary">Review pipeline health metrics</h4>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="p-4 rounded-lg bg-light-bg-secondary border border-light-border hover:border-flash-green transition-colors cursor-pointer">
+              <div className="flex items-center mb-2">
+                <span className="text-2xl mr-2">🎯</span>
+                <h4 className="font-medium text-light-text-primary">Implement top recommendations</h4>
+              </div>
+            </div>
+            <div className="p-4 rounded-lg bg-light-bg-secondary border border-light-border hover:border-flash-green transition-colors cursor-pointer">
+              <div className="flex items-center mb-2">
+                <span className="text-2xl mr-2">📈</span>
+                <h4 className="font-medium text-light-text-primary">Monitor key performance indicators</h4>
+              </div>
+            </div>
+            <div className="p-4 rounded-lg bg-light-bg-secondary border border-light-border hover:border-flash-green transition-colors cursor-pointer">
+              <div className="flex items-center mb-2">
+                <span className="text-2xl mr-2">📅</span>
+                <h4 className="font-medium text-light-text-primary">Schedule team performance review</h4>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

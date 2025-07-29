@@ -54,7 +54,7 @@ describe('StatsCard Component', () => {
       />
     );
     
-    expect(container.querySelector('.bg-flash-green\\/10')).toBeInTheDocument();
+    expect(container.querySelector('.bg-green-50')).toBeInTheDocument();
     
     rerender(
       <StatsCard
@@ -65,6 +65,6 @@ describe('StatsCard Component', () => {
       />
     );
     
-    expect(container.querySelector('.bg-flash-yellow\\/10')).toBeInTheDocument();
+    expect(container.querySelector('.bg-yellow-50')).toBeInTheDocument();
   });
 });

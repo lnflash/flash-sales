@@ -15,10 +15,10 @@ const RepTrackingPage: NextPage = () => {
         {/* Form Section */}
         <div className="lg:col-span-1">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
+            <h2 className="text-xl font-semibold text-light-text-primary mb-4">
               Track Weekly Performance
             </h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-light-text-secondary text-sm mb-6">
               Record whether reps submitted their Monday update and attended the Tuesday call.
             </p>
           </div>
@@ -27,17 +27,17 @@ const RepTrackingPage: NextPage = () => {
 
         {/* Table Section */}
         <div className="lg:col-span-2">
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-light-border">
+            <h2 className="text-xl font-semibold text-light-text-primary mb-6">
               Performance History
             </h2>
             
             {isLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-flash-green mx-auto"></div>
               </div>
             ) : trackingData.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-light-text-tertiary">
                 No tracking data available. Start by adding rep performance data.
               </div>
             ) : (

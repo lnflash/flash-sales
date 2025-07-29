@@ -1,5 +1,8 @@
 import { 
-  TrophyIcon
+  TrophyIcon,
+  ChartBarIcon,
+  LightBulbIcon,
+  ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import ExecutiveDashboard from '@/components/dashboard/ExecutiveDashboard';
@@ -7,6 +10,8 @@ import SalesFunnelChart from '@/components/dashboard/SalesFunnelChart';
 import PerformanceHeatMap from '@/components/dashboard/PerformanceHeatMap';
 import PredictiveAnalytics from '@/components/dashboard/PredictiveAnalytics';
 import InterestDistributionChart from '@/components/dashboard/InterestDistributionChart';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useSubmissionStats } from '@/hooks/useSubmissionStats';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
@@ -32,8 +37,8 @@ export default function AnalyticsPage() {
       {/* Executive Summary Row */}
       <section className="mb-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-white mb-2">Executive Summary</h2>
-          <p className="text-gray-400">Strategic insights and performance metrics for data-driven decision making</p>
+          <h2 className="text-2xl font-semibold text-light-text-primary mb-2">Executive Summary</h2>
+          <p className="text-light-text-secondary">Strategic insights and performance metrics for data-driven decision making</p>
         </div>
         <ExecutiveDashboard 
           analytics={advancedAnalytics}
@@ -61,38 +66,42 @@ export default function AnalyticsPage() {
           isLoading={isLoadingSubmissions}
         />
         <div className="space-y-6">
-          <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-            <h3 className="text-lg font-medium text-white mb-4 flex items-center">
-              <TrophyIcon className="h-5 w-5 mr-2 text-flash-yellow" />
-              Market Intelligence
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-flash-dark-2 rounded p-4">
-                <div className="text-sm text-gray-400 mb-1">Market Penetration</div>
-                <div className="text-xl font-bold text-flash-green">
-                  {advancedAnalytics.marketIntel.opportunitySize.currentPenetration.toFixed(2)}%
+          <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-light-text-primary flex items-center">
+                <TrophyIcon className="h-5 w-5 mr-2 text-flash-green" />
+                Market Intelligence
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
+                  <div className="text-sm text-light-text-secondary mb-1">Market Penetration</div>
+                  <div className="text-xl font-bold text-flash-green">
+                    {advancedAnalytics.marketIntel.opportunitySize.currentPenetration.toFixed(2)}%
+                  </div>
+                </div>
+                <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
+                  <div className="text-sm text-light-text-secondary mb-1">Win Rate</div>
+                  <div className="text-xl font-bold text-blue-600">
+                    {advancedAnalytics.marketIntel.competitivePosition.winRate.toFixed(1)}%
+                  </div>
+                </div>
+                <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
+                  <div className="text-sm text-light-text-secondary mb-1">Growth Rate</div>
+                  <div className="text-xl font-bold text-purple-600">
+                    {advancedAnalytics.marketIntel.opportunitySize.projectedGrowth.toFixed(1)}%
+                  </div>
+                </div>
+                <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
+                  <div className="text-sm text-light-text-secondary mb-1">Market Share</div>
+                  <div className="text-xl font-bold text-amber-600">
+                    {advancedAnalytics.marketIntel.competitivePosition.marketShare}%
+                  </div>
                 </div>
               </div>
-              <div className="bg-flash-dark-2 rounded p-4">
-                <div className="text-sm text-gray-400 mb-1">Win Rate</div>
-                <div className="text-xl font-bold text-blue-400">
-                  {advancedAnalytics.marketIntel.competitivePosition.winRate.toFixed(1)}%
-                </div>
-              </div>
-              <div className="bg-flash-dark-2 rounded p-4">
-                <div className="text-sm text-gray-400 mb-1">Growth Rate</div>
-                <div className="text-xl font-bold text-purple-400">
-                  {advancedAnalytics.marketIntel.opportunitySize.projectedGrowth.toFixed(1)}%
-                </div>
-              </div>
-              <div className="bg-flash-dark-2 rounded p-4">
-                <div className="text-sm text-gray-400 mb-1">Market Share</div>
-                <div className="text-xl font-bold text-amber-400">
-                  {advancedAnalytics.marketIntel.competitivePosition.marketShare}%
-                </div>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
           <InterestDistributionChart 
             distribution={interestDistribution}
@@ -100,7 +109,6 @@ export default function AnalyticsPage() {
           />
         </div>
       </section>
-      
     </DashboardLayout>
   );
 }

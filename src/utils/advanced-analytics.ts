@@ -7,12 +7,19 @@ import { Submission } from '@/types/submission';
 
 export interface SalesVelocityMetrics {
   avgTimeToConversion: number; // in days
+  avgTimeToConvert: number; // alias for component compatibility
   velocityTrend: number; // percentage change
   conversionsByTimeframe: {
     '0-7days': number;
     '8-30days': number;
     '31-90days': number;
     '90+days': number;
+  };
+  velocityByTimeframe: {
+    '0-7 days': number;
+    '8-30 days': number;
+    '31-60 days': number;
+    '60+ days': number;
   };
 }
 
@@ -81,6 +88,15 @@ export interface PredictiveInsights {
     action: string;
     expectedImpact: string;
   }[];
+  trend: 'increasing' | 'decreasing' | 'stable';
+  confidence: number;
+  nextMonthProjections: {
+    expectedSubmissions: number;
+    expectedConversions: number;
+  };
+  conversionProbability: {
+    overall: number;
+  };
 }
 
 export interface AdvancedAnalytics {
@@ -91,9 +107,15 @@ export interface AdvancedAnalytics {
   predictions: PredictiveInsights;
   executiveSummary: {
     keyMetrics: { label: string; value: string; trend: number }[];
-    alerts: { type: 'success' | 'warning' | 'danger'; message: string }[];
+    alerts: { type: 'success' | 'warning' | 'danger'; message: string; recommendation?: string }[];
     nextActions: string[];
   };
+  recommendations: {
+    priority: 'high' | 'medium' | 'low';
+    type: string;
+    action: string;
+    impact: string;
+  }[];
 }
 
 /**
@@ -140,10 +162,20 @@ function calculateSalesVelocity(submissions: Submission[]): SalesVelocityMetrics
     '90+days': conversionTimes.filter(t => t > 90).length,
   };
   
+  // Additional properties for UI compatibility
+  const velocityByTimeframe = {
+    '0-7 days': conversionsByTimeframe['0-7days'],
+    '8-30 days': conversionsByTimeframe['8-30days'],
+    '31-60 days': conversionsByTimeframe['31-90days'], // Map 31-90 to 31-60 for UI
+    '60+ days': conversionsByTimeframe['90+days'] // Map 90+ to 60+ for UI
+  };
+
   return {
     avgTimeToConversion,
+    avgTimeToConvert: avgTimeToConversion, // alias for component compatibility
     velocityTrend,
-    conversionsByTimeframe
+    conversionsByTimeframe,
+    velocityByTimeframe
   };
 }
 
@@ -328,6 +360,16 @@ function generatePredictiveInsights(submissions: Submission[]): PredictiveInsigh
     pipelineSize: submissions.filter(s => !s.signedUp).length
   });
   
+  // Additional properties for components
+  const trend = recentTrend > 5 ? 'increasing' : recentTrend < -5 ? 'decreasing' : 'stable';
+  const nextMonthProjections = {
+    expectedSubmissions: Math.round(dailySubmissionRate * 30),
+    expectedConversions: forecastedConversions.next30Days
+  };
+  const conversionProbability = {
+    overall: conversionRate * 100
+  };
+
   return {
     forecastedConversions,
     trendAnalysis: {
@@ -335,7 +377,11 @@ function generatePredictiveInsights(submissions: Submission[]): PredictiveInsigh
       strength: trendStrength,
       confidence
     },
-    recommendations
+    recommendations,
+    trend,
+    confidence,
+    nextMonthProjections,
+    conversionProbability
   };
 }
 
@@ -423,8 +469,10 @@ export function calculateAdvancedAnalytics(submissions: Submission[]): AdvancedA
     return {
       salesVelocity: {
         avgTimeToConversion: 0,
+        avgTimeToConvert: 0,
         velocityTrend: 0,
-        conversionsByTimeframe: { '0-7days': 0, '8-30days': 0, '31-90days': 0, '90+days': 0 }
+        conversionsByTimeframe: { '0-7days': 0, '8-30days': 0, '31-90days': 0, '90+days': 0 },
+        velocityByTimeframe: { '0-7 days': 0, '8-30 days': 0, '31-60 days': 0, '60+ days': 0 }
       },
       pipelineHealth: {
         totalPipeline: 0,
@@ -447,13 +495,18 @@ export function calculateAdvancedAnalytics(submissions: Submission[]): AdvancedA
       predictions: {
         forecastedConversions: { next7Days: 0, next30Days: 0, next90Days: 0 },
         trendAnalysis: { direction: 'stable', strength: 0, confidence: 0 },
-        recommendations: []
+        recommendations: [],
+        trend: 'stable',
+        confidence: 0,
+        nextMonthProjections: { expectedSubmissions: 0, expectedConversions: 0 },
+        conversionProbability: { overall: 0 }
       },
       executiveSummary: {
         keyMetrics: [],
         alerts: [],
         nextActions: []
-      }
+      },
+      recommendations: []
     };
   }
   
@@ -475,9 +528,9 @@ export function calculateAdvancedAnalytics(submissions: Submission[]): AdvancedA
       { label: 'Hot Prospects', value: pipelineHealth.hotProspects.toString(), trend: 8 }
     ],
     alerts: [
-      ...(conversionRate < 15 ? [{ type: 'warning' as const, message: 'Conversion rate below benchmark' }] : []),
-      ...(pipelineHealth.totalPipeline < 20 ? [{ type: 'danger' as const, message: 'Pipeline critically low' }] : []),
-      ...(predictions.trendAnalysis.direction === 'up' ? [{ type: 'success' as const, message: 'Positive growth trend detected' }] : [])
+      ...(conversionRate < 15 ? [{ type: 'warning' as const, message: 'Conversion rate below benchmark', recommendation: 'Focus on qualifying leads better' }] : []),
+      ...(pipelineHealth.totalPipeline < 20 ? [{ type: 'danger' as const, message: 'Pipeline critically low', recommendation: 'Increase prospecting activities immediately' }] : []),
+      ...(predictions.trendAnalysis.direction === 'up' ? [{ type: 'success' as const, message: 'Positive growth trend detected', recommendation: 'Maintain current strategy' }] : [])
     ],
     nextActions: [
       'Review pipeline health metrics',
@@ -487,12 +540,21 @@ export function calculateAdvancedAnalytics(submissions: Submission[]): AdvancedA
     ]
   };
   
+  // Generate UI-friendly recommendations
+  const recommendations = predictions.recommendations.slice(0, 4).map(rec => ({
+    priority: rec.priority,
+    type: rec.category,
+    action: rec.action,
+    impact: rec.expectedImpact
+  }));
+
   return {
     salesVelocity,
     pipelineHealth,
     benchmarks,
     marketIntel,
     predictions,
-    executiveSummary
+    executiveSummary,
+    recommendations
   };
 }
