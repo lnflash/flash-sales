@@ -44,13 +44,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
     
-    const response = await fetch(fullUrl, {
+    const fetchOptions: RequestInit = {
       method: req.method,
       headers: {
         'Content-Type': 'application/json',
       },
       signal: controller.signal
-    });
+    };
+
+    // Include body for POST requests
+    if (req.method === 'POST' && req.body) {
+      fetchOptions.body = JSON.stringify(req.body);
+      console.log(`[API PROXY] POST body:`, req.body);
+    }
+    
+    const response = await fetch(fullUrl, fetchOptions);
     
     clearTimeout(timeoutId);
     
