@@ -132,6 +132,25 @@ export async function updateSubmission(id: number, data: Partial<Submission>): P
   }
 }
 
+export async function deleteSubmission(id: number): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/submissions/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(error.message || 'Failed to delete submission');
+    }
+  } catch (error) {
+    console.error(`Error deleting submission ${id}:`, error);
+    throw error;
+  }
+}
+
 export async function getSubmissionStats(): Promise<SubmissionStats> {
   try {
     const response = await fetch(`${API_BASE_URL}/submissions/stats`);

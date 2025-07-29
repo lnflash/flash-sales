@@ -5,6 +5,7 @@ import SubmissionTable from '@/components/submissions/SubmissionTable';
 import SubmissionFiltersComponent from '@/components/submissions/SubmissionFilters';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { Submission, SubmissionFilters, PaginationState } from '@/types/submission';
+import { deleteSubmission } from '@/lib/api';
 
 export default function SubmissionsPage() {
   const router = useRouter();
@@ -22,7 +23,8 @@ export default function SubmissionsPage() {
     pagination,
     setPagination,
     setFilters,
-    resetFilters
+    resetFilters,
+    refetch
   } = useSubmissions(initialFilters);
 
   // Update filters when URL search parameter changes
@@ -31,6 +33,17 @@ export default function SubmissionsPage() {
       setFilters({ ...filters, search: search as string });
     }
   }, [search]);
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteSubmission(id);
+      // Refresh the submissions list
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete submission:', error);
+      alert('Failed to delete submission. Please try again.');
+    }
+  };
 
   return (
     <DashboardLayout title="Submissions">
@@ -54,6 +67,7 @@ export default function SubmissionsPage() {
           data={submissions}
           isLoading={isLoading}
           totalItems={totalCount}
+          onDelete={handleDelete}
         />
         
         {pageCount > 0 && (

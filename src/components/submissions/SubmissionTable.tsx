@@ -17,16 +17,18 @@ import {
   ChevronUpIcon, 
   ArrowsUpDownIcon,
   EyeIcon,
-  PencilSquareIcon
+  PencilSquareIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 interface SubmissionTableProps {
   data: Submission[];
   isLoading?: boolean;
   totalItems?: number;
+  onDelete?: (id: number) => void;
 }
 
-export default function SubmissionTable({ data, isLoading = false, totalItems = 0 }: SubmissionTableProps) {
+export default function SubmissionTable({ data, isLoading = false, totalItems = 0, onDelete }: SubmissionTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'timestamp', desc: true }
   ]);
@@ -111,6 +113,19 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
             >
               <PencilSquareIcon className="h-5 w-5" />
             </Link>
+            {onDelete && (
+              <button
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this submission?')) {
+                    onDelete(Number(info.getValue()));
+                  }
+                }}
+                className="p-1 text-light-text-secondary hover:text-red-600 rounded-md transition-colors"
+                title="Delete"
+              >
+                <TrashIcon className="h-5 w-5" />
+              </button>
+            )}
           </div>
         ),
       }),

@@ -72,9 +72,9 @@ export default function EditSubmissionPage() {
     return (
       <DashboardLayout title="Submission Not Found">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md text-center">
-            <h2 className="text-xl font-semibold text-red-400 mb-3">Error</h2>
-            <p className="text-gray-400 mb-4">
+          <div className="bg-white rounded-lg p-6 shadow-md text-center border border-light-border">
+            <h2 className="text-xl font-semibold text-red-600 mb-3">Error</h2>
+            <p className="text-light-text-secondary mb-4">
               Could not find submission with ID {submissionId}
             </p>
             <button 
@@ -103,29 +103,29 @@ export default function EditSubmissionPage() {
         </div>
 
         {isLoading ? (
-          <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md animate-pulse">
-            <div className="h-8 bg-flash-dark-2 rounded w-3/4 mb-6"></div>
+          <div className="bg-white rounded-lg p-6 shadow-md animate-pulse border border-light-border">
+            <div className="h-8 bg-light-bg-tertiary rounded w-3/4 mb-6"></div>
             <div className="space-y-4">
               {[...Array(6)].map((_, i) => (
                 <div key={i}>
-                  <div className="h-5 bg-flash-dark-2 rounded w-1/3 mb-2"></div>
-                  <div className="h-10 bg-flash-dark-2 rounded w-full"></div>
+                  <div className="h-5 bg-light-bg-tertiary rounded w-1/3 mb-2"></div>
+                  <div className="h-10 bg-light-bg-tertiary rounded w-full"></div>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-            <h1 className="text-xl font-bold text-white mb-6">Edit Submission</h1>
+          <div className="bg-white rounded-lg p-6 shadow-md border border-light-border">
+            <h1 className="text-xl font-bold text-light-text-primary mb-6">Edit Submission</h1>
             
             {errorMessage && (
-              <div className="mb-4 p-3 bg-red-500/20 border border-red-500 text-red-400 rounded-md">
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md">
                 {errorMessage}
               </div>
             )}
             
             {successMessage && (
-              <div className="mb-4 p-3 bg-flash-green/20 border border-flash-green text-flash-green rounded-md">
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-600 rounded-md">
                 {successMessage}
               </div>
             )}
@@ -133,7 +133,7 @@ export default function EditSubmissionPage() {
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="ownerName" className="block text-gray-400 text-sm font-medium mb-2">
+                  <label htmlFor="ownerName" className="block text-light-text-primary text-sm font-medium mb-2">
                     Business Name *
                   </label>
                   <input
@@ -143,12 +143,12 @@ export default function EditSubmissionPage() {
                     value={formState.ownerName || ''}
                     onChange={handleInputChange}
                     required
-                    className="w-full bg-flash-dark-2 border border-flash-dark-1 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-flash-green"
+                    className="w-full bg-white border border-light-border rounded-md px-3 py-2 text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="phoneNumber" className="block text-gray-400 text-sm font-medium mb-2">
+                  <label htmlFor="phoneNumber" className="block text-light-text-primary text-sm font-medium mb-2">
                     Phone Number
                   </label>
                   <input
@@ -157,12 +157,12 @@ export default function EditSubmissionPage() {
                     name="phoneNumber"
                     value={formState.phoneNumber || ''}
                     onChange={handleInputChange}
-                    className="w-full bg-flash-dark-2 border border-flash-dark-1 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-flash-green"
+                    className="w-full bg-white border border-light-border rounded-md px-3 py-2 text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="username" className="block text-gray-400 text-sm font-medium mb-2">
+                  <label htmlFor="username" className="block text-light-text-primary text-sm font-medium mb-2">
                     Sales Rep
                   </label>
                   <input
@@ -171,12 +171,12 @@ export default function EditSubmissionPage() {
                     name="username"
                     value={formState.username || ''}
                     onChange={handleInputChange}
-                    className="w-full bg-flash-dark-2 border border-flash-dark-1 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-flash-green"
+                    className="w-full bg-white border border-light-border rounded-md px-3 py-2 text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="interestLevel" className="block text-gray-400 text-sm font-medium mb-2">
+                  <label htmlFor="interestLevel" className="block text-light-text-primary text-sm font-medium mb-2">
                     Interest Level
                   </label>
                   <select
@@ -184,7 +184,7 @@ export default function EditSubmissionPage() {
                     name="interestLevel"
                     value={formState.interestLevel || 0}
                     onChange={handleInputChange}
-                    className="w-full bg-flash-dark-2 border border-flash-dark-1 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-flash-green"
+                    className="w-full bg-white border border-light-border rounded-md px-3 py-2 text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                   >
                     <option value="1">1 - Not Interested</option>
                     <option value="2">2 - Slightly Interested</option>
@@ -203,7 +203,7 @@ export default function EditSubmissionPage() {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-flash-green focus:ring-flash-green border-gray-300 rounded"
                   />
-                  <label htmlFor="packageSeen" className="ml-2 block text-gray-400 text-sm font-medium">
+                  <label htmlFor="packageSeen" className="ml-2 block text-light-text-primary text-sm font-medium">
                     Package Seen by Owner
                   </label>
                 </div>
@@ -217,13 +217,13 @@ export default function EditSubmissionPage() {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-flash-green focus:ring-flash-green border-gray-300 rounded"
                   />
-                  <label htmlFor="signedUp" className="ml-2 block text-gray-400 text-sm font-medium">
+                  <label htmlFor="signedUp" className="ml-2 block text-light-text-primary text-sm font-medium">
                     Signed Up
                   </label>
                 </div>
                 
                 <div className="md:col-span-2">
-                  <label htmlFor="decisionMakers" className="block text-gray-400 text-sm font-medium mb-2">
+                  <label htmlFor="decisionMakers" className="block text-light-text-primary text-sm font-medium mb-2">
                     Other Decision Makers
                   </label>
                   <input
@@ -232,12 +232,12 @@ export default function EditSubmissionPage() {
                     name="decisionMakers"
                     value={formState.decisionMakers || ''}
                     onChange={handleInputChange}
-                    className="w-full bg-flash-dark-2 border border-flash-dark-1 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-flash-green"
+                    className="w-full bg-white border border-light-border rounded-md px-3 py-2 text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                   />
                 </div>
                 
                 <div className="md:col-span-2">
-                  <label htmlFor="specificNeeds" className="block text-gray-400 text-sm font-medium mb-2">
+                  <label htmlFor="specificNeeds" className="block text-light-text-primary text-sm font-medium mb-2">
                     Specific Needs
                   </label>
                   <textarea
@@ -246,7 +246,7 @@ export default function EditSubmissionPage() {
                     value={formState.specificNeeds || ''}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full bg-flash-dark-2 border border-flash-dark-1 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-flash-green"
+                    className="w-full bg-white border border-light-border rounded-md px-3 py-2 text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                   />
                 </div>
               </div>
@@ -264,7 +264,7 @@ export default function EditSubmissionPage() {
                 
                 <Link
                   href={`/dashboard/submissions/${submissionId}`}
-                  className="px-4 py-2 border border-gray-500 text-gray-400 rounded-md hover:bg-flash-dark-2 transition-colors"
+                  className="px-4 py-2 border border-light-border text-light-text-secondary rounded-md hover:bg-light-bg-secondary transition-colors"
                 >
                   Cancel
                 </Link>

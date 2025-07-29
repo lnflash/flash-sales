@@ -6,7 +6,7 @@ const TARGET_API_URL = process.env.INTAKE_API_URL || 'https://flash-intake-form-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Add CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   // Handle OPTIONS request for preflight
@@ -40,6 +40,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'PUT' && req.body) {
       fetchOptions.body = JSON.stringify(req.body);
     }
+    
+    // DELETE method doesn't need body
     
     const response = await fetch(fullUrl, fetchOptions);
     
