@@ -14,9 +14,9 @@ export default function SubmissionDetailPage() {
     return (
       <DashboardLayout title="Submission Not Found">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md text-center">
-            <h2 className="text-xl font-semibold text-red-400 mb-3">Error</h2>
-            <p className="text-gray-400 mb-4">
+          <div className="bg-white rounded-lg p-6 shadow-md text-center border border-light-border">
+            <h2 className="text-xl font-semibold text-red-600 mb-3">Error</h2>
+            <p className="text-light-text-secondary mb-4">
               Could not find submission with ID {submissionId}
             </p>
             <button 

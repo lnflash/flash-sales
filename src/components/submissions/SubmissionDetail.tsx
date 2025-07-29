@@ -25,13 +25,13 @@ export default function SubmissionDetail({
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto">
-        <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md animate-pulse">
-          <div className="h-8 bg-flash-dark-2 rounded w-3/4 mb-6"></div>
+        <div className="bg-white rounded-lg p-6 shadow-md animate-pulse border border-light-border">
+          <div className="h-8 bg-light-bg-tertiary rounded w-3/4 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i}>
-                <div className="h-5 bg-flash-dark-2 rounded w-1/3 mb-2"></div>
-                <div className="h-8 bg-flash-dark-2 rounded w-full"></div>
+                <div className="h-5 bg-light-bg-tertiary rounded w-1/3 mb-2"></div>
+                <div className="h-8 bg-light-bg-tertiary rounded w-full"></div>
               </div>
             ))}
           </div>
@@ -52,17 +52,17 @@ export default function SubmissionDetail({
         </Link>
       </div>
 
-      <div className="bg-flash-dark-3 rounded-lg overflow-hidden shadow-md">
+      <div className="bg-white rounded-lg overflow-hidden shadow-md border border-light-border">
         <div className="p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <h1 className="text-2xl font-bold text-white">{submission.ownerName}</h1>
+            <h1 className="text-2xl font-bold text-light-text-primary">{submission.ownerName}</h1>
 
             <div className="flex items-center mt-2 md:mt-0">
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   submission.signedUp
-                    ? 'bg-flash-green/20 text-flash-green'
-                    : 'bg-gray-500/20 text-gray-400'
+                    ? 'bg-flash-green/10 text-flash-green border border-flash-green/20'
+                    : 'bg-gray-100 text-light-text-secondary border border-light-border'
                 }`}
               >
                 {submission.signedUp ? 'Signed Up' : 'Prospect'}
@@ -70,7 +70,7 @@ export default function SubmissionDetail({
 
               <Link
                 href={`/dashboard/submissions/${submission.id}/edit`}
-                className="ml-4 inline-flex items-center px-3 py-1 border border-flash-yellow text-flash-yellow rounded-md hover:bg-flash-yellow hover:text-flash-dark-1 transition-colors"
+                className="ml-4 inline-flex items-center px-3 py-1 border border-amber-500 text-amber-600 rounded-md hover:bg-amber-50 transition-colors"
               >
                 <PencilSquareIcon className="h-4 w-4 mr-1" />
                 Edit
@@ -80,38 +80,38 @@ export default function SubmissionDetail({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-gray-400 text-sm font-medium mb-1">Business Name</h3>
-              <p className="text-white">{submission.ownerName}</p>
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Business Name</h3>
+              <p className="text-light-text-primary">{submission.ownerName}</p>
             </div>
 
             <div>
-              <h3 className="text-gray-400 text-sm font-medium mb-1">Phone Number</h3>
-              <p className="text-white flex items-center">
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Phone Number</h3>
+              <p className="text-light-text-primary flex items-center">
                 <PhoneIcon className="h-4 w-4 mr-2 text-flash-green" />
                 {submission.phoneNumber || 'None provided'}
               </p>
             </div>
 
             <div>
-              <h3 className="text-gray-400 text-sm font-medium mb-1">Sales Rep</h3>
-              <p className="text-white flex items-center">
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Sales Rep</h3>
+              <p className="text-light-text-primary flex items-center">
                 <UserIcon className="h-4 w-4 mr-2 text-flash-green" />
                 {submission.username || 'Anonymous'}
               </p>
             </div>
 
             <div>
-              <h3 className="text-gray-400 text-sm font-medium mb-1">Submission Date</h3>
-              <p className="text-white flex items-center">
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Submission Date</h3>
+              <p className="text-light-text-primary flex items-center">
                 <CalendarIcon className="h-4 w-4 mr-2 text-flash-green" />
                 {formatDate(submission.timestamp)}
               </p>
             </div>
 
             <div>
-              <h3 className="text-gray-400 text-sm font-medium mb-1">Interest Level</h3>
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Interest Level</h3>
               <div className="flex items-center">
-                <div className="w-1/2 bg-flash-dark-2 rounded-full h-2">
+                <div className="w-1/2 bg-light-bg-tertiary rounded-full h-2">
                   <div
                     className="bg-gradient-to-r from-flash-green to-flash-yellow h-2 rounded-full"
                     style={{ width: `${(submission.interestLevel / 5) * 100}%` }}
@@ -122,26 +122,26 @@ export default function SubmissionDetail({
             </div>
 
             <div>
-              <h3 className="text-gray-400 text-sm font-medium mb-1">Package Seen by Owner</h3>
-              <p className={`${submission.packageSeen ? 'text-flash-green' : 'text-gray-400'}`}>
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Package Seen by Owner</h3>
+              <p className={`${submission.packageSeen ? 'text-flash-green' : 'text-light-text-tertiary'}`}>
                 {submission.packageSeen ? 'Yes' : 'No'}
               </p>
             </div>
 
             <div className="md:col-span-2">
-              <h3 className="text-gray-400 text-sm font-medium mb-1">Other Decision Makers</h3>
-              <p className="text-white flex items-center">
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Other Decision Makers</h3>
+              <p className="text-light-text-primary flex items-center">
                 <UserGroupIcon className="h-4 w-4 mr-2 text-flash-green flex-shrink-0" />
                 {submission.decisionMakers || 'None specified'}
               </p>
             </div>
 
             <div className="md:col-span-2">
-              <h3 className="text-gray-400 text-sm font-medium mb-1">Specific Needs</h3>
-              <div className="bg-flash-dark-2 rounded-md p-4 mt-1">
+              <h3 className="text-light-text-secondary text-sm font-medium mb-1">Specific Needs</h3>
+              <div className="bg-light-bg-secondary rounded-md p-4 mt-1 border border-light-border">
                 <div className="flex">
                   <ClipboardDocumentListIcon className="h-5 w-5 mr-2 text-flash-green flex-shrink-0" />
-                  <p className="text-white">
+                  <p className="text-light-text-primary">
                     {submission.specificNeeds || 'No specific needs provided'}
                   </p>
                 </div>

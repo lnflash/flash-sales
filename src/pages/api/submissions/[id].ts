@@ -53,6 +53,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(response.status).json({ error: 'Submission not found' });
     }
     
+    // For DELETE requests, we might not get a response body
+    if (req.method === 'DELETE') {
+      // Check if there's a response body
+      const contentLength = response.headers.get('content-length');
+      const contentType = response.headers.get('content-type');
+      
+      if (contentLength === '0' || !contentType?.includes('application/json')) {
+        // No content or not JSON, just return success
+        return res.status(204).end();
+      }
+    }
+    
     // Get the response data
     const data = await response.json();
     

@@ -145,6 +145,17 @@ export async function deleteSubmission(id: number): Promise<void> {
       const error = await response.json().catch(() => ({ message: response.statusText }));
       throw new Error(error.message || 'Failed to delete submission');
     }
+    
+    // DELETE requests might return 204 No Content, which is successful
+    if (response.status === 204) {
+      return;
+    }
+    
+    // If there's content, try to parse it
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      await response.json(); // consume the response if JSON
+    }
   } catch (error) {
     console.error(`Error deleting submission ${id}:`, error);
     throw error;
