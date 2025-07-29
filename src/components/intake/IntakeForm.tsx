@@ -216,21 +216,39 @@ export default function IntakeForm() {
                 Level of Interest
               </label>
               <div className="space-y-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  value={formData.interestLevel}
-                  onChange={(e) => handleSliderChange(parseInt(e.target.value))}
-                  className="w-full h-2 bg-light-bg-tertiary rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-light-text-tertiary">
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    value={formData.interestLevel}
+                    onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+                    className="w-full slider"
+                  />
+                  {/* Tick marks */}
+                  <div className="absolute w-full flex justify-between px-2 -bottom-1">
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <div key={num} className="flex flex-col items-center">
+                        <div className="w-0.5 h-2 bg-gray-400"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-between text-xs text-light-text-secondary mt-3">
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <span key={num} className="font-medium">{num}</span>
+                  ))}
+                </div>
+                <div className="flex justify-between text-xs text-light-text-tertiary mt-1">
                   <span>Not Interested</span>
-                  <span>Somewhat</span>
+                  <span className="text-center">Moderate</span>
                   <span>Very Interested</span>
                 </div>
-                <div className="text-center">
-                  <Badge variant={formData.interestLevel >= 4 ? 'success' : formData.interestLevel >= 3 ? 'warning' : 'secondary'}>
+                <div className="text-center mt-3">
+                  <Badge 
+                    variant={formData.interestLevel >= 4 ? 'default' : 'secondary'}
+                    className={formData.interestLevel >= 4 ? 'bg-green-100 text-green-800 border-green-300' : ''}
+                  >
                     Interest Level: {formData.interestLevel} / 5
                   </Badge>
                 </div>

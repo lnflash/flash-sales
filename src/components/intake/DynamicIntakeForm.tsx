@@ -627,24 +627,45 @@ export default function DynamicIntakeForm() {
                 Interest Level
               </label>
               <div className="space-y-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  value={formData.interestLevel}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    interestLevel: parseInt(e.target.value) 
-                  }))}
-                  className="w-full slider"
-                />
-                <div className="flex justify-between text-xs text-light-text-secondary">
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    value={formData.interestLevel}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      interestLevel: parseInt(e.target.value) 
+                    }))}
+                    className="w-full slider"
+                  />
+                  {/* Tick marks */}
+                  <div className="absolute w-full flex justify-between px-2 -bottom-1">
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <div key={num} className="flex flex-col items-center">
+                        <div className="w-0.5 h-2 bg-gray-400"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-between text-sm font-medium text-light-text-primary mt-3">
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <span key={num} className={formData.interestLevel === num ? 'text-flash-green font-bold' : ''}>
+                      {num}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex justify-between text-xs text-light-text-tertiary mt-1">
                   <span>Not Interested</span>
+                  <span className="text-center">Moderate</span>
                   <span>Very Interested</span>
                 </div>
-                <div className="text-center">
-                  <Badge variant={formData.interestLevel >= 4 ? 'default' : 'secondary'}>
-                    Level {formData.interestLevel}/5
+                <div className="text-center mt-3">
+                  <Badge 
+                    variant={formData.interestLevel >= 4 ? 'default' : 'secondary'}
+                    className={`text-base ${formData.interestLevel >= 4 ? 'bg-green-100 text-green-800 border-green-300' : ''}`}
+                  >
+                    Interest Level: {formData.interestLevel}/5
                   </Badge>
                 </div>
               </div>
