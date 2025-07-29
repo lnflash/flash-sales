@@ -56,17 +56,17 @@ export function useSupabaseProfile() {
         console.log('Supabase environment variables not available, using mock profile');
         // Instead of showing an error, create a mock profile
         const mockProfile: SupabaseUserProfile = {
-          id: 'mock-' + user.username,
-          email: `${user.username}@getflash.io`,
-          first_name: user.username.split('_')[0] || user.username,
-          last_name: user.username.split('_')[1] || '',
-          username: user.username,
-          role: user.role || 'sales_rep',
+          id: 'mock-' + username,
+          email: `${username}@getflash.io`,
+          first_name: username.split('_')[0] || username,
+          last_name: username.split('_')[1] || '',
+          username: username,
+          role: user?.role || 'sales_rep',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           notification_preferences: {},
           dashboard_preferences: {
-            default_territory: localStorage.getItem(`defaultTerritory_${user.username}`) || ''
+            default_territory: localStorage.getItem(`defaultTerritory_${username}`) || ''
           }
         };
         setProfile(mockProfile);
