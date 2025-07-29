@@ -1,25 +1,21 @@
-import getConfig from 'next/config';
-
 // Runtime configuration for Supabase
 export function getSupabaseConfig() {
-  // Try to get runtime config first
-  const { publicRuntimeConfig } = getConfig() || { publicRuntimeConfig: {} };
-  
   // Check if we're in the browser
   if (typeof window === 'undefined') {
+    // Server-side: use process.env
     return {
-      url: publicRuntimeConfig.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      anonKey: publicRuntimeConfig.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-      isConfigured: false
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      isConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     };
   }
 
-  // In the browser, check multiple sources
-  const url = publicRuntimeConfig.NEXT_PUBLIC_SUPABASE_URL || 
+  // Client-side: check window object first (injected by _document.tsx)
+  const url = (window as any).NEXT_PUBLIC_SUPABASE_URL || 
                process.env.NEXT_PUBLIC_SUPABASE_URL || 
                '';
                
-  const anonKey = publicRuntimeConfig.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+  const anonKey = (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY || 
                   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
                   '';
 

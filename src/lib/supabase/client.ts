@@ -1,15 +1,37 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
-import { getSupabaseConfig } from './config';
 
 // Create a dummy client for build time when env vars are not available
 const createSupabaseClient = () => {
-  // Get environment variables at runtime
-  const config = getSupabaseConfig();
-  const supabaseUrl = config.url;
-  const supabaseAnonKey = config.anonKey;
+  // Try multiple sources for environment variables
+  const supabaseUrl = 
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 
+    (typeof window !== 'undefined' && (window as any).NEXT_PUBLIC_SUPABASE_URL) ||
+    '';
+    
+  const supabaseAnonKey = 
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+    (typeof window !== 'undefined' && (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
+    '';
   
-  if (!supabaseUrl || !supabaseAnonKey) {
+  // For DigitalOcean, also check __NEXT_DATA__
+  if (typeof window !== 'undefined' && (!supabaseUrl || !supabaseAnonKey)) {
+    const nextData = (window as any).__NEXT_DATA__;
+    if (nextData?.props?.pageProps) {
+      const pageProps = nextData.props.pageProps;
+      if (pageProps.NEXT_PUBLIC_SUPABASE_URL && !supabaseUrl) {
+        (window as any).NEXT_PUBLIC_SUPABASE_URL = pageProps.NEXT_PUBLIC_SUPABASE_URL;
+      }
+      if (pageProps.NEXT_PUBLIC_SUPABASE_ANON_KEY && !supabaseAnonKey) {
+        (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY = pageProps.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      }
+    }
+  }
+  
+  const finalUrl = supabaseUrl || (typeof window !== 'undefined' && (window as any).NEXT_PUBLIC_SUPABASE_URL) || '';
+  const finalKey = supabaseAnonKey || (typeof window !== 'undefined' && (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY) || '';
+  
+  if (!finalUrl || !finalKey) {
     console.warn('Supabase environment variables not found. Using placeholder client.');
     // Return a placeholder client that won't throw during build
     return {
@@ -39,6 +61,9 @@ const createSupabaseClient = () => {
               single: () => Promise.resolve({ data: null, error: null })
             })
           })
+        }),
+        select: () => ({
+          limit: () => Promise.resolve({ data: null, error: { message: 'placeholder client' } })
         })
       }),
       channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
@@ -47,7 +72,7 @@ const createSupabaseClient = () => {
     } as any;
   }
   
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createClient<Database>(finalUrl, finalKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -78,6 +103,21 @@ export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>,
     return client[prop as keyof typeof client];
   }
 });
+
+// Helper to check if Supabase is configured
+export function isSupabaseConfigured(): boolean {
+  const supabaseUrl = 
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 
+    (typeof window !== 'undefined' && (window as any).NEXT_PUBLIC_SUPABASE_URL) ||
+    '';
+    
+  const supabaseAnonKey = 
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+    (typeof window !== 'undefined' && (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
+    '';
+    
+  return !!(supabaseUrl && supabaseAnonKey);
+}
 
 // Hook for real-time subscriptions
 export function useRealtimeSubscription<T extends keyof Database['public']['Tables']>(
