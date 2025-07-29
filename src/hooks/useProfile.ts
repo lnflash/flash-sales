@@ -42,15 +42,30 @@ export function useProfile() {
     },
     onError: (error) => {
       console.error('Error fetching profile:', error);
+      console.error('GraphQL error details:', {
+        message: error.message,
+        graphQLErrors: error.graphQLErrors,
+        networkError: error.networkError,
+      });
+      
+      // Check if it's an authentication error
+      if (error.message?.includes('Unauthorized') || 
+          error.message?.includes('authentication') ||
+          error.graphQLErrors?.some(e => e.extensions?.code === 'UNAUTHENTICATED')) {
+        console.log('Authentication error detected. The Flash API requires authentication tokens that we do not have.');
+      }
+      
       // If GraphQL fails, at least use local data
       if (user) {
-        setProfile({
+        const fallbackProfile = {
           id: user.userId,
           username: user.username,
           phone: '',
           createdAt: new Date().toISOString(),
           defaultTerritory: localStorage.getItem(`defaultTerritory_${user.username}`) || ''
-        });
+        };
+        setProfile(fallbackProfile);
+        setDefaultTerritory(fallbackProfile.defaultTerritory);
       }
     }
   });

@@ -67,7 +67,8 @@ export default function ProfilePage() {
     );
   }
 
-  if (error) {
+  // Don't show error page if we have profile data from fallback
+  if (error && !profile) {
     return (
       <DashboardLayout title="Profile">
         <div className="max-w-4xl mx-auto">
