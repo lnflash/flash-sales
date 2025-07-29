@@ -6,13 +6,27 @@ import SubmissionFiltersComponent from '@/components/submissions/SubmissionFilte
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { Submission, SubmissionFilters, PaginationState } from '@/types/submission';
 import { deleteSubmission } from '@/lib/api';
+import { getUserFromStorage } from '@/lib/auth';
+import { hasPermission } from '@/types/roles';
 
 export default function SubmissionsPage() {
   const router = useRouter();
   const { search } = router.query;
+  const [user, setUser] = useState(getUserFromStorage());
   
-  // Set initial filters based on URL search parameter
-  const initialFilters: SubmissionFilters = search ? { search: search as string } : {};
+  // Set initial filters based on URL search parameter and user role
+  const getInitialFilters = (): SubmissionFilters => {
+    const filters: SubmissionFilters = search ? { search: search as string } : {};
+    
+    // If user is a Sales Rep (doesn't have permission to view all reps), filter by their username
+    if (user && !hasPermission(user.role, 'canViewAllReps')) {
+      filters.username = user.username;
+    }
+    
+    return filters;
+  };
+  
+  const initialFilters = getInitialFilters();
   
   const {
     submissions,
@@ -30,11 +44,36 @@ export default function SubmissionsPage() {
   // Update filters when URL search parameter changes
   useEffect(() => {
     if (search && search !== filters.search) {
-      setFilters({ ...filters, search: search as string });
+      const newFilters = { ...filters, search: search as string };
+      // Always maintain username filter for Sales Reps
+      if (user && !hasPermission(user.role, 'canViewAllReps')) {
+        newFilters.username = user.username;
+      }
+      setFilters(newFilters);
     }
   }, [search]);
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // Override setFilters to always maintain username filter for Sales Reps
+  const handleSetFilters = (newFilters: SubmissionFilters) => {
+    // Always maintain username filter for Sales Reps
+    if (user && !hasPermission(user.role, 'canViewAllReps')) {
+      newFilters.username = user.username;
+    }
+    setFilters(newFilters);
+  };
+
+  // Override resetFilters to maintain username filter for Sales Reps
+  const handleResetFilters = () => {
+    const baseFilters: SubmissionFilters = {};
+    // Maintain username filter for Sales Reps even after reset
+    if (user && !hasPermission(user.role, 'canViewAllReps')) {
+      baseFilters.username = user.username;
+    }
+    setFilters(baseFilters);
+    setPagination({ pageIndex: 0, pageSize: 25 });
+  };
 
   const handleDelete = async (id: number) => {
     setDeletingId(id);
@@ -55,8 +94,8 @@ export default function SubmissionsPage() {
       <div className="mb-8">
         <SubmissionFiltersComponent
           filters={filters}
-          onFilterChange={setFilters}
-          onResetFilters={resetFilters}
+          onFilterChange={handleSetFilters}
+          onResetFilters={handleResetFilters}
         />
         
         <div className="bg-white p-4 rounded-lg mb-4 flex justify-between items-center shadow-sm border border-light-border">

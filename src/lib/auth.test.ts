@@ -19,7 +19,7 @@ describe('Auth Library', () => {
 
       const stored = localStorage.getItem('flash_dashboard_user');
       expect(stored).toBeTruthy();
-      expect(JSON.parse(stored!)).toEqual(userData);
+      expect(JSON.parse(stored!)).toEqual({ ...userData, role: 'Flash Sales Rep' });
     });
 
     it('overwrites existing user data', () => {
@@ -39,7 +39,7 @@ describe('Auth Library', () => {
       saveUserToStorage(userData2);
 
       const stored = localStorage.getItem('flash_dashboard_user');
-      expect(JSON.parse(stored!)).toEqual(userData2);
+      expect(JSON.parse(stored!)).toEqual({ ...userData2, role: 'Flash Sales Rep' });
     });
   });
 
@@ -49,6 +49,7 @@ describe('Auth Library', () => {
         username: 'testuser',
         userId: 'user123',
         loggedInAt: Date.now(),
+        role: 'Flash Sales Rep' as const,
       };
 
       localStorage.setItem('flash_dashboard_user', JSON.stringify(userData));
@@ -88,6 +89,7 @@ describe('Auth Library', () => {
         username: 'testuser',
         userId: 'user123',
         loggedInAt: Date.now() - (23 * 60 * 60 * 1000), // 23 hours ago
+        role: 'Flash Sales Rep' as const,
       };
 
       localStorage.setItem('flash_dashboard_user', JSON.stringify(userData));
@@ -103,6 +105,7 @@ describe('Auth Library', () => {
         username: 'testuser',
         userId: 'user123',
         loggedInAt: Date.now(),
+        role: 'Flash Sales Rep' as const,
       };
 
       localStorage.setItem('flash_dashboard_user', JSON.stringify(userData));
@@ -133,6 +136,7 @@ describe('Auth Library', () => {
         username: 'testuser',
         userId: 'user123',
         loggedInAt: Date.now(),
+        role: 'Flash Sales Rep' as const,
       };
 
       localStorage.setItem('flash_dashboard_user', JSON.stringify(userData));

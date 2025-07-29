@@ -1,19 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { BellIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { BellIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { formatDate } from '@/utils/date-formatter';
+import { getUserFromStorage } from '@/lib/auth';
+import { getUserNotifications, markAsRead, markAllAsRead, getUnreadCount } from '@/lib/notifications';
+import { Notification } from '@/types/notifications';
 
 interface HeaderProps {
   title: string;
 }
 
 export default function Header({ title }: HeaderProps) {
-  const [notifications] = useState(3);
+  const [notificationsList, setNotificationsList] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
   const router = useRouter();
   const currentDate = formatDate(new Date().toISOString());
+
+  useEffect(() => {
+    const user = getUserFromStorage();
+    if (user) {
+      setCurrentUser(user.username);
+      loadNotifications(user.username);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Refresh notifications every 30 seconds
+    const interval = setInterval(() => {
+      if (currentUser) {
+        loadNotifications(currentUser);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
+  const loadNotifications = (username: string) => {
+    const userNotifications = getUserNotifications(username);
+    setNotificationsList(userNotifications);
+    setUnreadCount(getUnreadCount(username));
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.read) {
+      markAsRead(notification.id);
+      if (currentUser) {
+        loadNotifications(currentUser);
+      }
+    }
+  };
+
+  const handleMarkAllAsRead = () => {
+    if (currentUser) {
+      markAllAsRead(currentUser);
+      loadNotifications(currentUser);
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'text-red-600 bg-red-50';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50';
+      default:
+        return 'text-green-600 bg-green-50';
+    }
+  };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,14 +110,79 @@ export default function Header({ title }: HeaderProps) {
               <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary absolute left-3 top-1/2 transform -translate-y-1/2" />
             </form>
 
-            <button className="relative p-2 rounded-lg hover:bg-light-bg-secondary transition-colors">
-              <BellIcon className="h-6 w-6 text-light-text-secondary" />
-              {notifications > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 bg-flash-green rounded-full flex items-center justify-center text-xs text-white font-medium">
-                  {notifications}
-                </span>
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 rounded-lg hover:bg-light-bg-secondary transition-colors"
+              >
+                <BellIcon className="h-6 w-6 text-light-text-secondary" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-flash-green rounded-full flex items-center justify-center text-xs text-white font-medium">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+              
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-light-border z-50">
+                  <div className="p-4 border-b border-light-border">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-light-text-primary">Notifications</h3>
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={handleMarkAllAsRead}
+                            className="text-sm text-flash-green hover:text-flash-green-light"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setShowNotifications(false)}
+                          className="p-1 rounded hover:bg-light-bg-secondary"
+                        >
+                          <XMarkIcon className="h-5 w-5 text-light-text-secondary" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="max-h-96 overflow-y-auto">
+                    {notificationsList.length === 0 ? (
+                      <div className="p-8 text-center text-light-text-secondary">
+                        No notifications
+                      </div>
+                    ) : (
+                      notificationsList.map((notification) => (
+                        <div
+                          key={notification.id}
+                          onClick={() => handleNotificationClick(notification)}
+                          className={`p-4 border-b border-light-border hover:bg-light-bg-secondary cursor-pointer transition-colors ${
+                            !notification.read ? 'bg-blue-50' : ''
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-1">
+                            <h4 className="font-medium text-light-text-primary">
+                              {notification.title}
+                            </h4>
+                            <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(notification.priority)}`}>
+                              {notification.priority}
+                            </span>
+                          </div>
+                          <p className="text-sm text-light-text-secondary mb-2">
+                            {notification.message}
+                          </p>
+                          <div className="flex justify-between items-center text-xs text-light-text-tertiary">
+                            <span>From: {notification.fromUsername}</span>
+                            <span>{formatDate(notification.createdAt)}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
           </div>
         </div>
       </div>

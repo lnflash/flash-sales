@@ -1,10 +1,11 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { 
   ArrowUpIcon, 
   UsersIcon, 
   CheckCircleIcon, 
   SparklesIcon,
-  ArrowTrendingUpIcon
+  ArrowTrendingUpIcon,
+  BellAlertIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatsCard from '@/components/dashboard/StatsCard';
@@ -13,6 +14,10 @@ import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
 import { calculateRepStats, calculateSignupLeaderboard, calculateInterestLeaderboard } from '@/utils/rep-stats-calculator';
 import { useRealtimeSubscriptions } from '@/hooks/useRealtimeDeals';
+import { getUserFromStorage } from '@/lib/auth';
+import { getUserRole, hasPermission } from '@/types/roles';
+import CreateNotificationModal from '@/components/notifications/CreateNotificationModal';
+import { Button } from '@/components/ui/button';
 
 // Lazy load heavy components
 const SubmissionTrends = lazy(() => import('@/components/dashboard/SubmissionTrends'));
@@ -48,9 +53,31 @@ const TableSkeleton = () => (
 
 export default function Dashboard() {
   const { stats, isLoading: isLoadingStats } = useSubmissionStats();
-  // Get ALL submissions for accurate rep scoreboard calculations
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [canCreateNotifications, setCanCreateNotifications] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const currentUser = getUserFromStorage();
+    if (currentUser) {
+      setUser(currentUser);
+      const role = getUserRole(currentUser.username);
+      // Only admins can create notifications
+      setCanCreateNotifications(hasPermission(role, 'canAssignRoles'));
+    }
+  }, []);
+  
+  // Filter submissions based on user role
+  const getFilters = () => {
+    if (user && !hasPermission(user.role, 'canViewAllReps')) {
+      return { username: user.username };
+    }
+    return {};
+  };
+  
+  // Get submissions with appropriate filtering
   const { submissions, isLoading: isLoadingSubmissions } = useSubmissions(
-    {}, // No filters
+    getFilters(), // Apply filters based on role
     { pageIndex: 0, pageSize: 1000 }, // Get all submissions for accurate rep stats
     [{ id: 'timestamp', desc: true }] // Sort by most recent
   );
@@ -70,6 +97,25 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout title="Dashboard">
+      {canCreateNotifications && (
+        <div className="mb-6 flex justify-end">
+          <Button
+            onClick={() => setShowNotificationModal(true)}
+            className="bg-flash-green hover:bg-flash-green-light flex items-center gap-2"
+          >
+            <BellAlertIcon className="h-5 w-5" />
+            Create Notification
+          </Button>
+        </div>
+      )}
+
+      <CreateNotificationModal
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+        onSuccess={() => {
+          // Notification created successfully
+        }}
+      />
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <StatsCard
           title="Total Submissions"

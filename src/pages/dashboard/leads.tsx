@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LeadWorkflowPipeline from '@/components/sales-intelligence/LeadWorkflowPipeline';
 import LeadQualificationWizard from '@/components/sales-intelligence/LeadQualificationWizard';
@@ -11,6 +11,8 @@ import { LeadWorkflow, LeadStage } from '@/types/lead-qualification';
 import { Submission } from '@/types/submission';
 import { calculateDealProbability } from '@/utils/deal-probability';
 import { JamaicaParish } from '@/types/lead-routing';
+import { getUserFromStorage } from '@/lib/auth';
+import { hasPermission } from '@/types/roles';
 import { 
   PlusIcon, 
   FunnelIcon,
@@ -135,8 +137,24 @@ export default function LeadsPage() {
   const [showProbabilityAnalyzer, setShowProbabilityAnalyzer] = useState(false);
   const [showLeadAssignment, setShowLeadAssignment] = useState(false);
   const [leadToAssign, setLeadToAssign] = useState<number | null>(null);
+  const [user, setUser] = useState<any>(null);
   
-  const { submissions } = useSubmissions();
+  useEffect(() => {
+    const currentUser = getUserFromStorage();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  }, []);
+  
+  // Filter submissions based on user role
+  const getFilters = () => {
+    if (user && !hasPermission(user.role, 'canViewAllReps')) {
+      return { username: user.username };
+    }
+    return {};
+  };
+  
+  const { submissions } = useSubmissions(getFilters());
 
   // Filter workflows by selected stage
   const filteredWorkflows = selectedStage
