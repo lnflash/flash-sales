@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { getUserFromStorage } from '@/lib/auth';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  CheckCircleIcon, 
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { getUserFromStorage } from "@/lib/auth";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  CheckCircleIcon,
   ExclamationCircleIcon,
   BuildingStorefrontIcon,
   UserGroupIcon,
@@ -21,10 +21,10 @@ import {
   CreditCardIcon,
   TruckIcon,
   ShoppingBagIcon,
-  UserIcon
-} from '@heroicons/react/24/outline';
-import { createSubmission } from '@/lib/api';
-import { calculateLeadScore } from '@/utils/lead-scoring';
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import { createSubmission } from "@/lib/api";
+import { calculateLeadScore } from "@/utils/lead-scoring";
 
 // Extended form data with dynamic fields
 interface DynamicFormData {
@@ -35,30 +35,30 @@ interface DynamicFormData {
   email: string;
   businessType: string;
   yearEstablished: string;
-  
+
   // Location
   address: string;
   city: string;
   state: string;
   zipCode: string;
-  
+
   // Business Details
   monthlyRevenue: string;
   numberOfEmployees: string;
   currentProcessor: string;
   monthlyTransactions: string;
   averageTicketSize: string;
-  
+
   // Needs Assessment
   packageSeen: boolean;
   decisionMakers: string;
   interestLevel: number;
   specificNeeds: string;
   painPoints: string[];
-  
+
   // Industry Specific
   industrySpecificData: Record<string, any>;
-  
+
   // Meta
   signedUp: boolean;
   leadScore: number;
@@ -68,68 +68,71 @@ interface DynamicFormData {
 }
 
 // Industry configurations
-const INDUSTRY_CONFIGS: Record<string, {
-  label: string;
-  icon: any;
-  additionalFields: Array<{
-    name: string;
+const INDUSTRY_CONFIGS: Record<
+  string,
+  {
     label: string;
-    type: 'text' | 'number' | 'select' | 'checkbox';
-    options?: string[];
-    required?: boolean;
-  }>;
-}> = {
+    icon: any;
+    additionalFields: Array<{
+      name: string;
+      label: string;
+      type: "text" | "number" | "select" | "checkbox";
+      options?: string[];
+      required?: boolean;
+    }>;
+  }
+> = {
   restaurant: {
-    label: 'Restaurant',
+    label: "Restaurant",
     icon: BuildingStorefrontIcon,
     additionalFields: [
-      { name: 'deliveryServices', label: 'Delivery Services Used', type: 'text' },
-      { name: 'tableCount', label: 'Number of Tables', type: 'number' },
-      { name: 'hasOnlineOrdering', label: 'Online Ordering', type: 'checkbox' },
-      { name: 'cuisineType', label: 'Cuisine Type', type: 'text' }
-    ]
+      { name: "deliveryServices", label: "Delivery Services Used", type: "text" },
+      { name: "tableCount", label: "Number of Tables", type: "number" },
+      { name: "hasOnlineOrdering", label: "Online Ordering", type: "checkbox" },
+      { name: "cuisineType", label: "Cuisine Type", type: "text" },
+    ],
   },
   retail: {
-    label: 'Retail',
+    label: "Retail",
     icon: ShoppingBagIcon,
     additionalFields: [
-      { name: 'storeCount', label: 'Number of Locations', type: 'number' },
-      { name: 'inventorySize', label: 'SKU Count', type: 'number' },
-      { name: 'hasEcommerce', label: 'E-commerce Enabled', type: 'checkbox' },
-      { name: 'posSystem', label: 'Current POS System', type: 'text' }
-    ]
+      { name: "storeCount", label: "Number of Locations", type: "number" },
+      { name: "inventorySize", label: "SKU Count", type: "number" },
+      { name: "hasEcommerce", label: "E-commerce Enabled", type: "checkbox" },
+      { name: "posSystem", label: "Current POS System", type: "text" },
+    ],
   },
   services: {
-    label: 'Professional Services',
+    label: "Professional Services",
     icon: UserGroupIcon,
     additionalFields: [
-      { name: 'serviceType', label: 'Service Category', type: 'text' },
-      { name: 'appointmentVolume', label: 'Monthly Appointments', type: 'number' },
-      { name: 'hasRecurringBilling', label: 'Recurring Billing', type: 'checkbox' },
-      { name: 'averageServiceDuration', label: 'Avg Service Duration (min)', type: 'number' }
-    ]
+      { name: "serviceType", label: "Service Category", type: "text" },
+      { name: "appointmentVolume", label: "Monthly Appointments", type: "number" },
+      { name: "hasRecurringBilling", label: "Recurring Billing", type: "checkbox" },
+      { name: "averageServiceDuration", label: "Avg Service Duration (min)", type: "number" },
+    ],
   },
   ecommerce: {
-    label: 'E-commerce',
+    label: "E-commerce",
     icon: TruckIcon,
     additionalFields: [
-      { name: 'platform', label: 'E-commerce Platform', type: 'text' },
-      { name: 'monthlyOrders', label: 'Monthly Orders', type: 'number' },
-      { name: 'internationalSales', label: 'International Sales', type: 'checkbox' },
-      { name: 'shippingProviders', label: 'Shipping Providers', type: 'text' }
-    ]
-  }
+      { name: "platform", label: "E-commerce Platform", type: "text" },
+      { name: "monthlyOrders", label: "Monthly Orders", type: "number" },
+      { name: "internationalSales", label: "International Sales", type: "checkbox" },
+      { name: "shippingProviders", label: "Shipping Providers", type: "text" },
+    ],
+  },
 };
 
 const PAIN_POINTS = [
-  'High processing fees',
-  'Poor customer support',
-  'Limited reporting',
-  'Slow settlement times',
-  'Integration issues',
-  'Security concerns',
-  'Limited payment options',
-  'Complex pricing'
+  "High processing fees",
+  "Poor customer support",
+  "Limited reporting",
+  "Slow settlement times",
+  "Integration issues",
+  "Security concerns",
+  "Limited payment options",
+  "Complex pricing",
 ];
 
 export default function DynamicCanvasForm() {
@@ -137,105 +140,103 @@ export default function DynamicCanvasForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formStartTime] = useState(Date.now());
-  
+
   const [formData, setFormData] = useState<DynamicFormData>({
-    businessName: '',
-    ownerName: '',
-    phoneNumber: '',
-    email: '',
-    businessType: '',
-    yearEstablished: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    monthlyRevenue: '',
-    numberOfEmployees: '',
-    currentProcessor: '',
-    monthlyTransactions: '',
-    averageTicketSize: '',
+    businessName: "",
+    ownerName: "",
+    phoneNumber: "",
+    email: "",
+    businessType: "",
+    yearEstablished: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    monthlyRevenue: "",
+    numberOfEmployees: "",
+    currentProcessor: "",
+    monthlyTransactions: "",
+    averageTicketSize: "",
     packageSeen: false,
-    decisionMakers: '',
+    decisionMakers: "",
     interestLevel: 3,
-    specificNeeds: '',
+    specificNeeds: "",
     painPoints: [],
     industrySpecificData: {},
     signedUp: false,
     leadScore: 0,
-    username: '',
+    username: "",
     formCompletionTime: 0,
-    fieldInteractions: {}
+    fieldInteractions: {},
   });
 
   // Track field interactions for analytics
   const trackFieldInteraction = (fieldName: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       fieldInteractions: {
         ...prev.fieldInteractions,
-        [fieldName]: (prev.fieldInteractions[fieldName] || 0) + 1
-      }
+        [fieldName]: (prev.fieldInteractions[fieldName] || 0) + 1,
+      },
     }));
   };
 
   useEffect(() => {
     const user = getUserFromStorage();
     if (user) {
-      setFormData(prev => ({ ...prev, username: user.username }));
+      setFormData((prev) => ({ ...prev, username: user.username }));
     }
   }, []);
 
   // Calculate lead score in real-time
   useEffect(() => {
     const score = calculateLeadScore(formData);
-    setFormData(prev => ({ ...prev, leadScore: score }));
+    setFormData((prev) => ({ ...prev, leadScore: score }));
   }, [
     formData.monthlyRevenue,
     formData.monthlyTransactions,
     formData.interestLevel,
     formData.painPoints,
     formData.yearEstablished,
-    formData.numberOfEmployees
+    formData.numberOfEmployees,
   ]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     trackFieldInteraction(name);
-    
-    if (type === 'checkbox') {
+
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleIndustrySpecificChange = (name: string, value: any) => {
     trackFieldInteraction(`industry_${name}`);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       industrySpecificData: {
         ...prev.industrySpecificData,
-        [name]: value
-      }
+        [name]: value,
+      },
     }));
   };
 
   const handlePainPointToggle = (painPoint: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      painPoints: prev.painPoints.includes(painPoint)
-        ? prev.painPoints.filter(p => p !== painPoint)
-        : [...prev.painPoints, painPoint]
+      painPoints: prev.painPoints.includes(painPoint) ? prev.painPoints.filter((p) => p !== painPoint) : [...prev.painPoints, painPoint],
     }));
   };
 
   const getTotalSteps = () => {
     return 5; // Always 5 steps, but step 4 might be skipped
   };
-  
+
   const shouldSkipStep4 = () => {
     return !formData.businessType || !INDUSTRY_CONFIGS[formData.businessType];
   };
@@ -245,17 +246,17 @@ export default function DynamicCanvasForm() {
   };
 
   const getLeadScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    if (score >= 40) return 'text-orange-600';
-    return 'text-red-600';
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    if (score >= 40) return "text-orange-600";
+    return "text-red-600";
   };
 
   const getLeadScoreLabel = (score: number) => {
-    if (score >= 80) return 'Hot Lead';
-    if (score >= 60) return 'Warm Lead';
-    if (score >= 40) return 'Cool Lead';
-    return 'Cold Lead';
+    if (score >= 80) return "Hot Lead";
+    if (score >= 60) return "Warm Lead";
+    if (score >= 40) return "Cool Lead";
+    return "Cold Lead";
   };
 
   const validateStep = (step: number): boolean => {
@@ -278,48 +279,48 @@ export default function DynamicCanvasForm() {
   const handleNext = () => {
     if (validateStep(currentStep)) {
       let nextStep = currentStep + 1;
-      
+
       // Skip step 4 if no business type selected
       if (nextStep === 4 && shouldSkipStep4()) {
         nextStep = 5;
       }
-      
+
       setCurrentStep(Math.min(nextStep, getTotalSteps()));
-      setError('');
+      setError("");
     } else {
-      setError('Please fill in all required fields');
+      setError("Please fill in all required fields");
     }
   };
 
   const handlePrevious = () => {
     let prevStep = currentStep - 1;
-    
+
     // Skip step 4 when going back if no business type selected
     if (prevStep === 4 && shouldSkipStep4()) {
       prevStep = 3;
     }
-    
+
     setCurrentStep(Math.max(prevStep, 1));
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent event bubbling
-    
+
     // Add validation to ensure we're on the last step
     if (currentStep !== getTotalSteps()) {
-      console.warn('Form submission attempted but not on last step');
+      console.warn("Form submission attempted but not on last step");
       return;
     }
-    
+
     setIsSubmitting(true);
-    setError('');
+    setError("");
     setSuccess(false);
 
     try {
       const completionTime = Math.round((Date.now() - formStartTime) / 1000); // in seconds
-      
+
       // Prepare submission data
       const submissionData = {
         ownerName: `${formData.businessName} - ${formData.ownerName}`,
@@ -328,36 +329,39 @@ export default function DynamicCanvasForm() {
         decisionMakers: formData.decisionMakers,
         interestLevel: formData.interestLevel,
         signedUp: formData.signedUp,
-        specificNeeds: `${formData.specificNeeds}\n\nPain Points: ${formData.painPoints.join(', ')}\n\nBusiness Details: ${JSON.stringify({
-          email: formData.email,
-          businessType: formData.businessType,
-          yearEstablished: formData.yearEstablished,
-          location: `${formData.city}, ${formData.state}`,
-          monthlyRevenue: formData.monthlyRevenue,
-          employees: formData.numberOfEmployees,
-          monthlyTransactions: formData.monthlyTransactions,
-          avgTicket: formData.averageTicketSize,
-          currentProcessor: formData.currentProcessor,
-          industryData: formData.industrySpecificData,
-          leadScore: formData.leadScore,
-          completionTime: completionTime,
-          fieldInteractions: formData.fieldInteractions
-        }, null, 2)}`,
-        username: formData.username
+        specificNeeds: `${formData.specificNeeds}\n\nPain Points: ${formData.painPoints.join(", ")}\n\nBusiness Details: ${JSON.stringify(
+          {
+            email: formData.email,
+            businessType: formData.businessType,
+            yearEstablished: formData.yearEstablished,
+            location: `${formData.city}, ${formData.state}`,
+            monthlyRevenue: formData.monthlyRevenue,
+            employees: formData.numberOfEmployees,
+            monthlyTransactions: formData.monthlyTransactions,
+            avgTicket: formData.averageTicketSize,
+            currentProcessor: formData.currentProcessor,
+            industryData: formData.industrySpecificData,
+            leadScore: formData.leadScore,
+            completionTime: completionTime,
+            fieldInteractions: formData.fieldInteractions,
+          },
+          null,
+          2
+        )}`,
+        username: formData.username,
       };
 
       await createSubmission(submissionData);
-      
+
       setSuccess(true);
-      
+
       // Redirect to submissions page after success
       setTimeout(() => {
-        router.push('/dashboard/submissions');
+        router.push("/dashboard/submissions");
       }, 1500);
-      
     } catch (err) {
-      console.error('Error submitting form:', err);
-      setError('Failed to submit form. Please try again.');
+      console.error("Error submitting form:", err);
+      setError("Failed to submit form. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -371,54 +375,20 @@ export default function DynamicCanvasForm() {
             <h3 className="text-lg font-semibold mb-4">Business Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Business Name *
-                </label>
-                <Input
-                  name="businessName"
-                  value={formData.businessName}
-                  onChange={handleInputChange}
-                  placeholder="ABC Restaurant"
-                  required
-                />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Business Name *</label>
+                <Input name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="ABC Restaurant" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Owner Name *
-                </label>
-                <Input
-                  name="ownerName"
-                  value={formData.ownerName}
-                  onChange={handleInputChange}
-                  placeholder="John Smith"
-                  required
-                />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Owner Name *</label>
+                <Input name="ownerName" value={formData.ownerName} onChange={handleInputChange} placeholder="John Smith" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Phone Number *
-                </label>
-                <Input
-                  name="phoneNumber"
-                  type="tel"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  placeholder="(555) 123-4567"
-                  required
-                />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Phone Number *</label>
+                <Input name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleInputChange} placeholder="(555) 123-4567" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Email *
-                </label>
-                <Input
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="john@example.com"
-                  required
-                />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Email *</label>
+                <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" required />
               </div>
             </div>
           </div>
@@ -429,9 +399,7 @@ export default function DynamicCanvasForm() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold mb-4">Business Type & Details</h3>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-2">
-                Select Business Type *
-              </label>
+              <label className="block text-sm font-medium text-light-text-primary mb-2">Select Business Type *</label>
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(INDUSTRY_CONFIGS).map(([key, config]) => {
                   const Icon = config.icon;
@@ -439,13 +407,13 @@ export default function DynamicCanvasForm() {
                     <button
                       key={key}
                       type="button"
-                      onClick={() => handleInputChange({ 
-                        target: { name: 'businessType', value: key, type: 'text' } 
-                      } as any)}
+                      onClick={() =>
+                        handleInputChange({
+                          target: { name: "businessType", value: key, type: "text" },
+                        } as any)
+                      }
                       className={`p-4 rounded-lg border-2 transition-all ${
-                        formData.businessType === key
-                          ? 'border-flash-green bg-green-50'
-                          : 'border-light-border hover:border-flash-green-light'
+                        formData.businessType === key ? "border-flash-green bg-green-50" : "border-light-border hover:border-flash-green-light"
                       }`}
                     >
                       <Icon className="h-8 w-8 mx-auto mb-2 text-flash-green" />
@@ -457,9 +425,7 @@ export default function DynamicCanvasForm() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Year Established *
-                </label>
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Year Established *</label>
                 <Input
                   name="yearEstablished"
                   type="number"
@@ -472,15 +438,8 @@ export default function DynamicCanvasForm() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Current Payment Processor
-                </label>
-                <Input
-                  name="currentProcessor"
-                  value={formData.currentProcessor}
-                  onChange={handleInputChange}
-                  placeholder="Square, Stripe, etc."
-                />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Current Payment Processor</label>
+                <Input name="currentProcessor" value={formData.currentProcessor} onChange={handleInputChange} placeholder="Square, Stripe, etc." />
               </div>
             </div>
           </div>
@@ -492,9 +451,7 @@ export default function DynamicCanvasForm() {
             <h3 className="text-lg font-semibold mb-4">Business Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Monthly Revenue *
-                </label>
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Monthly Revenue *</label>
                 <select
                   name="monthlyRevenue"
                   value={formData.monthlyRevenue}
@@ -511,9 +468,7 @@ export default function DynamicCanvasForm() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Number of Employees *
-                </label>
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Number of Employees *</label>
                 <select
                   name="numberOfEmployees"
                   value={formData.numberOfEmployees}
@@ -530,36 +485,18 @@ export default function DynamicCanvasForm() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Monthly Transactions
-                </label>
-                <Input
-                  name="monthlyTransactions"
-                  type="number"
-                  value={formData.monthlyTransactions}
-                  onChange={handleInputChange}
-                  placeholder="500"
-                />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Monthly Transactions</label>
+                <Input name="monthlyTransactions" type="number" value={formData.monthlyTransactions} onChange={handleInputChange} placeholder="500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
-                  Average Transaction Size
-                </label>
-                <Input
-                  name="averageTicketSize"
-                  type="number"
-                  value={formData.averageTicketSize}
-                  onChange={handleInputChange}
-                  placeholder="75"
-                />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Average Transaction Size</label>
+                <Input name="averageTicketSize" type="number" value={formData.averageTicketSize} onChange={handleInputChange} placeholder="75" />
               </div>
             </div>
             <div className="mt-4">
-              <label className="block text-sm font-medium text-light-text-primary mb-2">
-                Current Pain Points
-              </label>
+              <label className="block text-sm font-medium text-light-text-primary mb-2">Current Pain Points</label>
               <div className="grid grid-cols-2 gap-2">
-                {PAIN_POINTS.map(painPoint => (
+                {PAIN_POINTS.map((painPoint) => (
                   <label key={painPoint} className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -585,16 +522,14 @@ export default function DynamicCanvasForm() {
         const industryConfig = INDUSTRY_CONFIGS[formData.businessType];
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">
-              {industryConfig.label} Specific Information
-            </h3>
+            <h3 className="text-lg font-semibold mb-4">{industryConfig.label} Specific Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {industryConfig.additionalFields.map(field => (
+              {industryConfig.additionalFields.map((field) => (
                 <div key={field.name}>
                   <label className="block text-sm font-medium text-light-text-primary mb-1">
-                    {field.label} {field.required && '*'}
+                    {field.label} {field.required && "*"}
                   </label>
-                  {field.type === 'checkbox' ? (
+                  {field.type === "checkbox" ? (
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -607,7 +542,7 @@ export default function DynamicCanvasForm() {
                   ) : (
                     <Input
                       type={field.type}
-                      value={formData.industrySpecificData[field.name] || ''}
+                      value={formData.industrySpecificData[field.name] || ""}
                       onChange={(e) => handleIndustrySpecificChange(field.name, e.target.value)}
                       placeholder={field.label}
                       required={field.required}
@@ -624,9 +559,7 @@ export default function DynamicCanvasForm() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold mb-4">Interest & Next Steps</h3>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-2">
-                Interest Level
-              </label>
+              <label className="block text-sm font-medium text-light-text-primary mb-2">Interest Level</label>
               <div className="space-y-2">
                 <div className="relative">
                   <input
@@ -634,10 +567,12 @@ export default function DynamicCanvasForm() {
                     min="1"
                     max="5"
                     value={formData.interestLevel}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      interestLevel: parseInt(e.target.value) 
-                    }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        interestLevel: parseInt(e.target.value),
+                      }))
+                    }
                     className="w-full slider"
                   />
                   {/* Tick marks */}
@@ -651,7 +586,7 @@ export default function DynamicCanvasForm() {
                 </div>
                 <div className="flex justify-between text-sm font-medium text-light-text-primary mt-3">
                   {[1, 2, 3, 4, 5].map((num) => (
-                    <span key={num} className={formData.interestLevel === num ? 'text-flash-green font-bold' : ''}>
+                    <span key={num} className={formData.interestLevel === num ? "text-flash-green font-bold" : ""}>
                       {num}
                     </span>
                   ))}
@@ -662,9 +597,9 @@ export default function DynamicCanvasForm() {
                   <span>Very Interested</span>
                 </div>
                 <div className="text-center mt-3">
-                  <Badge 
-                    variant={formData.interestLevel >= 4 ? 'default' : 'secondary'}
-                    className={`text-base ${formData.interestLevel >= 4 ? 'bg-green-100 text-green-800 border-green-300' : ''}`}
+                  <Badge
+                    variant={formData.interestLevel >= 4 ? "default" : "secondary"}
+                    className={`text-base ${formData.interestLevel >= 4 ? "bg-green-100 text-green-800 border-green-300" : ""}`}
                   >
                     Interest Level: {formData.interestLevel}/5
                   </Badge>
@@ -672,20 +607,11 @@ export default function DynamicCanvasForm() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">
-                Decision Makers
-              </label>
-              <Input
-                name="decisionMakers"
-                value={formData.decisionMakers}
-                onChange={handleInputChange}
-                placeholder="Owner, CFO, Manager"
-              />
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Decision Makers</label>
+              <Input name="decisionMakers" value={formData.decisionMakers} onChange={handleInputChange} placeholder="Owner, CFO, Manager" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">
-                Specific Needs or Questions
-              </label>
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Specific Needs or Questions</label>
               <textarea
                 name="specificNeeds"
                 value={formData.specificNeeds}
@@ -737,18 +663,14 @@ export default function DynamicCanvasForm() {
                 <span className="font-medium text-light-text-primary">{formData.username}</span>
               </div>
             )}
-            
+
             <div className="flex justify-between items-start mt-6">
               <div>
-                <CardTitle>Flash Sales Canvas Form</CardTitle>
-                <CardDescription>
-                  Capture lead information with intelligent field adaptation
-                </CardDescription>
+                <CardTitle>Flash Sales Intake Form</CardTitle>
+                <CardDescription>Capture lead information with intelligent field adaptation</CardDescription>
               </div>
               <div className="text-right">
-                <div className={`text-2xl font-bold ${getLeadScoreColor(formData.leadScore)}`}>
-                  {formData.leadScore}
-                </div>
+                <div className={`text-2xl font-bold ${getLeadScoreColor(formData.leadScore)}`}>{formData.leadScore}</div>
                 <Badge variant="outline" className="mt-1">
                   {getLeadScoreLabel(formData.leadScore)}
                 </Badge>
@@ -757,7 +679,9 @@ export default function DynamicCanvasForm() {
           </div>
           <div className="mt-4">
             <div className="flex justify-between text-sm text-light-text-secondary mb-2">
-              <span>Step {currentStep} of {getTotalSteps()}</span>
+              <span>
+                Step {currentStep} of {getTotalSteps()}
+              </span>
               <span>{Math.round(getStepProgress())}% Complete</span>
             </div>
             <Progress value={getStepProgress()} className="h-2" />
@@ -769,20 +693,21 @@ export default function DynamicCanvasForm() {
               <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Submission Successful!</h3>
               <p className="text-light-text-secondary">
-                Lead score: <span className={`font-bold ${getLeadScoreColor(formData.leadScore)}`}>
+                Lead score:{" "}
+                <span className={`font-bold ${getLeadScoreColor(formData.leadScore)}`}>
                   {formData.leadScore} - {getLeadScoreLabel(formData.leadScore)}
                 </span>
               </p>
               <p className="text-light-text-secondary mt-2">Redirecting to submissions...</p>
             </div>
           ) : (
-            <form 
-              onSubmit={handleSubmit} 
-              className="space-y-6" 
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6"
               autoComplete="off"
               onKeyDown={(e) => {
                 // Prevent form submission on Enter key except for submit button
-                if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+                if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
                   e.preventDefault();
                 }
               }}
@@ -797,30 +722,17 @@ export default function DynamicCanvasForm() {
               {renderStepContent()}
 
               <div className="flex justify-between pt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={currentStep === 1}
-                >
+                <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
                   Previous
                 </Button>
-                
+
                 {currentStep < getTotalSteps() ? (
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    className="bg-flash-green hover:bg-flash-green-light"
-                  >
+                  <Button type="button" onClick={handleNext} className="bg-flash-green hover:bg-flash-green-light">
                     Next
                   </Button>
                 ) : (
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-flash-green hover:bg-flash-green-light"
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit'}
+                  <Button type="submit" disabled={isSubmitting} className="bg-flash-green hover:bg-flash-green-light">
+                    {isSubmitting ? "Submitting..." : "Submit"}
                   </Button>
                 )}
               </div>

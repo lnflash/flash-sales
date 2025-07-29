@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation';
-import { getUserFromStorage, logout } from '@/lib/auth';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { getUserFromStorage, logout } from "@/lib/auth";
 import {
   ChartBarIcon,
   TableCellsIcon,
@@ -16,7 +16,7 @@ import {
   DocumentTextIcon,
   ArrowRightOnRectangleIcon,
   UserGroupIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 interface NavItem {
   name: string;
@@ -25,14 +25,14 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Canvas Form', href: '/intake', icon: DocumentTextIcon },
-  { name: 'Dynamic Canvas', href: '/intake-dynamic', icon: DocumentTextIcon },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
-  { name: 'Submissions', href: '/dashboard/submissions', icon: TableCellsIcon },
-  { name: 'Lead Management', href: '/dashboard/leads', icon: UserGroupIcon },
-  { name: 'Rep Tracking', href: '/dashboard/rep-tracking', icon: ClipboardDocumentCheckIcon },
-  { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
+  { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
+  { name: "Canvas Form", href: "/intake", icon: DocumentTextIcon },
+  { name: "Intake Form ", href: "/intake-dynamic", icon: DocumentTextIcon },
+  { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon },
+  { name: "Submissions", href: "/dashboard/submissions", icon: TableCellsIcon },
+  { name: "Lead Management", href: "/dashboard/leads", icon: UserGroupIcon },
+  { name: "Rep Tracking", href: "/dashboard/rep-tracking", icon: ClipboardDocumentCheckIcon },
+  { name: "Settings", href: "/dashboard/settings", icon: Cog6ToothIcon },
 ];
 
 export default function Sidebar() {
@@ -50,31 +50,21 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push("/login");
   };
 
   return (
-    <div
-      className={`h-screen bg-white border-r border-light-border transition-all duration-300 flex flex-col ${
-        collapsed ? 'w-16' : 'w-64'
-      }`}
-    >
+    <div className={`h-screen bg-white border-r border-light-border transition-all duration-300 flex flex-col ${collapsed ? "w-16" : "w-64"}`}>
       <div className="p-4 flex items-center justify-between border-b border-light-border">
         {!collapsed && (
-          <span className="text-xl font-bold bg-gradient-to-r from-flash-green to-flash-green-light text-transparent bg-clip-text">
-            Flash Sales
-          </span>
+          <span className="text-xl font-bold bg-gradient-to-r from-flash-green to-flash-green-light text-transparent bg-clip-text">Flash Sales</span>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="p-1.5 rounded-lg hover:bg-light-bg-secondary transition-colors"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ? (
-            <ChevronDoubleRightIcon className="h-5 w-5 text-flash-green" />
-          ) : (
-            <ChevronDoubleLeftIcon className="h-5 w-5 text-flash-green" />
-          )}
+          {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-flash-green" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-flash-green" />}
         </button>
       </div>
 
@@ -87,17 +77,10 @@ export default function Sidebar() {
                 <Link
                   href={item.href}
                   className={`flex items-center px-3 py-2.5 rounded-lg transition-all font-medium ${
-                    isActive
-                      ? 'bg-flash-green text-white shadow-sm'
-                      : 'text-light-text-secondary hover:bg-light-bg-secondary hover:text-light-text-primary'
+                    isActive ? "bg-flash-green text-white shadow-sm" : "text-light-text-secondary hover:bg-light-bg-secondary hover:text-light-text-primary"
                   }`}
                 >
-                  <item.icon
-                    className={`h-5 w-5 ${collapsed ? 'mx-auto' : 'mr-3'} ${
-                      isActive ? 'text-white' : ''
-                    }`}
-                    aria-hidden="true"
-                  />
+                  <item.icon className={`h-5 w-5 ${collapsed ? "mx-auto" : "mr-3"} ${isActive ? "text-white" : ""}`} aria-hidden="true" />
                   {!collapsed && <span className="text-sm">{item.name}</span>}
                 </Link>
               </li>
@@ -107,19 +90,13 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-light-border space-y-3">
-        <div
-          className={`flex items-center ${
-            collapsed ? 'justify-center' : 'justify-start'
-          }`}
-        >
+        <div className={`flex items-center ${collapsed ? "justify-center" : "justify-start"}`}>
           <div className="h-9 w-9 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold shadow-sm">
-            {user?.username?.charAt(0).toUpperCase() || 'U'}
+            {user?.username?.charAt(0).toUpperCase() || "U"}
           </div>
           {!collapsed && (
             <div className="ml-3">
-              <p className="text-sm font-medium text-light-text-primary capitalize">
-                {user?.username || 'User'}
-              </p>
+              <p className="text-sm font-medium text-light-text-primary capitalize">{user?.username || "User"}</p>
               <p className="text-xs text-light-text-secondary">Flash Sales Rep</p>
             </div>
           )}
@@ -127,11 +104,11 @@ export default function Sidebar() {
         <button
           onClick={handleLogout}
           className={`w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors ${
-            collapsed ? 'justify-center' : 'justify-start'
+            collapsed ? "justify-center" : "justify-start"
           }`}
           title="Logout"
         >
-          <ArrowRightOnRectangleIcon className={`h-5 w-5 ${collapsed ? '' : 'mr-3'}`} />
+          <ArrowRightOnRectangleIcon className={`h-5 w-5 ${collapsed ? "" : "mr-3"}`} />
           {!collapsed && <span>Logout</span>}
         </button>
       </div>
