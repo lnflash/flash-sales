@@ -127,10 +127,10 @@ export default function SettingsPage() {
             </div>
           </div>
           
-          <div className="bg-flash-dark-2 px-6 py-4 flex justify-end">
+          <div className="bg-light-bg-secondary px-6 py-4 flex justify-end border-t border-light-border">
             <button 
               type="button"
-              className="px-4 py-2 bg-flash-green text-white rounded-md hover:bg-flash-green-light transition-colors"
+              className="px-4 py-2 bg-flash-green text-white font-medium rounded-md hover:bg-flash-green-dark transition-colors shadow-sm"
             >
               Save Changes
             </button>
