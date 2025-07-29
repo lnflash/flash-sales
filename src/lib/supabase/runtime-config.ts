@@ -3,6 +3,7 @@
 
 let cachedUrl: string = '';
 let cachedKey: string = '';
+let configFetched = false;
 
 export function getSupabaseEnvVars(): { url: string; key: string } {
   // Return cached values if available and not empty
@@ -25,11 +26,39 @@ export function getSupabaseEnvVars(): { url: string; key: string } {
     return { url: cachedUrl, key: cachedKey };
   }
 
-  // Fallback to process.env (for local development)
-  cachedUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  cachedKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  // Check process.env
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    cachedUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    cachedKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    return { url: cachedUrl, key: cachedKey };
+  }
   
-  return { url: cachedUrl, key: cachedKey };
+  // Return empty strings if nothing found
+  return { url: '', key: '' };
+}
+
+// Async function to fetch config from API
+export async function fetchRuntimeConfig() {
+  if (configFetched || typeof window === 'undefined') return;
+  
+  try {
+    const response = await fetch('/api/config');
+    if (response.ok) {
+      const config = await response.json();
+      if (config.supabase.url && config.supabase.anonKey) {
+        cachedUrl = config.supabase.url;
+        cachedKey = config.supabase.anonKey;
+        // Also set on window for other uses
+        (window as any).NEXT_PUBLIC_SUPABASE_URL = config.supabase.url;
+        (window as any).NEXT_PUBLIC_SUPABASE_ANON_KEY = config.supabase.anonKey;
+        (window as any).NEXT_PUBLIC_USE_SUPABASE = config.supabase.isEnabled;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch runtime config:', error);
+  } finally {
+    configFetched = true;
+  }
 }
 
 export function isSupabaseConfigured(): boolean {

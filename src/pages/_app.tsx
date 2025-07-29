@@ -1,9 +1,11 @@
 import { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import QueryProvider from '@/lib/query-provider';
 import { ApolloProviderWrapper } from '@/lib/apollo-provider';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { fetchRuntimeConfig } from '@/lib/supabase/runtime-config';
 import '@/styles/globals.css';
 
 // List of public routes that don't require authentication
@@ -12,6 +14,11 @@ const publicRoutes = ['/login', '/'];
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isPublicRoute = publicRoutes.includes(router.pathname);
+  
+  // Fetch runtime config on app mount
+  useEffect(() => {
+    fetchRuntimeConfig();
+  }, []);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getSupabase } from "@/lib/supabase/client";
 import { getUserFromStorage } from "@/lib/auth";
+import { getSupabaseEnvVars } from "@/lib/supabase/runtime-config";
 
 export interface SupabaseUserProfile {
   id: string;
@@ -54,11 +55,10 @@ export function useSupabaseProfile() {
       // Get Supabase instance and check if it's configured
       const supabase = getSupabase();
       
-      // Test if Supabase is actually working by trying a simple query
-      const { error: testError } = await supabase.from("users").select("id").limit(1);
-      
-      if (testError && testError.message && testError.message.includes('placeholder')) {
-        console.error('Supabase is not properly configured, using mock profile');
+      // Check if we have valid environment variables
+      const envVars = getSupabaseEnvVars();
+      if (!envVars.url || !envVars.key) {
+        console.log('Supabase environment variables not available, using mock profile');
         // Instead of showing an error, create a mock profile
         const mockProfile: SupabaseUserProfile = {
           id: 'mock-' + user.username,
@@ -197,14 +197,9 @@ export function useSupabaseProfile() {
       setIsSaving(true);
       setError(null);
 
-      // Get Supabase instance
-      const supabase = getSupabase();
-      
-      // Test if Supabase is actually working
-      const { error: testError } = await supabase.from("users").select("id").limit(1);
-      
-      // If Supabase is not configured, update local storage only
-      if (testError && testError.message && testError.message.includes('placeholder')) {
+      // Check if we have valid environment variables
+      const envVars = getSupabaseEnvVars();
+      if (!envVars.url || !envVars.key) {
         // Update the mock profile
         const updatedProfile = { ...profile, ...updates };
         
