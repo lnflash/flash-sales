@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { getUserFromStorage } from '@/lib/auth';
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { getUserFromStorage } from "@/lib/auth";
 
 export interface SupabaseUserProfile {
   id: string;
@@ -51,36 +51,34 @@ export function useSupabaseProfile() {
       setLoading(true);
       setError(null);
 
+      console.log('Fetching profile for username:', user.username);
+
       // First, try to get the user by username
-      let { data, error: fetchError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', user.username)
-        .single();
+      let { data, error: fetchError } = await supabase.from("users").select("*").eq("username", user.username).single();
+
+      console.log('First query result:', { data, error: fetchError });
 
       if (fetchError || !data) {
         // If not found, try by email (assuming username@flashbitcoin.com)
         const email = `${user.username}@flashbitcoin.com`;
-        const result = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', email)
-          .single();
+        console.log('Trying with email:', email);
+        const result = await supabase.from("users").select("*").eq("email", email).single();
 
         data = result.data;
         fetchError = result.error;
+        console.log('Email query result:', { data, error: fetchError });
       }
 
       if (fetchError) {
-        console.error('Error fetching profile:', fetchError);
-        
+        console.error("Error fetching profile:", fetchError);
+
         // If user doesn't exist, create a new one
-        if (fetchError.code === 'PGRST116') {
+        if (fetchError.code === "PGRST116") {
           const newUser = await createNewUser(user.username);
           if (newUser) {
             setProfile(formatProfile(newUser));
           } else {
-            setError('Failed to create user profile');
+            setError("Failed to create user profile");
           }
         } else {
           setError(fetchError.message);
@@ -89,8 +87,8 @@ export function useSupabaseProfile() {
         setProfile(formatProfile(data));
       }
     } catch (err) {
-      console.error('Error in fetchProfile:', err);
-      setError('Failed to load profile');
+      console.error("Error in fetchProfile:", err);
+      setError("Failed to load profile");
     } finally {
       setLoading(false);
     }
@@ -99,32 +97,32 @@ export function useSupabaseProfile() {
   const createNewUser = async (username: string) => {
     try {
       const email = `${username}@flashbitcoin.com`;
-      const nameParts = username.split('_');
+      const nameParts = username.split("_");
       const firstName = nameParts[0] || username;
-      const lastName = nameParts[1] || 'User';
+      const lastName = nameParts[1] || "User";
 
       const { data, error } = await supabase
-        .from('users')
+        .from("users")
         .insert({
           email,
           username,
           first_name: firstName,
           last_name: lastName,
-          role: 'sales_rep',
+          role: "sales_rep",
           notification_preferences: {},
-          dashboard_preferences: {}
+          dashboard_preferences: {},
         })
         .select()
         .single();
 
       if (error) {
-        console.error('Error creating user:', error);
+        console.error("Error creating user:", error);
         return null;
       }
 
       return data;
     } catch (err) {
-      console.error('Error in createNewUser:', err);
+      console.error("Error in createNewUser:", err);
       return null;
     }
   };
@@ -136,16 +134,16 @@ export function useSupabaseProfile() {
       first_name: data.first_name,
       last_name: data.last_name,
       full_name: data.full_name,
-      username: data.username || data.email.split('@')[0],
+      username: data.username || data.email.split("@")[0],
       avatar_url: data.avatar_url,
       role: data.role,
       timezone: data.timezone,
-      phone: data.notification_preferences?.phone || '',
-      default_territory: data.dashboard_preferences?.default_territory || '',
+      phone: data.notification_preferences?.phone || "",
+      default_territory: data.dashboard_preferences?.default_territory || "",
       notification_preferences: data.notification_preferences || {},
       dashboard_preferences: data.dashboard_preferences || {},
       created_at: data.created_at,
-      updated_at: data.updated_at
+      updated_at: data.updated_at,
     };
   };
 
@@ -168,7 +166,7 @@ export function useSupabaseProfile() {
       if (updates.phone !== undefined) {
         updateData.notification_preferences = {
           ...profile.notification_preferences,
-          phone: updates.phone
+          phone: updates.phone,
         };
       }
 
@@ -176,24 +174,19 @@ export function useSupabaseProfile() {
       if (updates.default_territory !== undefined) {
         updateData.dashboard_preferences = {
           ...profile.dashboard_preferences,
-          default_territory: updates.default_territory
+          default_territory: updates.default_territory,
         };
-        
+
         // Also save to localStorage for backward compatibility
         if (user) {
           localStorage.setItem(`defaultTerritory_${user.username}`, updates.default_territory);
         }
       }
 
-      const { data, error: updateError } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', profile.id)
-        .select()
-        .single();
+      const { data, error: updateError } = await supabase.from("users").update(updateData).eq("id", profile.id).select().single();
 
       if (updateError) {
-        console.error('Error updating profile:', updateError);
+        console.error("Error updating profile:", updateError);
         setError(updateError.message);
         return false;
       }
@@ -204,8 +197,8 @@ export function useSupabaseProfile() {
 
       return true;
     } catch (err) {
-      console.error('Error in updateProfile:', err);
-      setError('Failed to update profile');
+      console.error("Error in updateProfile:", err);
+      setError("Failed to update profile");
       return false;
     } finally {
       setIsSaving(false);
@@ -218,6 +211,6 @@ export function useSupabaseProfile() {
     error,
     isSaving,
     updateProfile,
-    refetch: fetchProfile
+    refetch: fetchProfile,
   };
 }

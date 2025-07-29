@@ -7,7 +7,7 @@ SET state_province = 'St. Ann'
 FROM deals d
 JOIN users u ON d.owner_id = u.id
 WHERE o.id = d.organization_id
-  AND (u.email LIKE 'rogimon%' OR u.first_name = 'rogimon' OR u.last_name = 'rogimon');
+  AND (u.first_name = 'rogimon');
 
 -- Update for username 'Tatiana_1' -> Kingston  
 UPDATE organizations o
@@ -15,7 +15,7 @@ SET state_province = 'Kingston'
 FROM deals d
 JOIN users u ON d.owner_id = u.id
 WHERE o.id = d.organization_id
-  AND (u.email LIKE 'Tatiana_1%' OR u.first_name = 'Tatiana_1' OR u.last_name = 'Tatiana_1');
+  AND (u.first_name = 'Tatiana_1');
 
 -- Update for username 'charms' -> Portland
 UPDATE organizations o
@@ -23,7 +23,7 @@ SET state_province = 'Portland'
 FROM deals d
 JOIN users u ON d.owner_id = u.id
 WHERE o.id = d.organization_id
-  AND (u.email LIKE 'charms%' OR u.first_name = 'charms' OR u.last_name = 'charms');
+  AND (u.first_name = 'charms');
 
 -- Update for username 'Chala' -> St. Mary
 UPDATE organizations o
@@ -31,7 +31,7 @@ SET state_province = 'St. Mary'
 FROM deals d
 JOIN users u ON d.owner_id = u.id
 WHERE o.id = d.organization_id
-  AND (u.email LIKE 'Chala%' OR u.first_name = 'Chala' OR u.last_name = 'Chala');
+  AND (u.first_name = 'Chala');
 
 -- Alternative approach if username is stored in custom_fields or a username column
 -- This can be uncommented and adjusted based on the actual users table structure:

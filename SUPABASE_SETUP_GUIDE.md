@@ -1,6 +1,7 @@
 # Supabase Setup Guide for Flash CRM
 
 ## Prerequisites
+
 - Supabase account (create at https://supabase.com)
 - PostgreSQL client (optional but helpful): psql, TablePlus, or DBeaver
 - Node.js 18+ installed locally
@@ -8,6 +9,7 @@
 ## Step 1: Create Supabase Project
 
 1. **Sign in to Supabase Dashboard**
+
    - Go to https://app.supabase.com
    - Create a new project
    - Project name: `flash-crm-production` (or `flash-crm-dev` for development)
@@ -91,10 +93,12 @@ supabase db push
 1. **Go to Authentication > Providers**
 2. **Enable Email provider** (for now)
 3. **Configure email templates**:
+
    - Customize confirmation emails
    - Set redirect URLs to your dashboard
 
 4. **Create initial admin user**:
+
 ```sql
 -- Run in SQL Editor after enabling auth
 INSERT INTO auth.users (
@@ -104,7 +108,7 @@ INSERT INTO auth.users (
   created_at,
   updated_at
 ) VALUES (
-  'admin@flashbitcoin.com',
+  'admin@getflash.io',
   crypt('temporary_password_change_me', gen_salt('bf')),
   NOW(),
   NOW(),
@@ -120,7 +124,7 @@ INSERT INTO public.users (
   role
 ) VALUES (
   '[AUTH_ID_FROM_ABOVE]',
-  'admin@flashbitcoin.com',
+  'admin@getflash.io',
   'Admin',
   'User',
   'admin'
@@ -131,6 +135,7 @@ INSERT INTO public.users (
 
 1. **Go to Storage**
 2. **Create buckets**:
+
 ```sql
 -- Run in SQL Editor
 INSERT INTO storage.buckets (id, name, public) VALUES
@@ -140,6 +145,7 @@ INSERT INTO storage.buckets (id, name, public) VALUES
 ```
 
 3. **Set up storage policies**:
+
 ```sql
 -- Allow authenticated users to upload their own avatar
 CREATE POLICY "Users can upload own avatar" ON storage.objects
@@ -163,12 +169,14 @@ CREATE POLICY "Public can view avatars" ON storage.objects
 ## Step 7: Configure Row Level Security (RLS)
 
 1. **Test RLS is working**:
+
 ```sql
 -- Should return no rows when accessed as anon
 SELECT * FROM organizations;
 ```
 
 2. **Create service role for migrations**:
+
 ```sql
 -- Create a service role that bypasses RLS for data migration
 -- Use this carefully and only during migration
@@ -177,6 +185,7 @@ SELECT * FROM organizations;
 ## Step 8: Environment Configuration
 
 1. **Create `.env.local` file**:
+
 ```bash
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT_ID].supabase.co
@@ -192,12 +201,13 @@ INTAKE_API_URL=https://flash-intake-form-3xgvo.ondigitalocean.app/api
 ```
 
 2. **Update `.env.production`**:
+
 ```bash
 # Production values
 NEXT_PUBLIC_SUPABASE_URL=https://[PROD_PROJECT_ID].supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-NEXT_PUBLIC_APP_URL=https://dashboard.flashbitcoin.com
+NEXT_PUBLIC_APP_URL=https://dashboard.getflash.io
 NEXT_PUBLIC_APP_ENV=production
 ```
 
@@ -214,6 +224,7 @@ npm install @supabase/realtime-js
 ## Step 10: Create Supabase Client Configuration
 
 Create `src/lib/supabase.ts`:
+
 ```typescript
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
@@ -258,6 +269,7 @@ supabase gen types typescript --project-id [PROJECT_ID] > src/types/database.ts
 ## Step 12: Test the Connection
 
 Create `src/lib/supabase-test.ts`:
+
 ```typescript
 import { supabase } from './supabase';
 
@@ -268,12 +280,12 @@ export async function testConnection() {
       .from('organizations')
       .select('count')
       .single();
-    
+
     if (error) {
       console.error('Connection test failed:', error);
       return false;
     }
-    
+
     console.log('Connection successful!');
     return true;
   } catch (err) {
@@ -286,6 +298,7 @@ export async function testConnection() {
 ## Step 13: Data Migration Preparation
 
 1. **Create migration tracking table**:
+
 ```sql
 CREATE TABLE migration_status (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -313,6 +326,7 @@ CREATE TABLE migration_status (
 ## Step 15: Monitoring Setup
 
 1. **Enable Logging**:
+
    - Go to Settings > Logs
    - Enable query logs for debugging
 
@@ -324,21 +338,27 @@ CREATE TABLE migration_status (
 ## Common Issues & Solutions
 
 ### Issue: "permission denied for schema public"
+
 **Solution**: Make sure you're using the correct role:
+
 ```sql
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT CREATE ON SCHEMA public TO postgres;
 ```
 
 ### Issue: "extension vector does not exist"
+
 **Solution**: Vector extension might not be available on free tier. Comment out vector-related code for now:
+
 ```sql
 -- CREATE EXTENSION IF NOT EXISTS "vector";
 -- Comment out transcript_embedding column in conversation_intelligence table
 ```
 
 ### Issue: RLS blocking all queries
+
 **Solution**: For development, you can temporarily disable RLS:
+
 ```sql
 ALTER TABLE organizations DISABLE ROW LEVEL SECURITY;
 -- Remember to re-enable for production!

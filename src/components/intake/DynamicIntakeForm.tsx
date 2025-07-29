@@ -189,13 +189,13 @@ export default function DynamicCanvasForm() {
     const user = getUserFromStorage();
     if (user) {
       // Get default territory from localStorage
-      const defaultTerritory = localStorage.getItem(`defaultTerritory_${user.username}`) || '';
-      setFormData((prev) => ({ 
-        ...prev, 
+      const defaultTerritory = localStorage.getItem(`defaultTerritory_${user.username}`) || "";
+      setFormData((prev) => ({
+        ...prev,
         username: user.username,
-        territory: defaultTerritory
+        territory: defaultTerritory,
       }));
-      
+
       // Also try to load from Supabase profile
       loadUserProfile(user.username);
     }
@@ -203,24 +203,20 @@ export default function DynamicCanvasForm() {
 
   const loadUserProfile = async (username: string) => {
     try {
-      const { supabase } = await import('@/lib/supabase/client');
-      
+      const { supabase } = await import("@/lib/supabase/client");
+
       // Try to get user profile from Supabase
-      const { data } = await supabase
-        .from('users')
-        .select('dashboard_preferences')
-        .or(`username.eq.${username},email.eq.${username}@flashbitcoin.com`)
-        .single();
+      const { data } = await supabase.from("users").select("dashboard_preferences").or(`username.eq.${username},email.eq.${username}@getflash.io`).single();
 
       if (data?.dashboard_preferences?.default_territory) {
-        setFormData(prev => ({ 
-          ...prev, 
-          territory: data.dashboard_preferences.default_territory
+        setFormData((prev) => ({
+          ...prev,
+          territory: data.dashboard_preferences.default_territory,
         }));
       }
     } catch (error) {
       // Silently fail - localStorage fallback is already in place
-      console.log('Could not load profile from Supabase:', error);
+      console.log("Could not load profile from Supabase:", error);
     }
   };
 

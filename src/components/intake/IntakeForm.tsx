@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { getUserFromStorage } from '@/lib/auth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircleIcon, ExclamationCircleIcon, UserIcon } from '@heroicons/react/24/outline';
-import { createSubmission } from '@/lib/api';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { getUserFromStorage } from "@/lib/auth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircleIcon, ExclamationCircleIcon, UserIcon } from "@heroicons/react/24/outline";
+import { createSubmission } from "@/lib/api";
 
 interface FormData {
   ownerName: string;
@@ -26,31 +26,31 @@ export default function IntakeForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   const [formData, setFormData] = useState<FormData>({
-    ownerName: '',
-    phoneNumber: '',
+    ownerName: "",
+    phoneNumber: "",
     packageSeen: false,
-    decisionMakers: '',
+    decisionMakers: "",
     interestLevel: 3,
     signedUp: false,
-    specificNeeds: '',
-    username: '',
-    territory: ''
+    specificNeeds: "",
+    username: "",
+    territory: "",
   });
 
   useEffect(() => {
     const user = getUserFromStorage();
     if (user) {
       // Get default territory from localStorage
-      const defaultTerritory = localStorage.getItem(`defaultTerritory_${user.username}`) || '';
-      setFormData(prev => ({ 
-        ...prev, 
+      const defaultTerritory = localStorage.getItem(`defaultTerritory_${user.username}`) || "";
+      setFormData((prev) => ({
+        ...prev,
         username: user.username,
-        territory: defaultTerritory
+        territory: defaultTerritory,
       }));
-      
+
       // Also try to load from Supabase profile
       loadUserProfile(user.username);
     }
@@ -58,81 +58,76 @@ export default function IntakeForm() {
 
   const loadUserProfile = async (username: string) => {
     try {
-      const { supabase } = await import('@/lib/supabase/client');
-      
+      const { supabase } = await import("@/lib/supabase/client");
+
       // Try to get user profile from Supabase
-      const { data } = await supabase
-        .from('users')
-        .select('dashboard_preferences')
-        .or(`username.eq.${username},email.eq.${username}@flashbitcoin.com`)
-        .single();
+      const { data } = await supabase.from("users").select("dashboard_preferences").or(`username.eq.${username},email.eq.${username}@getflash.io`).single();
 
       if (data?.dashboard_preferences?.default_territory) {
-        setFormData(prev => ({ 
-          ...prev, 
-          territory: data.dashboard_preferences.default_territory
+        setFormData((prev) => ({
+          ...prev,
+          territory: data.dashboard_preferences.default_territory,
         }));
       }
     } catch (error) {
       // Silently fail - localStorage fallback is already in place
-      console.log('Could not load profile from Supabase:', error);
+      console.log("Could not load profile from Supabase:", error);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSliderChange = (value: number) => {
-    setFormData(prev => ({ ...prev, interestLevel: value }));
+    setFormData((prev) => ({ ...prev, interestLevel: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError('');
+    setError("");
     setSuccess(false);
 
     try {
       // Validate required fields
       if (!formData.ownerName.trim()) {
-        setError('Business name and owner is required');
+        setError("Business name and owner is required");
         setIsSubmitting(false);
         return;
       }
 
       // Submit the form
       await createSubmission(formData);
-      
+
       setSuccess(true);
-      
+
       // Reset form
       setFormData({
-        ownerName: '',
-        phoneNumber: '',
+        ownerName: "",
+        phoneNumber: "",
         packageSeen: false,
-        decisionMakers: '',
+        decisionMakers: "",
         interestLevel: 3,
         signedUp: false,
-        specificNeeds: '',
-        username: 'Flash Rep',
-        territory: ''
+        specificNeeds: "",
+        username: "Flash Rep",
+        territory: "",
       });
 
       // Redirect to submissions page after success
       setTimeout(() => {
-        router.push('/dashboard/submissions');
+        router.push("/dashboard/submissions");
       }, 1500);
-      
     } catch (err) {
-      console.error('Error submitting form:', err);
-      setError('Failed to submit form. Please try again.');
+      console.error("Error submitting form:", err);
+      setError("Failed to submit form. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -150,23 +145,19 @@ export default function IntakeForm() {
                 <span className="font-medium text-light-text-primary">{formData.username}</span>
               </div>
             )}
-            
+
             <div className="text-center">
               <div className="flex justify-center mb-4">
                 <div className="w-16 h-16 bg-flash-green rounded-full flex items-center justify-center">
                   <span className="text-white text-2xl font-bold">F</span>
                 </div>
               </div>
-              <CardTitle className="text-2xl font-bold text-light-text-primary">
-                Flash Sales Canvas Form
-              </CardTitle>
-              <p className="text-light-text-secondary mt-2">
-                Capture lead information quickly and efficiently
-              </p>
+              <CardTitle className="text-2xl font-bold text-light-text-primary">Flash Sales Canvas Form</CardTitle>
+              <p className="text-light-text-secondary mt-2">Capture lead information quickly and efficiently</p>
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent className="p-6">
           {success && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start">
@@ -177,7 +168,7 @@ export default function IntakeForm() {
               </div>
             </div>
           )}
-          
+
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
               <ExclamationCircleIcon className="h-5 w-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
@@ -254,9 +245,7 @@ export default function IntakeForm() {
 
             {/* Package Seen */}
             <div>
-              <label className="block text-sm font-medium text-light-text-secondary mb-2">
-                Package Seen by Owner?
-              </label>
+              <label className="block text-sm font-medium text-light-text-secondary mb-2">Package Seen by Owner?</label>
               <div className="flex items-center space-x-4">
                 <label className="flex items-center cursor-pointer">
                   <input
@@ -289,9 +278,7 @@ export default function IntakeForm() {
 
             {/* Interest Level */}
             <div>
-              <label className="block text-sm font-medium text-light-text-secondary mb-2">
-                Level of Interest
-              </label>
+              <label className="block text-sm font-medium text-light-text-secondary mb-2">Level of Interest</label>
               <div className="space-y-2">
                 <div className="relative">
                   <input
@@ -313,7 +300,9 @@ export default function IntakeForm() {
                 </div>
                 <div className="flex justify-between text-xs text-light-text-secondary mt-3">
                   {[1, 2, 3, 4, 5].map((num) => (
-                    <span key={num} className="font-medium">{num}</span>
+                    <span key={num} className="font-medium">
+                      {num}
+                    </span>
                   ))}
                 </div>
                 <div className="flex justify-between text-xs text-light-text-tertiary mt-1">
@@ -322,9 +311,9 @@ export default function IntakeForm() {
                   <span>Very Interested</span>
                 </div>
                 <div className="text-center mt-3">
-                  <Badge 
-                    variant={formData.interestLevel >= 4 ? 'default' : 'secondary'}
-                    className={formData.interestLevel >= 4 ? 'bg-green-100 text-green-800 border-green-300' : ''}
+                  <Badge
+                    variant={formData.interestLevel >= 4 ? "default" : "secondary"}
+                    className={formData.interestLevel >= 4 ? "bg-green-100 text-green-800 border-green-300" : ""}
                   >
                     Interest Level: {formData.interestLevel} / 5
                   </Badge>
@@ -334,9 +323,7 @@ export default function IntakeForm() {
 
             {/* Signed Up */}
             <div>
-              <label className="block text-sm font-medium text-light-text-secondary mb-2">
-                Signed Up
-              </label>
+              <label className="block text-sm font-medium text-light-text-secondary mb-2">Signed Up</label>
               <div className="flex items-center space-x-4">
                 <label className="flex items-center cursor-pointer">
                   <input
@@ -369,12 +356,8 @@ export default function IntakeForm() {
 
             {/* Submit Button */}
             <div className="pt-6">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-flash-green text-white hover:bg-flash-green-dark disabled:opacity-50"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Form'}
+              <Button type="submit" disabled={isSubmitting} className="w-full bg-flash-green text-white hover:bg-flash-green-dark disabled:opacity-50">
+                {isSubmitting ? "Submitting..." : "Submit Form"}
               </Button>
             </div>
           </form>

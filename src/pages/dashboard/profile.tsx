@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
-import { JamaicaParish, JAMAICA_PARISHES } from '@/types/lead-routing';
-import { formatDate } from '@/utils/date-formatter';
-import { getUserFromStorage } from '@/lib/auth';
-import { useRouter } from 'next/router';
-import { 
-  UserIcon, 
-  PhoneIcon, 
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useSupabaseProfile } from "@/hooks/useSupabaseProfile";
+import { JamaicaParish, JAMAICA_PARISHES } from "@/types/lead-routing";
+import { formatDate } from "@/utils/date-formatter";
+import { getUserFromStorage } from "@/lib/auth";
+import { useRouter } from "next/router";
+import {
+  UserIcon,
+  PhoneIcon,
   EnvelopeIcon,
   CalendarIcon,
   MapPinIcon,
@@ -16,29 +16,29 @@ import {
   IdentificationIcon,
   GlobeAltIcon,
   PencilIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 export default function ProfilePage() {
   const router = useRouter();
   const user = getUserFromStorage();
   const { profile, loading, error, isSaving, updateProfile } = useSupabaseProfile();
-  
+
   // Form state
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    phone: '',
-    timezone: '',
-    default_territory: ''
+    first_name: "",
+    last_name: "",
+    phone: "",
+    timezone: "",
+    default_territory: "",
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
     if (!user) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [user, router]);
 
@@ -46,11 +46,11 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setFormData({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        phone: profile.phone || '',
-        timezone: profile.timezone || 'America/New_York',
-        default_territory: profile.default_territory || ''
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone: profile.phone || "",
+        timezone: profile.timezone || "America/New_York",
+        default_territory: profile.default_territory || "",
       });
     }
   }, [profile]);
@@ -61,9 +61,9 @@ export default function ProfilePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -74,7 +74,7 @@ export default function ProfilePage() {
     if (success) {
       setSaveSuccess(true);
       setIsEditing(false);
-      
+
       // Hide success message after 3 seconds
       setTimeout(() => setSaveSuccess(false), 3000);
     }
@@ -84,11 +84,11 @@ export default function ProfilePage() {
     // Reset form data to current profile values
     if (profile) {
       setFormData({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        phone: profile.phone || '',
-        timezone: profile.timezone || 'America/New_York',
-        default_territory: profile.default_territory || ''
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone: profile.phone || "",
+        timezone: profile.timezone || "America/New_York",
+        default_territory: profile.default_territory || "",
       });
     }
     setIsEditing(false);
@@ -146,15 +146,11 @@ export default function ProfilePage() {
                 <UserIcon className="w-12 h-12 text-flash-green" />
               </div>
               <div className="ml-6">
-                <h1 className="text-2xl font-bold text-light-text-primary">
-                  {profile?.full_name || profile?.username || 'Unknown User'}
-                </h1>
-                <p className="text-light-text-secondary">
-                  {profile?.email || `${user.username}@flashbitcoin.com`}
-                </p>
+                <h1 className="text-2xl font-bold text-light-text-primary">{profile?.full_name || profile?.username || "Unknown User"}</h1>
+                <p className="text-light-text-secondary">{profile?.email || `${user.username}@flashbitcoin.com`}</p>
               </div>
             </div>
-            
+
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -199,9 +195,7 @@ export default function ProfilePage() {
                   className="w-full px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary">
-                  {profile?.first_name || 'Not set'}
-                </p>
+                <p className="text-light-text-primary">{profile?.first_name || "Not set"}</p>
               )}
             </div>
 
@@ -220,9 +214,7 @@ export default function ProfilePage() {
                   className="w-full px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary">
-                  {profile?.last_name || 'Not set'}
-                </p>
+                <p className="text-light-text-primary">{profile?.last_name || "Not set"}</p>
               )}
             </div>
 
@@ -232,9 +224,7 @@ export default function ProfilePage() {
                 <IdentificationIcon className="w-4 h-4 mr-1" />
                 Username
               </label>
-              <p className="text-light-text-primary">
-                {profile?.username || user.username}
-              </p>
+              <p className="text-light-text-primary">{profile?.username || user.username}</p>
             </div>
 
             {/* Email */}
@@ -243,9 +233,7 @@ export default function ProfilePage() {
                 <EnvelopeIcon className="w-4 h-4 mr-1" />
                 Email
               </label>
-              <p className="text-light-text-primary">
-                {profile?.email || `${user.username}@flashbitcoin.com`}
-              </p>
+              <p className="text-light-text-primary">{profile?.email || `${user.username}@flashbitcoin.com`}</p>
             </div>
 
             {/* Phone */}
@@ -264,9 +252,7 @@ export default function ProfilePage() {
                   className="w-full px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary">
-                  {profile?.phone || 'Not provided'}
-                </p>
+                <p className="text-light-text-primary">{profile?.phone || "Not provided"}</p>
               )}
             </div>
 
@@ -290,9 +276,7 @@ export default function ProfilePage() {
                   <option value="America/Jamaica">Jamaica Time (JMT)</option>
                 </select>
               ) : (
-                <p className="text-light-text-primary">
-                  {profile?.timezone || 'America/New_York'}
-                </p>
+                <p className="text-light-text-primary">{profile?.timezone || "America/New_York"}</p>
               )}
             </div>
 
@@ -302,9 +286,7 @@ export default function ProfilePage() {
                 <CalendarIcon className="w-4 h-4 mr-1" />
                 Member Since
               </label>
-              <p className="text-light-text-primary">
-                {profile?.created_at ? formatDate(profile.created_at) : 'N/A'}
-              </p>
+              <p className="text-light-text-primary">{profile?.created_at ? formatDate(profile.created_at) : "N/A"}</p>
             </div>
 
             {/* Role */}
@@ -313,9 +295,7 @@ export default function ProfilePage() {
                 <IdentificationIcon className="w-4 h-4 mr-1" />
                 Role
               </label>
-              <p className="text-light-text-primary capitalize">
-                {profile?.role?.replace('_', ' ') || 'Sales Rep'}
-              </p>
+              <p className="text-light-text-primary capitalize">{profile?.role?.replace("_", " ") || "Sales Rep"}</p>
             </div>
           </div>
 
@@ -332,12 +312,10 @@ export default function ProfilePage() {
                 onClick={handleSave}
                 disabled={isSaving}
                 className={`px-4 py-2 rounded-md transition-colors ${
-                  isSaving
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-flash-green text-white hover:bg-flash-green-light'
+                  isSaving ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-flash-green text-white hover:bg-flash-green-light"
                 }`}
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? "Saving..." : "Save Changes"}
               </button>
             </div>
           )}
@@ -358,20 +336,20 @@ export default function ProfilePage() {
               <select
                 id="defaultTerritory"
                 value={formData.default_territory}
-                onChange={(e) => setFormData(prev => ({ ...prev, default_territory: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, default_territory: e.target.value }))}
                 disabled={!isEditing}
                 className={`flex-1 px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green ${
-                  !isEditing ? 'opacity-60 cursor-not-allowed' : ''
+                  !isEditing ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
                 <option value="">Select a territory...</option>
-                {JAMAICA_PARISHES.map(parish => (
+                {JAMAICA_PARISHES.map((parish) => (
                   <option key={parish} value={parish}>
                     {parish}
                   </option>
                 ))}
               </select>
-              
+
               {!isEditing && (
                 <button
                   onClick={async () => {
@@ -384,18 +362,16 @@ export default function ProfilePage() {
                   disabled={isSaving || formData.default_territory === profile?.default_territory}
                   className={`px-4 py-2 rounded-md transition-all ${
                     isSaving || formData.default_territory === profile?.default_territory
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-flash-green text-white hover:bg-flash-green-light'
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-flash-green text-white hover:bg-flash-green-light"
                   }`}
                 >
-                  {isSaving ? 'Saving...' : 'Save'}
+                  {isSaving ? "Saving..." : "Save"}
                 </button>
               )}
             </div>
-            
-            <p className="mt-3 text-sm text-light-text-secondary">
-              This territory will be automatically selected when creating new submissions.
-            </p>
+
+            <p className="mt-3 text-sm text-light-text-secondary">This territory will be automatically selected when creating new submissions.</p>
           </div>
         </div>
       </div>
