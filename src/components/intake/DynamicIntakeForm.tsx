@@ -304,6 +304,14 @@ export default function DynamicIntakeForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
+    
+    // Add validation to ensure we're on the last step
+    if (currentStep !== getTotalSteps()) {
+      console.warn('Form submission attempted but not on last step');
+      return;
+    }
+    
     setIsSubmitting(true);
     setError('');
     setSuccess(false);
@@ -736,7 +744,17 @@ export default function DynamicIntakeForm() {
               <p className="text-light-text-secondary mt-2">Redirecting to submissions...</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form 
+              onSubmit={handleSubmit} 
+              className="space-y-6" 
+              autoComplete="off"
+              onKeyDown={(e) => {
+                // Prevent form submission on Enter key except for submit button
+                if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+                  e.preventDefault();
+                }
+              }}
+            >
               {error && (
                 <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 rounded-lg">
                   <ExclamationCircleIcon className="h-5 w-5" />
