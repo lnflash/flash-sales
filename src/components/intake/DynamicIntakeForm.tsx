@@ -232,7 +232,11 @@ export default function DynamicIntakeForm() {
   };
 
   const getTotalSteps = () => {
-    return formData.businessType ? 5 : 4;
+    return 5; // Always 5 steps, but step 4 might be skipped
+  };
+  
+  const shouldSkipStep4 = () => {
+    return !formData.businessType || !INDUSTRY_CONFIGS[formData.businessType];
   };
 
   const getStepProgress = () => {
@@ -272,7 +276,14 @@ export default function DynamicIntakeForm() {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, getTotalSteps()));
+      let nextStep = currentStep + 1;
+      
+      // Skip step 4 if no business type selected
+      if (nextStep === 4 && shouldSkipStep4()) {
+        nextStep = 5;
+      }
+      
+      setCurrentStep(Math.min(nextStep, getTotalSteps()));
       setError('');
     } else {
       setError('Please fill in all required fields');
@@ -280,7 +291,14 @@ export default function DynamicIntakeForm() {
   };
 
   const handlePrevious = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+    let prevStep = currentStep - 1;
+    
+    // Skip step 4 when going back if no business type selected
+    if (prevStep === 4 && shouldSkipStep4()) {
+      prevStep = 3;
+    }
+    
+    setCurrentStep(Math.max(prevStep, 1));
     setError('');
   };
 
@@ -549,8 +567,9 @@ export default function DynamicIntakeForm() {
         );
 
       case 4:
+        // This case should never be reached if no business type is selected
+        // because handleNext/handlePrevious skip it
         if (!formData.businessType || !INDUSTRY_CONFIGS[formData.businessType]) {
-          handleNext(); // Skip if no industry selected
           return null;
         }
 
