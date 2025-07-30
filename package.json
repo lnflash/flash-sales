@@ -21,6 +21,8 @@
     "supabase:migration:reset": "supabase db reset",
     "migrate:legacy": "tsx src/scripts/migrate-to-supabase.ts",
     "migrate:verify": "tsx src/scripts/migrate-to-supabase.ts --verify",
+    "migrate:compare": "tsx src/scripts/compare-data-migration.ts",
+    "migrate:fix-missing": "tsx src/scripts/fix-missing-submission.ts",
     "supabase:test": "tsx src/scripts/test-supabase-connection.ts",
     "supabase:test:simple": "tsx src/scripts/test-simple-connection.ts"
   },
