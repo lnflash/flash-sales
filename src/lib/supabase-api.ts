@@ -90,22 +90,22 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
   try {
     console.log("Fetching submissions from Supabase deals table with filters:", filters);
 
-    // Build the base query with joins
+    // Build the base query with joins - explicitly specify the foreign key
     let countQuery = supabase.from("deals").select(
       `
         *,
-        organization:organizations(*),
-        primary_contact:contacts(*),
-        owner:users(*)
+        organization:organizations!organization_id(*),
+        primary_contact:contacts!primary_contact_id(*),
+        owner:users!owner_id(*)
       `,
       { count: "exact", head: true }
     );
 
     let dataQuery = supabase.from("deals").select(`
         *,
-        organization:organizations(*),
-        primary_contact:contacts(*),
-        owner:users(*)
+        organization:organizations!organization_id(*),
+        primary_contact:contacts!primary_contact_id(*),
+        owner:users!owner_id(*)
       `);
 
     // Apply filters to both queries
@@ -127,8 +127,10 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
     }
 
     console.log("Supabase raw deals data:", data);
+    console.log("Sample deal with organization:", data?.[0]);
     const submissions = (data || []).map(mapDealToSubmission);
     console.log("Mapped submissions:", submissions);
+    console.log("Sample submission territory:", submissions[0]?.territory);
 
     return {
       data: submissions,

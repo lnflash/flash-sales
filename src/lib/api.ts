@@ -8,13 +8,16 @@ import {
 } from '@/types/submission';
 
 // Feature flag to use Supabase instead of external API
-const USE_SUPABASE = process.env.NEXT_PUBLIC_USE_SUPABASE === 'true';
+// Force Supabase usage in production
+const USE_SUPABASE = process.env.NEXT_PUBLIC_USE_SUPABASE === 'true' || 
+                    process.env.NODE_ENV === 'production' ||
+                    (typeof window !== 'undefined' && window.location.hostname.includes('ondigitalocean.app'));
 
 // Import Supabase functions synchronously
 import * as supabaseApiModule from './supabase-api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-console.log('API base URL:', API_BASE_URL, 'USE_SUPABASE:', USE_SUPABASE);
+console.log('API base URL:', API_BASE_URL, 'USE_SUPABASE:', USE_SUPABASE, 'NODE_ENV:', process.env.NODE_ENV);
 
 // Helper function to handle API responses
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -70,13 +73,8 @@ export async function getSubmissions(
 ): Promise<SubmissionListResponse> {
   // Use Supabase if enabled
   if (USE_SUPABASE) {
-    try {
-      console.log('Fetching submissions from Supabase');
-      return await supabaseApiModule.getSubmissions(filters, pagination, sortBy);
-    } catch (error) {
-      console.error('Supabase error, falling back to external API:', error);
-      // Fall through to external API
-    }
+    console.log('Fetching submissions from Supabase (territory data available)');
+    return await supabaseApiModule.getSubmissions(filters, pagination, sortBy);
   }
 
   // Use external API
@@ -183,12 +181,7 @@ export async function deleteSubmission(id: number): Promise<void> {
 export async function getSubmissionStats(): Promise<SubmissionStats> {
   // Use Supabase if enabled
   if (USE_SUPABASE) {
-    try {
-      return await supabaseApiModule.getSubmissionStats();
-    } catch (error) {
-      console.error('Supabase stats error, falling back to external API:', error);
-      // Fall through to external API
-    }
+    return await supabaseApiModule.getSubmissionStats();
   }
 
   // Use external API
