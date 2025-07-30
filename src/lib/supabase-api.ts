@@ -9,7 +9,7 @@ function mapDealToSubmission(deal: any): Submission {
   // Get territory with fallback logic
   let territory = deal.organization?.state_province || "";
   
-  // If no territory from organization, try to determine from owner
+  // If no territory from organization, try to determine from owner (if owner exists)
   if (!territory && deal.owner?.email) {
     const territoryMap: Record<string, string> = {
       'rogimon@getflash.io': 'St. Ann',
@@ -34,7 +34,7 @@ function mapDealToSubmission(deal: any): Submission {
     interestLevel: deal.interest_level || 0,
     signedUp: deal.status === "won" || false,
     specificNeeds: deal.specific_needs || "",
-    username: deal.owner?.email?.split("@")[0] || "",
+    username: deal.owner?.email?.split("@")[0] || "Unassigned",
     territory: territory,
     timestamp: deal.created_at || new Date().toISOString(),
   };
@@ -117,7 +117,13 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
       query = query.eq("package_seen", filters.packageSeen);
     }
     if (filters.username) {
-      query = query.eq("owner.email", `${filters.username}@getflash.io`);
+      if (filters.username === 'Unassigned') {
+        // Filter for deals without owners
+        query = query.is("owner_id", null);
+      } else {
+        // Filter for specific username
+        query = query.eq("owner.email", `${filters.username}@getflash.io`);
+      }
     }
   }
 
@@ -167,22 +173,22 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
       console.log("Searching for:", filters.search);
     }
 
-    // Build the base query with joins - explicitly specify the foreign key
+    // Build the base query with LEFT joins to include deals without related records
     let countQuery = supabase.from("deals").select(
       `
         *,
-        organization:organizations!organization_id(*),
-        primary_contact:contacts!primary_contact_id(*),
-        owner:users!owner_id(*)
+        organization:organizations!organization_id!left(*),
+        primary_contact:contacts!primary_contact_id!left(*),
+        owner:users!owner_id!left(*)
       `,
       { count: "exact", head: true }
     );
 
     let dataQuery = supabase.from("deals").select(`
         *,
-        organization:organizations!organization_id(*),
-        primary_contact:contacts!primary_contact_id(*),
-        owner:users!owner_id(*)
+        organization:organizations!organization_id!left(*),
+        primary_contact:contacts!primary_contact_id!left(*),
+        owner:users!owner_id!left(*)
       `);
 
     // Apply filters to both queries
@@ -204,11 +210,21 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
     }
 
     console.log(`Supabase returned ${data?.length || 0} deals`);
+    
+    // Log deals without owners
+    const dealsWithoutOwners = data?.filter(d => !d.owner_id) || [];
+    if (dealsWithoutOwners.length > 0) {
+      console.log(`Found ${dealsWithoutOwners.length} deals without owners:`, 
+        dealsWithoutOwners.map(d => ({ name: d.name, id: d.id }))
+      );
+    }
+    
     if (filters?.search) {
       console.log("Search results for '" + filters.search + "':", data?.map(d => ({
         dealName: d.name,
         orgName: d.organization?.name,
-        hasOrg: !!d.organization
+        hasOrg: !!d.organization,
+        hasOwner: !!d.owner_id
       })));
     }
     const submissions = (data || []).map(mapDealToSubmission);
