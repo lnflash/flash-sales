@@ -26,7 +26,7 @@ function mapDealToSubmission(deal: any): Submission {
   }
 
   return {
-    id: parseInt(deal.id) || 0, // Convert UUID to number for compatibility
+    id: deal.id, // Keep as string UUID
     ownerName: deal.organization?.name || deal.name || "",
     phoneNumber: deal.primary_contact?.phone_primary || "",
     packageSeen: deal.package_seen || false,
@@ -50,41 +50,18 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
       // Normalize search term for better matching
       const searchTerm = normalizeSearchTerm(filters.search);
       
-      // Check if search term is a number for numeric field searches
-      const isNumeric = !isNaN(Number(searchTerm));
-      
-      // Comprehensive search across ALL visible fields
+      // For Supabase, we can only search direct fields on the deals table
+      // Nested field searches require a different approach
       const searchConditions = [
-        // Organization fields
-        `organization.name.ilike.%${searchTerm}%`,
-        `organization.address_line1.ilike.%${searchTerm}%`,
-        `organization.city.ilike.%${searchTerm}%`,
-        `organization.state_province.ilike.%${searchTerm}%`,
-        `organization.postal_code.ilike.%${searchTerm}%`,
-        `organization.country.ilike.%${searchTerm}%`,
-        
-        // Deal fields
+        // Deal fields (direct fields only)
         `name.ilike.%${searchTerm}%`,
         `decision_makers.ilike.%${searchTerm}%`,
         `specific_needs.ilike.%${searchTerm}%`,
-        `description.ilike.%${searchTerm}%`,
-        
-        // Contact fields
-        `primary_contact.first_name.ilike.%${searchTerm}%`,
-        `primary_contact.last_name.ilike.%${searchTerm}%`,
-        `primary_contact.email.ilike.%${searchTerm}%`,
-        `primary_contact.phone_primary.ilike.%${searchTerm}%`,
-        `primary_contact.phone_secondary.ilike.%${searchTerm}%`,
-        `primary_contact.title.ilike.%${searchTerm}%`,
-        
-        // Owner/User fields
-        `owner.email.ilike.%${searchTerm}%`,
-        `owner.first_name.ilike.%${searchTerm}%`,
-        `owner.last_name.ilike.%${searchTerm}%`,
-        `owner.username.ilike.%${searchTerm}%`
+        `description.ilike.%${searchTerm}%`
       ];
       
-      // Add numeric field searches if the search term is a number
+      // Check if search term is a number for numeric field searches
+      const isNumeric = !isNaN(Number(searchTerm));
       if (isNumeric) {
         searchConditions.push(
           `interest_level.eq.${searchTerm}`,
