@@ -19,6 +19,8 @@ const nextConfig = {
   env: {
     // Explicitly set NEXT_PUBLIC_APP_ENV to 'production' in production
     NEXT_PUBLIC_APP_ENV: process.env.NODE_ENV === 'production' ? 'production' : process.env.NODE_ENV,
+    // Enable Supabase in production
+    NEXT_PUBLIC_USE_SUPABASE: process.env.NODE_ENV === 'production' ? 'true' : process.env.NEXT_PUBLIC_USE_SUPABASE,
   },
 };
 

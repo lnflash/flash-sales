@@ -10,14 +10,8 @@ import {
 // Feature flag to use Supabase instead of external API
 const USE_SUPABASE = process.env.NEXT_PUBLIC_USE_SUPABASE === 'true';
 
-// Import Supabase functions if enabled
-let supabaseApi: any = null;
-if (USE_SUPABASE) {
-  import('./supabase-api').then(module => {
-    supabaseApi = module;
-    console.log('Using Supabase for data fetching');
-  });
-}
+// Import Supabase functions synchronously
+import * as supabaseApiModule from './supabase-api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
 console.log('API base URL:', API_BASE_URL, 'USE_SUPABASE:', USE_SUPABASE);
@@ -74,10 +68,11 @@ export async function getSubmissions(
   pagination?: PaginationState,
   sortBy?: SortOption[]
 ): Promise<SubmissionListResponse> {
-  // Use Supabase if enabled and loaded
-  if (USE_SUPABASE && supabaseApi) {
+  // Use Supabase if enabled
+  if (USE_SUPABASE) {
     try {
-      return await supabaseApi.getSubmissions(filters, pagination, sortBy);
+      console.log('Fetching submissions from Supabase');
+      return await supabaseApiModule.getSubmissions(filters, pagination, sortBy);
     } catch (error) {
       console.error('Supabase error, falling back to external API:', error);
       // Fall through to external API
@@ -186,10 +181,10 @@ export async function deleteSubmission(id: number): Promise<void> {
 }
 
 export async function getSubmissionStats(): Promise<SubmissionStats> {
-  // Use Supabase if enabled and loaded
-  if (USE_SUPABASE && supabaseApi) {
+  // Use Supabase if enabled
+  if (USE_SUPABASE) {
     try {
-      return await supabaseApi.getSubmissionStats();
+      return await supabaseApiModule.getSubmissionStats();
     } catch (error) {
       console.error('Supabase stats error, falling back to external API:', error);
       // Fall through to external API
