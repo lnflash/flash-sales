@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { Submission, SubmissionFilters, PaginationState, SortOption, SubmissionStats, SubmissionListResponse } from "@/types/submission";
+import { normalizeSearchTerm } from "@/lib/search-utils";
 
 // Helper function to convert Supabase deal data to Submission format
 function mapDealToSubmission(deal: any): Submission {
@@ -46,7 +47,18 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
   // Apply filters
   if (filters) {
     if (filters.search) {
-      query = query.or(`organization.name.ilike.%${filters.search}%,name.ilike.%${filters.search}%`);
+      // Normalize search term for better matching
+      const searchTerm = normalizeSearchTerm(filters.search);
+      
+      // Create search conditions for different fields
+      const searchConditions = [
+        `organization.name.ilike.%${searchTerm}%`,
+        `name.ilike.%${searchTerm}%`, 
+        `primary_contact.phone_primary.ilike.%${searchTerm}%`,
+        `owner.email.ilike.%${searchTerm}%`
+      ];
+      
+      query = query.or(searchConditions.join(','));
     }
     if (filters.dateRange?.start) {
       query = query.gte("created_at", filters.dateRange.start);
@@ -108,6 +120,11 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
 export async function getSubmissions(filters?: SubmissionFilters, pagination?: PaginationState, sortBy?: SortOption[]): Promise<SubmissionListResponse> {
   try {
     console.log("Fetching submissions from Supabase deals table with filters:", filters);
+    
+    // Log search term specifically
+    if (filters?.search) {
+      console.log("Searching for:", filters.search);
+    }
 
     // Build the base query with joins - explicitly specify the foreign key
     let countQuery = supabase.from("deals").select(
@@ -145,11 +162,16 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
       throw dataError;
     }
 
-    console.log("Supabase raw deals data:", data);
-    console.log("Sample deal with organization:", data?.[0]);
+    console.log(`Supabase returned ${data?.length || 0} deals`);
+    if (filters?.search) {
+      console.log("Search results for '" + filters.search + "':", data?.map(d => ({
+        dealName: d.name,
+        orgName: d.organization?.name,
+        hasOrg: !!d.organization
+      })));
+    }
     const submissions = (data || []).map(mapDealToSubmission);
-    console.log("Mapped submissions:", submissions);
-    console.log("Sample submission territory:", submissions[0]?.territory);
+    console.log("Mapped submissions count:", submissions.length);
 
     return {
       data: submissions,
