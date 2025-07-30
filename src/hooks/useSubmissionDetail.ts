@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Submission } from '@/types/submission';
 import { getSubmissionById } from '@/lib/api';
 
-export function useSubmissionDetail(id: number) {
+export function useSubmissionDetail(id: number | string) {
   // Always use real API data
   console.log('Detail hook - Current environment:', process.env.NEXT_PUBLIC_APP_ENV);
   

@@ -7,7 +7,7 @@ export default function SubmissionDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   
-  const submissionId = id ? parseInt(id as string) : 0;
+  const submissionId = id ? String(id) : '';
   const { submission, isLoading, error } = useSubmissionDetail(submissionId);
 
   if (error) {
@@ -38,7 +38,7 @@ export default function SubmissionDetailPage() {
       ) : isLoading ? (
         <SubmissionDetail
           submission={{
-            id: 0,
+            id: '',
             ownerName: '',
             packageSeen: false,
             interestLevel: 0,

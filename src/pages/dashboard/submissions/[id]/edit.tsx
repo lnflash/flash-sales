@@ -11,7 +11,7 @@ export default function EditSubmissionPage() {
   const router = useRouter();
   const { id } = router.query;
   
-  const submissionId = id ? parseInt(id as string) : 0;
+  const submissionId = id ? String(id) : '';
   const { submission, isLoading, error, mutate } = useSubmissionDetail(submissionId);
   
   const [formState, setFormState] = useState<Partial<Submission>>({});

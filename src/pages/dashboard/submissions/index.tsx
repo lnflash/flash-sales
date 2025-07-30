@@ -53,7 +53,7 @@ export default function SubmissionsPage() {
     }
   }, [search]);
 
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
   // Override setFilters to always maintain username filter for Sales Reps
   const handleSetFilters = (newFilters: SubmissionFilters) => {
@@ -75,7 +75,7 @@ export default function SubmissionsPage() {
     setPagination({ pageIndex: 0, pageSize: 25 });
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | string) => {
     setDeletingId(id);
     try {
       await deleteSubmission(id);

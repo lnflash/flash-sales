@@ -23,6 +23,11 @@
     "migrate:verify": "tsx src/scripts/migrate-to-supabase.ts --verify",
     "migrate:compare": "tsx src/scripts/compare-data-migration.ts",
     "migrate:fix-missing": "tsx src/scripts/fix-missing-submission.ts",
+    "migrate:analyze-owners": "tsx src/scripts/analyze-missing-owners.ts",
+    "migrate:generate-owner-fix": "tsx src/scripts/generate-owner-fix-sql.ts",
+    "migrate:apply-owner-fix": "tsx src/scripts/apply-owner-fix.ts",
+    "migrate:apply-owner-fix-batch": "tsx src/scripts/apply-owner-fix-batch.ts",
+    "migrate:execute-sql": "tsx src/scripts/execute-sql-migration.ts",
     "supabase:test": "tsx src/scripts/test-supabase-connection.ts",
     "supabase:test:simple": "tsx src/scripts/test-simple-connection.ts"
   },

@@ -25,7 +25,7 @@ interface SubmissionTableProps {
   data: Submission[];
   isLoading?: boolean;
   totalItems?: number;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: number | string) => void;
 }
 
 export default function SubmissionTable({ data, isLoading = false, totalItems = 0, onDelete }: SubmissionTableProps) {
@@ -124,7 +124,7 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  const submissionId = Number(info.getValue());
+                  const submissionId = info.getValue();
                   if (window.confirm('Are you sure you want to delete this submission?')) {
                     onDelete(submissionId);
                   }
