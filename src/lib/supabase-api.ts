@@ -154,18 +154,18 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
     let countQuery = supabase.from("deals").select(
       `
         *,
-        organization:organizations!organization_id(name, state_province),
-        primary_contact:contacts!primary_contact_id(phone_primary),
-        owner:users!owner_id(email, username)
+        organization:organizations!deals_organization_id_fkey(name, state_province),
+        primary_contact:contacts!deals_primary_contact_id_fkey(phone_primary),
+        owner:users!deals_owner_id_fkey(email, username)
       `,
       { count: "exact", head: true }
     );
 
     let dataQuery = supabase.from("deals").select(`
         *,
-        organization:organizations!organization_id(name, state_province),
-        primary_contact:contacts!primary_contact_id(phone_primary),
-        owner:users!owner_id(email, username)
+        organization:organizations!deals_organization_id_fkey(name, state_province),
+        primary_contact:contacts!deals_primary_contact_id_fkey(phone_primary),
+        owner:users!deals_owner_id_fkey(email, username)
       `);
 
     // Apply filters to both queries
@@ -226,9 +226,9 @@ export async function getSubmissionById(id: number | string): Promise<Submission
       .select(
         `
         *,
-        organization:organizations!organization_id!left(*),
-        primary_contact:contacts!primary_contact_id!left(*),
-        owner:users!owner_id!left(*)
+        organization:organizations!deals_organization_id_fkey(name, state_province),
+        primary_contact:contacts!deals_primary_contact_id_fkey(phone_primary),
+        owner:users!deals_owner_id_fkey(email, username)
       `
       )
       .eq("id", id)
@@ -329,9 +329,9 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
       })
       .select(`
         *,
-        organization:organizations!organization_id(name, state_province),
-        primary_contact:contacts!primary_contact_id(phone_primary),
-        owner:users!owner_id(email, username)
+        organization:organizations!deals_organization_id_fkey(name, state_province),
+        primary_contact:contacts!deals_primary_contact_id_fkey(phone_primary),
+        owner:users!deals_owner_id_fkey(email, username)
       `)
       .single();
     
