@@ -50,13 +50,54 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
       // Normalize search term for better matching
       const searchTerm = normalizeSearchTerm(filters.search);
       
-      // Create search conditions for different fields
+      // Check if search term is a number for numeric field searches
+      const isNumeric = !isNaN(Number(searchTerm));
+      
+      // Comprehensive search across ALL visible fields
       const searchConditions = [
+        // Organization fields
         `organization.name.ilike.%${searchTerm}%`,
-        `name.ilike.%${searchTerm}%`, 
+        `organization.address_line1.ilike.%${searchTerm}%`,
+        `organization.city.ilike.%${searchTerm}%`,
+        `organization.state_province.ilike.%${searchTerm}%`,
+        `organization.postal_code.ilike.%${searchTerm}%`,
+        `organization.country.ilike.%${searchTerm}%`,
+        
+        // Deal fields
+        `name.ilike.%${searchTerm}%`,
+        `decision_makers.ilike.%${searchTerm}%`,
+        `specific_needs.ilike.%${searchTerm}%`,
+        `description.ilike.%${searchTerm}%`,
+        
+        // Contact fields
+        `primary_contact.first_name.ilike.%${searchTerm}%`,
+        `primary_contact.last_name.ilike.%${searchTerm}%`,
+        `primary_contact.email.ilike.%${searchTerm}%`,
         `primary_contact.phone_primary.ilike.%${searchTerm}%`,
-        `owner.email.ilike.%${searchTerm}%`
+        `primary_contact.phone_secondary.ilike.%${searchTerm}%`,
+        `primary_contact.title.ilike.%${searchTerm}%`,
+        
+        // Owner/User fields
+        `owner.email.ilike.%${searchTerm}%`,
+        `owner.first_name.ilike.%${searchTerm}%`,
+        `owner.last_name.ilike.%${searchTerm}%`,
+        `owner.username.ilike.%${searchTerm}%`
       ];
+      
+      // Add numeric field searches if the search term is a number
+      if (isNumeric) {
+        searchConditions.push(
+          `interest_level.eq.${searchTerm}`,
+          `amount.eq.${searchTerm}`
+        );
+      }
+      
+      // Also search for boolean values
+      if (searchTerm === 'yes' || searchTerm === 'true' || searchTerm === 'signed up') {
+        searchConditions.push(`package_seen.eq.true`, `status.eq.won`);
+      } else if (searchTerm === 'no' || searchTerm === 'false' || searchTerm === 'prospect') {
+        searchConditions.push(`package_seen.eq.false`, `status.neq.won`);
+      }
       
       query = query.or(searchConditions.join(','));
     }

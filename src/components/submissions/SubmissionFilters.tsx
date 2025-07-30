@@ -78,7 +78,8 @@ export default function SubmissionFiltersComponent({
         >
           <input
             type="text"
-            placeholder="Search submissions..."
+            placeholder="Search by name, phone, email, territory, rep..."
+            title="Search across organization names, contact info, territories, reps, and more"
             className="w-full pl-10 pr-4 py-2 bg-light-bg-secondary rounded-md text-light-text-primary placeholder-light-text-tertiary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
