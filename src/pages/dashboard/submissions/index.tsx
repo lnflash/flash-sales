@@ -18,8 +18,8 @@ export default function SubmissionsPage() {
   const getInitialFilters = (): SubmissionFilters => {
     const filters: SubmissionFilters = search ? { search: search as string } : {};
     
-    // If user is a Sales Rep (doesn't have permission to view all reps), filter by their username
-    if (user && !hasPermission(user.role, 'canViewAllReps')) {
+    // If user is a Sales Rep or has no role (doesn't have permission to view all reps), filter by their username
+    if (user && (!user.role || !hasPermission(user.role, 'canViewAllReps'))) {
       filters.username = user.username;
     }
     
@@ -45,8 +45,8 @@ export default function SubmissionsPage() {
   useEffect(() => {
     if (search && search !== filters.search) {
       const newFilters = { ...filters, search: search as string };
-      // Always maintain username filter for Sales Reps
-      if (user && !hasPermission(user.role, 'canViewAllReps')) {
+      // Always maintain username filter for Sales Reps or users with no role
+      if (user && (!user.role || !hasPermission(user.role, 'canViewAllReps'))) {
         newFilters.username = user.username;
       }
       setFilters(newFilters);
@@ -55,20 +55,20 @@ export default function SubmissionsPage() {
 
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
-  // Override setFilters to always maintain username filter for Sales Reps
+  // Override setFilters to always maintain username filter for Sales Reps or users with no role
   const handleSetFilters = (newFilters: SubmissionFilters) => {
-    // Always maintain username filter for Sales Reps
-    if (user && !hasPermission(user.role, 'canViewAllReps')) {
+    // Always maintain username filter for Sales Reps or users with no role
+    if (user && (!user.role || !hasPermission(user.role, 'canViewAllReps'))) {
       newFilters.username = user.username;
     }
     setFilters(newFilters);
   };
 
-  // Override resetFilters to maintain username filter for Sales Reps
+  // Override resetFilters to maintain username filter for Sales Reps or users with no role
   const handleResetFilters = () => {
     const baseFilters: SubmissionFilters = {};
-    // Maintain username filter for Sales Reps even after reset
-    if (user && !hasPermission(user.role, 'canViewAllReps')) {
+    // Maintain username filter for Sales Reps or users with no role even after reset
+    if (user && (!user.role || !hasPermission(user.role, 'canViewAllReps'))) {
       baseFilters.username = user.username;
     }
     setFilters(baseFilters);

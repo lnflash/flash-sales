@@ -37,10 +37,11 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor('id', {
-        header: 'ID',
-        cell: (info) => <span className="text-light-text-tertiary">{info.getValue()}</span>,
-      }),
+      // Removed ID column as requested
+      // columnHelper.accessor('id', {
+      //   header: 'ID',
+      //   cell: (info) => <span className="text-light-text-tertiary">{info.getValue()}</span>,
+      // }),
       columnHelper.accessor('ownerName', {
         header: 'Business Name',
         cell: (info) => info.getValue(),

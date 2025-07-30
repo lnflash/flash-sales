@@ -66,7 +66,8 @@ export default function SubmissionFiltersComponent({
     filters.signedUp !== undefined ||
     filters.packageSeen !== undefined ||
     filters.dateRange?.start ||
-    filters.dateRange?.end
+    filters.dateRange?.end ||
+    filters.username
   );
 
   return (
@@ -216,7 +217,33 @@ export default function SubmissionFiltersComponent({
             </div>
           </div>
 
-          <div className="md:col-span-3">
+          <div>
+            <label className="block text-sm font-medium text-light-text-secondary mb-2">
+              Sales Rep
+            </label>
+            <select
+              className="w-full px-3 py-2 bg-white rounded-md text-light-text-primary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+              value={filters.username || ''}
+              onChange={(e) => onFilterChange({
+                ...filters,
+                username: e.target.value || undefined
+              })}
+            >
+              <option value="">All Reps</option>
+              <option value="rogimon">rogimon</option>
+              <option value="tatiana_1">tatiana_1</option>
+              <option value="charms">charms</option>
+              <option value="chala">chala</option>
+              <option value="kandi">kandi</option>
+              <option value="leah">leah</option>
+              <option value="tamoy">tamoy</option>
+              <option value="jodi">jodi</option>
+              <option value="flash">flash</option>
+              <option value="Unassigned">Unassigned</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-light-text-secondary mb-2">
               Date Range
             </label>

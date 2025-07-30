@@ -34,7 +34,7 @@ function mapDealToSubmission(deal: any): Submission {
     interestLevel: deal.interest_level || 0,
     signedUp: deal.status === "won" || false,
     specificNeeds: deal.specific_needs || "",
-    username: deal.owner?.email?.split("@")[0] || "Unassigned",
+    username: deal.owner?.username || deal.owner?.email?.split("@")[0] || "Unassigned",
     territory: territory,
     timestamp: deal.created_at || new Date().toISOString(),
   };
