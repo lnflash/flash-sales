@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface LeadAssignmentProps {
-  leadId: number;
+  leadId: number | string;
   currentTerritory?: JamaicaParish;
   onAssign: (repId: string, territory: JamaicaParish) => void;
   onCancel: () => void;

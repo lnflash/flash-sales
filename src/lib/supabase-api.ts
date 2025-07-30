@@ -189,15 +189,15 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
     console.log(`Supabase returned ${data?.length || 0} deals`);
     
     // Log deals without owners
-    const dealsWithoutOwners = data?.filter(d => !d.owner_id) || [];
+    const dealsWithoutOwners = data?.filter((d: any) => !d.owner_id) || [];
     if (dealsWithoutOwners.length > 0) {
       console.log(`Found ${dealsWithoutOwners.length} deals without owners:`, 
-        dealsWithoutOwners.map(d => ({ name: d.name, id: d.id }))
+        dealsWithoutOwners.map((d: any) => ({ name: d.name, id: d.id }))
       );
     }
     
     if (filters?.search) {
-      console.log("Search results for '" + filters.search + "':", data?.map(d => ({
+      console.log("Search results for '" + filters.search + "':", data?.map((d: any) => ({
         dealName: d.name,
         orgName: d.organization?.name,
         hasOrg: !!d.organization,
