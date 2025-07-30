@@ -86,11 +86,9 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
       }),
       columnHelper.accessor('username', {
         header: 'Rep',
-        cell: (info) => {
-          const value = info.getValue();
-          // Show the actual value, don't override with N/A
-          return <span className="text-light-text-primary">{value || 'Unassigned'}</span>;
-        },
+        cell: (info) => (
+          <span className="text-light-text-primary">{info.getValue() || 'N/A'}</span>
+        ),
       }),
       columnHelper.accessor('territory', {
         header: 'Territory',

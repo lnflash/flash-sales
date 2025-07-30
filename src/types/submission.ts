@@ -1,6 +1,6 @@
 // Mirror the intake form submission type
 export interface Submission {
-  id: number | string; // Support both number (legacy) and string (Supabase UUID)
+  id: number;
   ownerName: string;
   phoneNumber?: string;
   packageSeen: boolean;

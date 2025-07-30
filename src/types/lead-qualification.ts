@@ -15,8 +15,8 @@ export interface LeadQualificationCriteria {
 }
 
 export interface LeadWorkflow {
-  id: number | string;
-  submissionId: number | string;
+  id: number;
+  submissionId: number;
   currentStage: LeadStage;
   previousStage?: LeadStage;
   qualificationScore: number;

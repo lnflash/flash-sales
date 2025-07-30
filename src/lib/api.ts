@@ -8,10 +8,8 @@ import {
 } from '@/types/submission';
 
 // Feature flag to use Supabase instead of external API
-// Force Supabase usage in production
-const USE_SUPABASE = process.env.NEXT_PUBLIC_USE_SUPABASE === 'true' || 
-                    process.env.NODE_ENV === 'production' ||
-                    (typeof window !== 'undefined' && window.location.hostname.includes('ondigitalocean.app'));
+// Temporarily disable Supabase for submissions until we properly implement it
+const USE_SUPABASE = false; // process.env.NEXT_PUBLIC_USE_SUPABASE === 'true';
 
 // Import Supabase functions synchronously
 import * as supabaseApiModule from './supabase-api';
