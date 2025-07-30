@@ -31,8 +31,9 @@ export function useSupabaseSubmissions() {
         .from('deals')
         .select(`
           *,
-          organization:organizations!inner(*),
-          contact:contacts(*)
+          organization:organizations!left(*),
+          contact:contacts!left(*),
+          owner:users!owner_id!left(*)
         `)
         .order('created_at', { ascending: false });
 
@@ -45,15 +46,15 @@ export function useSupabaseSubmissions() {
         contact: item.contact?.[0],
         deal: item,
         // Map to old field names for compatibility
-        ownerName: item.organization.name,
-        phoneNumber: item.contact?.[0]?.phone_primary,
+        ownerName: item.organization?.name || item.name || 'Unknown',
+        phoneNumber: item.contact?.[0]?.phone_primary || '',
         packageSeen: item.package_seen || false,
         decisionMakers: item.decision_makers,
         interestLevel: item.interest_level || 0,
         signedUp: item.status === 'won',
         specificNeeds: item.specific_needs,
         timestamp: item.created_at,
-        username: item.owner?.email || 'Unknown'
+        username: item.owner?.email?.split('@')[0] || 'Unassigned'
       }));
 
       return submissions;

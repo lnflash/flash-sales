@@ -249,9 +249,9 @@ export async function getSubmissionById(id: number): Promise<Submission> {
       .select(
         `
         *,
-        organization:organizations(*),
-        primary_contact:contacts(*),
-        owner:users(*)
+        organization:organizations!organization_id!left(*),
+        primary_contact:contacts!primary_contact_id!left(*),
+        owner:users!owner_id!left(*)
       `
       )
       .eq("id", id)
@@ -296,9 +296,9 @@ export async function updateSubmission(id: number, data: Partial<Submission>): P
       .select(
         `
         *,
-        organization:organizations(*),
-        primary_contact:contacts(*),
-        owner:users(*)
+        organization:organizations!organization_id!left(*),
+        primary_contact:contacts!primary_contact_id!left(*),
+        owner:users!owner_id!left(*)
       `
       )
       .single();
