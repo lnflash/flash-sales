@@ -1,6 +1,6 @@
 // Mirror the intake form submission type
 export interface Submission {
-  id: number;
+  id: number | string; // Support both for compatibility
   ownerName: string;
   phoneNumber?: string;
   packageSeen: boolean;

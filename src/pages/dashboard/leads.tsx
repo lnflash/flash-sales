@@ -139,7 +139,7 @@ export default function LeadsPage() {
   const [selectedWorkflow, setSelectedWorkflow] = useState<LeadWorkflow | null>(null);
   const [showProbabilityAnalyzer, setShowProbabilityAnalyzer] = useState(false);
   const [showLeadAssignment, setShowLeadAssignment] = useState(false);
-  const [leadToAssign, setLeadToAssign] = useState<number | null>(null);
+  const [leadToAssign, setLeadToAssign] = useState<number | string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [selectedTerritory, setSelectedTerritory] = useState<string>('');
   

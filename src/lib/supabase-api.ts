@@ -150,22 +150,22 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
       console.log("Searching for:", filters.search);
     }
 
-    // Build the base query with LEFT joins to include deals without related records
+    // Build the base query with proper joins
     let countQuery = supabase.from("deals").select(
       `
         *,
-        organization:organizations!organization_id!left(*),
-        primary_contact:contacts!primary_contact_id!left(*),
-        owner:users!owner_id!left(*)
+        organization:organizations!organization_id(name, state_province),
+        primary_contact:contacts!primary_contact_id(phone_primary),
+        owner:users!owner_id(email, username)
       `,
       { count: "exact", head: true }
     );
 
     let dataQuery = supabase.from("deals").select(`
         *,
-        organization:organizations!organization_id!left(*),
-        primary_contact:contacts!primary_contact_id!left(*),
-        owner:users!owner_id!left(*)
+        organization:organizations!organization_id(name, state_province),
+        primary_contact:contacts!primary_contact_id(phone_primary),
+        owner:users!owner_id(email, username)
       `);
 
     // Apply filters to both queries
@@ -219,7 +219,7 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
   }
 }
 
-export async function getSubmissionById(id: number): Promise<Submission> {
+export async function getSubmissionById(id: number | string): Promise<Submission> {
   try {
     const { data, error } = await supabase
       .from("deals")
@@ -246,16 +246,105 @@ export async function getSubmissionById(id: number): Promise<Submission> {
 
 export async function createSubmission(data: Omit<Submission, "id" | "timestamp">): Promise<Submission> {
   try {
-    // This is complex - we need to create organization, contact, and deal
-    // For now, throw an error to use the external API
-    throw new Error("Creating submissions via Supabase not yet implemented");
+    console.log("Creating submission in Supabase:", data);
+    
+    // First, check if organization exists or create it
+    let organizationId = null;
+    if (data.ownerName) {
+      const { data: existingOrg } = await supabase
+        .from("organizations")
+        .select("id")
+        .eq("name", data.ownerName)
+        .single();
+      
+      if (existingOrg) {
+        organizationId = existingOrg.id;
+      } else {
+        // Create new organization
+        const { data: newOrg, error: orgError } = await supabase
+          .from("organizations")
+          .insert({
+            name: data.ownerName,
+            state_province: data.territory || "",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (orgError) throw orgError;
+        organizationId = newOrg.id;
+      }
+    }
+    
+    // Create contact if phone number is provided
+    let contactId = null;
+    if (data.phoneNumber && organizationId) {
+      const { data: newContact, error: contactError } = await supabase
+        .from("contacts")
+        .insert({
+          organization_id: organizationId,
+          phone_primary: data.phoneNumber,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+      
+      if (!contactError && newContact) {
+        contactId = newContact.id;
+      }
+    }
+    
+    // Get user ID from username
+    let ownerId = null;
+    if (data.username) {
+      const { data: user } = await supabase
+        .from("users")
+        .select("id")
+        .or(`username.eq.${data.username},email.eq.${data.username}@getflash.io`)
+        .single();
+      
+      if (user) {
+        ownerId = user.id;
+      }
+    }
+    
+    // Create the deal
+    const { data: newDeal, error: dealError } = await supabase
+      .from("deals")
+      .insert({
+        name: data.ownerName,
+        organization_id: organizationId,
+        primary_contact_id: contactId,
+        owner_id: ownerId,
+        package_seen: data.packageSeen || false,
+        decision_makers: data.decisionMakers || "",
+        interest_level: data.interestLevel || 0,
+        status: data.signedUp ? "won" : "open",
+        specific_needs: data.specificNeeds || "",
+        stage: "initial_contact",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select(`
+        *,
+        organization:organizations!organization_id(name, state_province),
+        primary_contact:contacts!primary_contact_id(phone_primary),
+        owner:users!owner_id(email, username)
+      `)
+      .single();
+    
+    if (dealError) throw dealError;
+    
+    return mapDealToSubmission(newDeal);
   } catch (error) {
     console.error("Error creating submission in Supabase:", error);
     throw error;
   }
 }
 
-export async function updateSubmission(id: number, data: Partial<Submission>): Promise<Submission> {
+export async function updateSubmission(id: number | string, data: Partial<Submission>): Promise<Submission> {
   try {
     // Update only the deal fields that map to submission fields
     const updateData: any = {};
@@ -290,7 +379,7 @@ export async function updateSubmission(id: number, data: Partial<Submission>): P
   }
 }
 
-export async function deleteSubmission(id: number): Promise<void> {
+export async function deleteSubmission(id: number | string): Promise<void> {
   try {
     const { error } = await supabase.from("deals").delete().eq("id", id);
 

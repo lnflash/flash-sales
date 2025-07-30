@@ -8,8 +8,10 @@ import {
 } from '@/types/submission';
 
 // Feature flag to use Supabase instead of external API
-// Temporarily disable Supabase for submissions until we properly implement it
-const USE_SUPABASE = false; // process.env.NEXT_PUBLIC_USE_SUPABASE === 'true';
+// Use Supabase for reading, but external API for creating until we implement create
+const USE_SUPABASE = process.env.NEXT_PUBLIC_USE_SUPABASE === 'true' || 
+                    process.env.NODE_ENV === 'production' ||
+                    (typeof window !== 'undefined' && window.location.hostname.includes('ondigitalocean.app'));
 
 // Import Supabase functions synchronously
 import * as supabaseApiModule from './supabase-api';
@@ -104,7 +106,13 @@ export async function getSubmissions(
   }
 }
 
-export async function getSubmissionById(id: number): Promise<Submission> {
+export async function getSubmissionById(id: number | string): Promise<Submission> {
+  // Use Supabase if enabled
+  if (USE_SUPABASE) {
+    console.log('Fetching submission from Supabase');
+    return await supabaseApiModule.getSubmissionById(id);
+  }
+  
   try {
     const response = await fetch(`${API_BASE_URL}/submissions/${id}`);
     return handleResponse<Submission>(response);
@@ -115,22 +123,18 @@ export async function getSubmissionById(id: number): Promise<Submission> {
 }
 
 export async function createSubmission(data: Omit<Submission, 'id' | 'timestamp'>): Promise<Submission> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/submissions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return handleResponse<Submission>(response);
-  } catch (error) {
-    console.error('Error creating submission:', error);
-    throw error;
-  }
+  // Always use Supabase for creating
+  console.log('Creating submission via Supabase');
+  return await supabaseApiModule.createSubmission(data);
 }
 
-export async function updateSubmission(id: number, data: Partial<Submission>): Promise<Submission> {
+export async function updateSubmission(id: number | string, data: Partial<Submission>): Promise<Submission> {
+  // Use Supabase if enabled
+  if (USE_SUPABASE) {
+    console.log('Updating submission via Supabase');
+    return await supabaseApiModule.updateSubmission(id, data);
+  }
+  
   try {
     const response = await fetch(`${API_BASE_URL}/submissions/${id}`, {
       method: 'PUT',
@@ -146,7 +150,13 @@ export async function updateSubmission(id: number, data: Partial<Submission>): P
   }
 }
 
-export async function deleteSubmission(id: number): Promise<void> {
+export async function deleteSubmission(id: number | string): Promise<void> {
+  // Use Supabase if enabled
+  if (USE_SUPABASE) {
+    console.log('Deleting submission via Supabase');
+    return await supabaseApiModule.deleteSubmission(id);
+  }
+  
   try {
     const response = await fetch(`${API_BASE_URL}/submissions/${id}`, {
       method: 'DELETE',
