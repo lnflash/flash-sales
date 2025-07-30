@@ -5,6 +5,25 @@ import { Submission, SubmissionFilters, PaginationState, SortOption, SubmissionS
 function mapDealToSubmission(deal: any): Submission {
   if (!deal) return null as any;
 
+  // Get territory with fallback logic
+  let territory = deal.organization?.state_province || "";
+  
+  // If no territory from organization, try to determine from owner
+  if (!territory && deal.owner?.email) {
+    const territoryMap: Record<string, string> = {
+      'rogimon@getflash.io': 'St. Ann',
+      'tatiana_1@getflash.io': 'Kingston',
+      'charms@getflash.io': 'Portland',
+      'chala@getflash.io': 'St. Mary',
+      'kandi@getflash.io': 'St. Catherine',
+      'leah@getflash.io': 'Clarendon',
+      'tamoy@getflash.io': 'Manchester',
+      'jodi@getflash.io': 'St. Elizabeth',
+      'flash@getflash.io': 'Kingston'
+    };
+    territory = territoryMap[deal.owner.email] || "";
+  }
+
   return {
     id: parseInt(deal.id) || 0, // Convert UUID to number for compatibility
     ownerName: deal.organization?.name || deal.name || "",
@@ -15,7 +34,7 @@ function mapDealToSubmission(deal: any): Submission {
     signedUp: deal.status === "won" || false,
     specificNeeds: deal.specific_needs || "",
     username: deal.owner?.email?.split("@")[0] || "",
-    territory: deal.organization?.state_province || "",
+    territory: territory,
     timestamp: deal.created_at || new Date().toISOString(),
   };
 }
