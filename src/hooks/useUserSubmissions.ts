@@ -11,12 +11,13 @@ export function useUserSubmissions(username: string | undefined) {
   return useQuery({
     queryKey: ['userSubmissions', username],
     queryFn: async () => {
-      console.log(`[useUserSubmissions] Query function called for username: ${username}`);
-      
-      if (!username) {
-        console.log(`[useUserSubmissions] No username provided, returning empty`);
-        return { submissions: [], count: 0 };
-      }
+      try {
+        console.log(`[useUserSubmissions] Query function called for username: ${username}`);
+        
+        if (!username) {
+          console.log(`[useUserSubmissions] No username provided, returning empty`);
+          return { submissions: [], count: 0 };
+        }
 
       // Initialize Supabase client inside the query function
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -74,12 +75,13 @@ export function useUserSubmissions(username: string | undefined) {
       console.log(`[useUserSubmissions] First submission:`, submissions[0]);
       
       return { submissions, count: count || 0 };
+      } catch (error) {
+        console.error('[useUserSubmissions] Error in query function:', error);
+        return { submissions: [], count: 0 };
+      }
     },
     enabled: !!username,
     staleTime: 1000 * 60, // 1 minute
-    retry: 1,
-    onError: (error) => {
-      console.error('[useUserSubmissions] Query error:', error);
-    }
+    retry: 1
   });
 }
