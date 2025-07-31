@@ -5,11 +5,6 @@ import { createClient } from '@supabase/supabase-js';
 import { Submission } from '@/types/submission';
 import { mapDealToSubmission } from '@/lib/supabase-api';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 export function useUserSubmissions(username: string | undefined) {
   return useQuery({
     queryKey: ['userSubmissions', username],
@@ -17,6 +12,17 @@ export function useUserSubmissions(username: string | undefined) {
       if (!username) {
         return { submissions: [], count: 0 };
       }
+
+      // Initialize Supabase client inside the query function
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        console.error('Missing Supabase environment variables');
+        return { submissions: [], count: 0 };
+      }
+      
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
       console.log(`Fetching submissions for username: ${username}`);
 
