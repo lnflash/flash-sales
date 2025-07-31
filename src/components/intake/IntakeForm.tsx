@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircleIcon, ExclamationCircleIcon, UserIcon } from "@heroicons/react/24/outline";
-import { createSubmission } from "@/lib/api";
-import { LeadStatus } from "@/types/submission";
+import { CheckCircleIcon, ExclamationCircleIcon, UserIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import { createSubmission, updateSubmission, getSubmissionById } from "@/lib/api";
+import { LeadStatus, Submission } from "@/types/submission";
+import SubmissionSearch from "./SubmissionSearch";
 
 interface FormData {
   ownerName: string;
@@ -24,11 +25,18 @@ interface FormData {
   territory: string;
 }
 
-export default function IntakeForm() {
+interface IntakeFormProps {
+  submissionId?: string;
+}
+
+export default function IntakeForm({ submissionId }: IntakeFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     ownerName: "",
@@ -57,7 +65,77 @@ export default function IntakeForm() {
       // Also try to load from Supabase profile
       loadUserProfile(user.username);
     }
-  }, []);
+
+    // Load submission data if in edit mode
+    if (submissionId) {
+      loadSubmission(submissionId);
+    }
+  }, [submissionId]);
+
+  const loadSubmission = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const submission = await getSubmissionById(id);
+      setFormData({
+        ownerName: submission.ownerName || "",
+        phoneNumber: submission.phoneNumber || "",
+        packageSeen: submission.packageSeen || false,
+        decisionMakers: submission.decisionMakers || "",
+        interestLevel: submission.interestLevel || 3,
+        signedUp: submission.signedUp || false,
+        leadStatus: submission.leadStatus,
+        specificNeeds: submission.specificNeeds || "",
+        username: submission.username || "",
+        territory: submission.territory || "",
+      });
+      setIsEditMode(true);
+    } catch (error) {
+      console.error("Error loading submission:", error);
+      setError("Failed to load submission data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmissionSelect = (submission: Submission) => {
+    // Pre-fill form with selected submission data
+    setFormData({
+      ownerName: submission.ownerName || "",
+      phoneNumber: submission.phoneNumber || "",
+      packageSeen: submission.packageSeen || false,
+      decisionMakers: submission.decisionMakers || "",
+      interestLevel: submission.interestLevel || 3,
+      signedUp: submission.signedUp || false,
+      leadStatus: submission.leadStatus,
+      specificNeeds: submission.specificNeeds || "",
+      username: submission.username || "",
+      territory: submission.territory || "",
+    });
+    setShowSearch(false);
+    // Navigate to edit mode
+    router.push(`/intake?id=${submission.id}&mode=edit`);
+  };
+
+  const handleClearSearch = () => {
+    // Reset form to create mode
+    const user = getUserFromStorage();
+    const defaultTerritory = localStorage.getItem(`defaultTerritory_${user?.username}`) || "";
+    setFormData({
+      ownerName: "",
+      phoneNumber: "",
+      packageSeen: false,
+      decisionMakers: "",
+      interestLevel: 3,
+      signedUp: false,
+      leadStatus: undefined,
+      specificNeeds: "",
+      username: user?.username || "",
+      territory: defaultTerritory,
+    });
+    setIsEditMode(false);
+    // Clear URL parameters
+    router.push('/intake');
+  };
 
   const loadUserProfile = async (username: string) => {
     try {
@@ -120,29 +198,41 @@ export default function IntakeForm() {
         return;
       }
 
-      // Submit the form
-      await createSubmission(formData);
+      if (isEditMode && submissionId) {
+        // Update existing submission
+        await updateSubmission(submissionId, formData);
+        setSuccess(true);
+        
+        // Redirect to submission detail page after success
+        setTimeout(() => {
+          router.push(`/dashboard/submissions/${submissionId}`);
+        }, 1500);
+      } else {
+        // Create new submission
+        await createSubmission(formData);
+        setSuccess(true);
 
-      setSuccess(true);
+        // Reset form for new submission
+        const user = getUserFromStorage();
+        const defaultTerritory = localStorage.getItem(`defaultTerritory_${user?.username}`) || "";
+        setFormData({
+          ownerName: "",
+          phoneNumber: "",
+          packageSeen: false,
+          decisionMakers: "",
+          interestLevel: 3,
+          signedUp: false,
+          leadStatus: undefined,
+          specificNeeds: "",
+          username: user?.username || "Flash Rep",
+          territory: defaultTerritory,
+        });
 
-      // Reset form
-      setFormData({
-        ownerName: "",
-        phoneNumber: "",
-        packageSeen: false,
-        decisionMakers: "",
-        interestLevel: 3,
-        signedUp: false,
-        leadStatus: undefined,
-        specificNeeds: "",
-        username: "Flash Rep",
-        territory: "",
-      });
-
-      // Redirect to submissions page after success
-      setTimeout(() => {
-        router.push("/dashboard/submissions");
-      }, 1500);
+        // Keep on the same page for continuous entry
+        setTimeout(() => {
+          setSuccess(false);
+        }, 3000);
+      }
     } catch (err) {
       console.error("Error submitting form:", err);
       setError("Failed to submit form. Please try again.");
@@ -150,6 +240,17 @@ export default function IntakeForm() {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="bg-white rounded-lg p-12 shadow-lg border border-light-border text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
+          <p className="mt-4 text-light-text-secondary">Loading submission data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -170,8 +271,12 @@ export default function IntakeForm() {
                   <span className="text-white text-2xl font-bold">F</span>
                 </div>
               </div>
-              <CardTitle className="text-2xl font-bold text-light-text-primary">Flash Sales Canvas Form</CardTitle>
-              <p className="text-light-text-secondary mt-2">Capture lead information quickly and efficiently</p>
+              <CardTitle className="text-2xl font-bold text-light-text-primary">
+                {isEditMode ? "Edit Submission" : "Flash Sales Canvas Form"}
+              </CardTitle>
+              <p className="text-light-text-secondary mt-2">
+                {isEditMode ? "Update existing lead information" : "Capture lead information quickly and efficiently"}
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -182,7 +287,9 @@ export default function IntakeForm() {
               <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-green-800 font-medium">Success!</p>
-                <p className="text-green-600 text-sm">Form submitted successfully. Redirecting...</p>
+                <p className="text-green-600 text-sm">
+                  {isEditMode ? "Submission updated successfully. Redirecting..." : "Form submitted successfully!"}
+                </p>
               </div>
             </div>
           )}
@@ -194,6 +301,32 @@ export default function IntakeForm() {
                 <p className="text-red-800 font-medium">Error</p>
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
+            </div>
+          )}
+
+          {/* Search Section - Only show for new submissions */}
+          {!isEditMode && !submissionId && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium text-light-text-secondary">
+                  Search Existing Submissions
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="text-sm text-flash-green hover:text-flash-green-light flex items-center"
+                >
+                  <ArrowPathIcon className="w-4 h-4 mr-1" />
+                  {showSearch ? "Hide Search" : "Build on Existing"}
+                </button>
+              </div>
+              {showSearch && (
+                <SubmissionSearch
+                  onSelect={handleSubmissionSelect}
+                  onClear={handleClearSearch}
+                  currentSubmissionId={submissionId}
+                />
+              )}
             </div>
           )}
 
@@ -382,9 +515,25 @@ export default function IntakeForm() {
 
             {/* Submit Button */}
             <div className="pt-6">
-              <Button type="submit" disabled={isSubmitting} className="w-full bg-flash-green text-white hover:bg-flash-green-dark disabled:opacity-50">
-                {isSubmitting ? "Submitting..." : "Submit Form"}
-              </Button>
+              <div className="flex space-x-4">
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="flex-1 bg-flash-green text-white hover:bg-flash-green-dark disabled:opacity-50"
+                >
+                  {isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update Submission" : "Submit Form")}
+                </Button>
+                {isEditMode && (
+                  <Button
+                    type="button"
+                    onClick={handleClearSearch}
+                    variant="outline"
+                    className="px-6"
+                  >
+                    Create New
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </CardContent>
