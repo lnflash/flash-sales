@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { BellIcon, MagnifyingGlassIcon, XMarkIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { BellIcon, MagnifyingGlassIcon, XMarkIcon, Bars3Icon, UserCircleIcon, ArrowRightOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
 import { formatDate } from '@/utils/date-formatter';
-import { getUserFromStorage } from '@/lib/auth';
+import { getUserFromStorage, logout } from '@/lib/auth';
 import { getUserNotifications, markAsRead, markAllAsRead, getUnreadCount } from '@/lib/notifications';
 import { Notification } from '@/types/notifications';
 import { useMobileMenu } from '@/contexts/MobileMenuContext';
@@ -19,16 +19,19 @@ export default function Header({ title }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const router = useRouter();
   const currentDate = formatDate(new Date().toISOString());
   const { toggleMobileMenu, isMobile } = useMobileMenu();
 
   useEffect(() => {
-    const user = getUserFromStorage();
-    if (user) {
-      setCurrentUser(user.username);
-      loadNotifications(user.username);
+    const userData = getUserFromStorage();
+    if (userData) {
+      setUser(userData);
+      setCurrentUser(userData.username);
+      loadNotifications(userData.username);
     }
   }, []);
 
@@ -42,6 +45,27 @@ export default function Header({ title }: HeaderProps) {
 
     return () => clearInterval(interval);
   }, [currentUser]);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showNotifications && !target.closest('.notifications-dropdown')) {
+        setShowNotifications(false);
+      }
+      if (showUserMenu && !target.closest('.user-menu-dropdown')) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showNotifications, showUserMenu]);
 
   const loadNotifications = (username: string) => {
     const userNotifications = getUserNotifications(username);
@@ -134,7 +158,7 @@ export default function Header({ title }: HeaderProps) {
               <MagnifyingGlassIcon className="h-6 w-6 text-light-text-secondary" />
             </button>
 
-            <div className="relative">
+            <div className="relative notifications-dropdown">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 rounded-lg hover:bg-light-bg-secondary transition-colors"
@@ -203,6 +227,49 @@ export default function Header({ title }: HeaderProps) {
                         </div>
                       ))
                     )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* User Menu */}
+            <div className="relative user-menu-dropdown">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center p-2 rounded-lg hover:bg-light-bg-secondary transition-colors"
+              >
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold">
+                  {user?.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              </button>
+
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-light-border z-50">
+                  <div className="p-4 border-b border-light-border">
+                    <p className="text-sm font-medium text-light-text-primary">{user?.username || 'User'}</p>
+                    <p className="text-xs text-light-text-secondary">{user?.role || 'Flash Sales Rep'}</p>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        router.push('/dashboard/profile');
+                      }}
+                      className="w-full flex items-center px-3 py-2 text-sm text-light-text-primary hover:bg-light-bg-secondary rounded-md transition-colors"
+                    >
+                      <UserIcon className="h-4 w-4 mr-3" />
+                      Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        handleLogout();
+                      }}
+                      className="w-full flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors mt-1"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
+                      Logout
+                    </button>
                   </div>
                 </div>
               )}
