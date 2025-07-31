@@ -23,8 +23,10 @@ import {
   ShoppingBagIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import { createSubmission } from "@/lib/api";
+import { createSubmission, updateSubmission, getSubmissionById } from "@/lib/api";
 import { calculateLeadScore } from "@/utils/lead-scoring";
+import { Submission } from "@/types/submission";
+import SubmissionSearch from "./SubmissionSearch";
 
 // Extended form data with dynamic fields
 interface DynamicFormData {
@@ -136,43 +138,52 @@ const PAIN_POINTS = [
   "Complex pricing",
 ];
 
-export default function DynamicCanvasForm() {
+interface DynamicCanvasFormProps {
+  submissionId?: string;
+}
+
+const initialFormData: DynamicFormData = {
+  businessName: "",
+  ownerName: "",
+  phoneNumber: "",
+  email: "",
+  businessType: "",
+  yearEstablished: "",
+  address: "",
+  city: "",
+  state: "",
+  zipCode: "",
+  territory: "",
+  monthlyRevenue: "",
+  numberOfEmployees: "",
+  currentProcessor: "",
+  monthlyTransactions: "",
+  averageTicketSize: "",
+  packageSeen: false,
+  decisionMakers: "",
+  interestLevel: 3,
+  specificNeeds: "",
+  painPoints: [],
+  industrySpecificData: {},
+  signedUp: false,
+  leadScore: 0,
+  username: "",
+  formCompletionTime: 0,
+  fieldInteractions: {},
+};
+
+export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [formStartTime] = useState(Date.now());
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [showSearch, setShowSearch] = useState(true);
 
-  const [formData, setFormData] = useState<DynamicFormData>({
-    businessName: "",
-    ownerName: "",
-    phoneNumber: "",
-    email: "",
-    businessType: "",
-    yearEstablished: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    territory: "",
-    monthlyRevenue: "",
-    numberOfEmployees: "",
-    currentProcessor: "",
-    monthlyTransactions: "",
-    averageTicketSize: "",
-    packageSeen: false,
-    decisionMakers: "",
-    interestLevel: 3,
-    specificNeeds: "",
-    painPoints: [],
-    industrySpecificData: {},
-    signedUp: false,
-    leadScore: 0,
-    username: "",
-    formCompletionTime: 0,
-    fieldInteractions: {},
-  });
+  const [formData, setFormData] = useState<DynamicFormData>({...initialFormData});
 
   // Track field interactions for analytics
   const trackFieldInteraction = (fieldName: string) => {
@@ -199,7 +210,76 @@ export default function DynamicCanvasForm() {
       // Also try to load from Supabase profile
       loadUserProfile(user.username);
     }
-  }, []);
+
+    // Load submission data if in edit mode
+    if (submissionId) {
+      loadSubmission(submissionId);
+    }
+  }, [submissionId]);
+
+  const loadSubmission = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const submission = await getSubmissionById(id);
+      
+      // Map submission data to dynamic form data
+      setFormData((prev) => ({
+        ...prev,
+        businessName: submission.ownerName || "",
+        ownerName: submission.ownerName || "",
+        phoneNumber: submission.phoneNumber || "",
+        territory: submission.territory || "",
+        packageSeen: submission.packageSeen || false,
+        decisionMakers: submission.decisionMakers || "",
+        interestLevel: submission.interestLevel || 3,
+        signedUp: submission.signedUp || false,
+        specificNeeds: submission.specificNeeds || "",
+        username: submission.username || "",
+      }));
+      setIsEditMode(true);
+    } catch (error) {
+      console.error("Error loading submission:", error);
+      setError("Failed to load submission data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmissionSelect = (submission: Submission) => {
+    // Pre-fill form with selected submission data
+    setFormData((prev) => ({
+      ...prev,
+      businessName: submission.ownerName || "",
+      ownerName: submission.ownerName || "",
+      phoneNumber: submission.phoneNumber || "",
+      territory: submission.territory || "",
+      packageSeen: submission.packageSeen || false,
+      decisionMakers: submission.decisionMakers || "",
+      interestLevel: submission.interestLevel || 3,
+      signedUp: submission.signedUp || false,
+      specificNeeds: submission.specificNeeds || "",
+      username: submission.username || "",
+    }));
+    setShowSearch(false);
+    // Navigate to edit mode
+    router.push(`/intake-dynamic?id=${submission.id}&mode=edit`);
+  };
+
+  const handleClearSearch = () => {
+    // Reset form to create mode
+    const user = getUserFromStorage();
+    const defaultTerritory = localStorage.getItem(`defaultTerritory_${user?.username}`) || "";
+    setFormData(initialFormData);
+    setFormData((prev) => ({
+      ...prev,
+      username: user?.username || "",
+      territory: defaultTerritory,
+    }));
+    setIsEditMode(false);
+    setCurrentStep(1);
+    // Clear URL parameters
+    router.push('/intake-dynamic');
+  };
 
   const loadUserProfile = async (username: string) => {
     try {
@@ -382,14 +462,35 @@ export default function DynamicCanvasForm() {
         username: formData.username,
       };
 
-      await createSubmission(submissionData);
+      if (isEditMode && submissionId) {
+        // Update existing submission
+        await updateSubmission(submissionId, submissionData);
+        setSuccess(true);
+        
+        // Redirect to submission detail page after success
+        setTimeout(() => {
+          router.push(`/dashboard/submissions/${submissionId}`);
+        }, 1500);
+      } else {
+        // Create new submission
+        await createSubmission(submissionData);
+        setSuccess(true);
 
-      setSuccess(true);
+        // Reset form for new submission
+        const user = getUserFromStorage();
+        const defaultTerritory = localStorage.getItem(`defaultTerritory_${user?.username}`) || "";
+        setFormData({
+          ...initialFormData,
+          username: user?.username || "",
+          territory: defaultTerritory,
+        });
+        setCurrentStep(1);
 
-      // Redirect to submissions page after success
-      setTimeout(() => {
-        router.push("/dashboard/submissions");
-      }, 1500);
+        // Keep on the same page for continuous entry
+        setTimeout(() => {
+          setSuccess(false);
+        }, 3000);
+      }
     } catch (err) {
       console.error("Error submitting form:", err);
       setError("Failed to submit form. Please try again.");
@@ -720,6 +821,17 @@ export default function DynamicCanvasForm() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-white rounded-lg p-12 shadow-lg border border-light-border text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
+          <p className="mt-4 text-light-text-secondary">Loading submission data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Card>
@@ -735,8 +847,10 @@ export default function DynamicCanvasForm() {
 
             <div className="flex justify-between items-start mt-6">
               <div>
-                <CardTitle>Flash Sales Intake Form</CardTitle>
-                <CardDescription>Capture lead information with intelligent field adaptation</CardDescription>
+                <CardTitle>{isEditMode ? "Edit Submission" : "Flash Sales Intake Form"}</CardTitle>
+                <CardDescription>
+                  {isEditMode ? "Update existing lead information" : "Capture lead information with intelligent field adaptation"}
+                </CardDescription>
               </div>
               <div className="text-right">
                 <div className={`text-2xl font-bold ${getLeadScoreColor(formData.leadScore)}`}>{formData.leadScore}</div>
@@ -767,28 +881,61 @@ export default function DynamicCanvasForm() {
                   {formData.leadScore} - {getLeadScoreLabel(formData.leadScore)}
                 </span>
               </p>
-              <p className="text-light-text-secondary mt-2">Redirecting to submissions...</p>
+              <p className="text-light-text-secondary mt-2">
+                {isEditMode ? "Redirecting to submission details..." : "Ready for next entry..."}
+              </p>
             </div>
           ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6"
-              autoComplete="off"
-              onKeyDown={(e) => {
-                // Prevent form submission on Enter key except for submit button
-                if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
-                  e.preventDefault();
-                }
-              }}
-            >
-              {error && (
-                <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 rounded-lg">
-                  <ExclamationCircleIcon className="h-5 w-5" />
-                  <span>{error}</span>
+            <>
+              {/* Search Section - Only show for new submissions on step 1 */}
+              {!isEditMode && !submissionId && currentStep === 1 && (
+                <div className="mb-6 p-4 bg-light-bg-secondary rounded-lg border border-light-border">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <label className="block text-sm font-medium text-light-text-primary">
+                        Search Existing Submissions
+                      </label>
+                      <p className="text-xs text-light-text-secondary mt-1">
+                        Start typing to find and update an existing lead
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowSearch(!showSearch)}
+                      className="text-sm text-light-text-secondary hover:text-light-text-primary flex items-center"
+                    >
+                      {showSearch ? "Hide" : "Show"} Search
+                    </button>
+                  </div>
+                  {showSearch && (
+                    <SubmissionSearch
+                      onSelect={handleSubmissionSelect}
+                      onClear={handleClearSearch}
+                      currentSubmissionId={submissionId}
+                    />
+                  )}
                 </div>
               )}
 
-              {renderStepContent()}
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-6"
+                autoComplete="off"
+                onKeyDown={(e) => {
+                  // Prevent form submission on Enter key except for submit button
+                  if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+                    e.preventDefault();
+                  }
+                }}
+              >
+                {error && (
+                  <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 rounded-lg">
+                    <ExclamationCircleIcon className="h-5 w-5" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {renderStepContent()}
 
               <div className="flex justify-between pt-6">
                 <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
@@ -806,6 +953,7 @@ export default function DynamicCanvasForm() {
                 )}
               </div>
             </form>
+            </>
           )}
         </CardContent>
       </Card>
