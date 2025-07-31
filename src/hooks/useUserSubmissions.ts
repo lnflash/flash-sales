@@ -6,10 +6,15 @@ import { Submission } from '@/types/submission';
 import { mapDealToSubmission } from '@/lib/supabase-api';
 
 export function useUserSubmissions(username: string | undefined) {
+  console.log(`[useUserSubmissions] Hook called with username: ${username}`);
+  
   return useQuery({
     queryKey: ['userSubmissions', username],
     queryFn: async () => {
+      console.log(`[useUserSubmissions] Query function called for username: ${username}`);
+      
       if (!username) {
+        console.log(`[useUserSubmissions] No username provided, returning empty`);
         return { submissions: [], count: 0 };
       }
 
@@ -17,8 +22,11 @@ export function useUserSubmissions(username: string | undefined) {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       
+      console.log(`[useUserSubmissions] Supabase URL: ${supabaseUrl ? 'present' : 'missing'}`);
+      console.log(`[useUserSubmissions] Supabase Key: ${supabaseAnonKey ? 'present' : 'missing'}`);
+      
       if (!supabaseUrl || !supabaseAnonKey) {
-        console.error('Missing Supabase environment variables');
+        console.error('[useUserSubmissions] Missing Supabase environment variables');
         return { submissions: [], count: 0 };
       }
       
@@ -34,7 +42,7 @@ export function useUserSubmissions(username: string | undefined) {
         .single();
 
       if (userError || !userData) {
-        console.log(`No user found for username: ${username}`);
+        console.log(`[useUserSubmissions] No user found for username: ${username}`, { userError, userData });
         return { submissions: [], count: 0 };
       }
 
@@ -69,5 +77,9 @@ export function useUserSubmissions(username: string | undefined) {
     },
     enabled: !!username,
     staleTime: 1000 * 60, // 1 minute
+    retry: 1,
+    onError: (error) => {
+      console.error('[useUserSubmissions] Query error:', error);
+    }
   });
 }
