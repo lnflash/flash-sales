@@ -5,6 +5,15 @@
 
 # testing
 /coverage
+# Prevent test files in pages directory
+src/pages/**/*.test.tsx
+src/pages/**/*.test.ts
+src/pages/**/*.test.jsx
+src/pages/**/*.test.js
+src/pages/**/*.spec.tsx
+src/pages/**/*.spec.ts
+src/pages/**/*.spec.jsx
+src/pages/**/*.spec.js
 
 # next.js
 /.next/

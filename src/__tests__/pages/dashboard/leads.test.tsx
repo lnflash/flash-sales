@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { useRouter } from 'next/router';
-import LeadsPage from './leads';
+import LeadsPage from '@/pages/dashboard/leads';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { getUserFromStorage } from '@/lib/auth';
 
