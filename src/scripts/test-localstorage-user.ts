@@ -9,7 +9,7 @@ if (userData) {
   console.log('User data from localStorage:', user);
   console.log('Username:', user.username);
   console.log('Username length:', user.username.length);
-  console.log('Username charCodes:', Array.from(user.username).map(c => c.charCodeAt(0)));
+  console.log('Username charCodes:', Array.from(user.username).map((c: string) => c.charCodeAt(0)));
 } else {
   console.log('No user data found in localStorage');
 }
