@@ -97,10 +97,11 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
       if (filters.username === 'Unassigned') {
         // Filter for deals without owners
         query = query.is("owner_id", null);
-      } else {
-        // We'll handle username filtering in the main function
-        // by filtering the results after fetching
       }
+    }
+    // Apply user ID filter if we have one (from username lookup)
+    if ((filters as any).userIdForFilter) {
+      query = query.eq("owner_id", (filters as any).userIdForFilter);
     }
   }
 
@@ -150,6 +151,29 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
       console.log("Searching for:", filters.search);
     }
 
+    // If we need to filter by username (and it's not 'Unassigned'), we need to get the user ID first
+    let userIdForFilter: string | null = null;
+    if (filters?.username && filters.username !== 'Unassigned') {
+      const { data: userData } = await supabase
+        .from("users")
+        .select("id")
+        .or(`username.eq.${filters.username},email.eq.${filters.username}@getflash.io`)
+        .single();
+      
+      if (userData) {
+        userIdForFilter = userData.id;
+        console.log(`Found user ID for username '${filters.username}':`, userIdForFilter);
+      } else {
+        console.log(`No user found for username '${filters.username}'`);
+        // Return empty results if user not found
+        return {
+          data: [],
+          totalCount: 0,
+          pageCount: 0,
+        };
+      }
+    }
+
     // Build the base query with proper joins
     let countQuery = supabase.from("deals").select(
       `
@@ -168,9 +192,12 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
         owner:users!owner_id(email, username)
       `);
 
-    // Apply filters to both queries
-    countQuery = buildSupabaseQuery(countQuery, filters);
-    dataQuery = buildSupabaseQuery(dataQuery, filters, pagination, sortBy);
+    // Apply filters to both queries, but pass the user ID if we have one
+    const modifiedFilters = userIdForFilter 
+      ? { ...filters, userIdForFilter } 
+      : filters;
+    countQuery = buildSupabaseQuery(countQuery, modifiedFilters);
+    dataQuery = buildSupabaseQuery(dataQuery, modifiedFilters, pagination, sortBy);
 
     // Execute count query
     const { count, error: countError } = await countQuery;
@@ -204,14 +231,8 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
         hasOwner: !!d.owner_id
       })));
     }
-    let submissions = (data || []).map(mapDealToSubmission);
+    const submissions = (data || []).map(mapDealToSubmission);
     console.log("Mapped submissions count:", submissions.length);
-
-    // Apply username filtering on the mapped data if needed
-    if (filters?.username && filters.username !== 'Unassigned') {
-      submissions = submissions.filter((sub: Submission) => sub.username === filters.username);
-      console.log(`Filtered by username '${filters.username}':`, submissions.length);
-    }
 
     return {
       data: submissions,
