@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { getUserFromStorage, logout, User } from "@/lib/auth";
-import { hasPermission, ROLE_PERMISSIONS } from "@/types/roles";
+import { hasPermission, ROLE_PERMISSIONS, UserRole } from "@/types/roles";
 import {
   ChartBarIcon,
   TableCellsIcon,
@@ -26,17 +26,18 @@ interface NavItem {
   href: string;
   icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement>>;
   requiresPermission?: keyof typeof ROLE_PERMISSIONS['Flash Admin'];
+  hideForRoles?: UserRole[];
 }
 
 const navigation: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
+  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, hideForRoles: ["Flash Sales Rep"] },
   { name: "My Dashboard", href: "/dashboard/rep-dashboard", icon: ChartPieIcon },
   { name: "Canvas Form", href: "/intake", icon: DocumentTextIcon },
   { name: "Intake Form ", href: "/intake-dynamic", icon: DocumentTextIcon },
   { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, requiresPermission: 'canViewAnalytics' },
   { name: "Submissions", href: "/dashboard/submissions", icon: TableCellsIcon },
   { name: "Lead Management", href: "/dashboard/leads", icon: UserGroupIcon },
-  { name: "Rep Tracking", href: "/dashboard/rep-tracking", icon: ClipboardDocumentCheckIcon },
+  { name: "Rep Tracking", href: "/dashboard/rep-tracking", icon: ClipboardDocumentCheckIcon, hideForRoles: ["Flash Sales Rep"] },
   { name: "Profile", href: "/dashboard/profile", icon: UserIcon },
   { name: "Settings", href: "/dashboard/settings", icon: Cog6ToothIcon, requiresPermission: 'canViewSettings' },
   { name: "Role Management", href: "/dashboard/roles", icon: UserGroupIcon, requiresPermission: 'canAssignRoles' },
@@ -79,10 +80,22 @@ export default function Sidebar() {
         <ul className="space-y-1">
           {navigation
             .filter((item) => {
+              // Check if item is hidden for current user role
+              if (item.hideForRoles && user?.role && item.hideForRoles.includes(user.role)) {
+                return false;
+              }
               // Show all items if no permission required
               if (!item.requiresPermission) return true;
               // Check permission based on user role
               return user?.role && hasPermission(user.role, item.requiresPermission);
+            })
+            .sort((a, b) => {
+              // For Sales Reps, put "My Dashboard" first
+              if (user?.role === "Flash Sales Rep") {
+                if (a.name === "My Dashboard") return -1;
+                if (b.name === "My Dashboard") return 1;
+              }
+              return 0;
             })
             .map((item) => {
               const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);

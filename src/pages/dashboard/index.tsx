@@ -18,6 +18,7 @@ import { getUserFromStorage } from '@/lib/auth';
 import { getUserRole, hasPermission } from '@/types/roles';
 import CreateNotificationModal from '@/components/notifications/CreateNotificationModal';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/router';
 
 // Lazy load heavy components
 const SubmissionTrends = lazy(() => import('@/components/dashboard/SubmissionTrends'));
@@ -56,16 +57,24 @@ export default function Dashboard() {
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [canCreateNotifications, setCanCreateNotifications] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const currentUser = getUserFromStorage();
     if (currentUser) {
       setUser(currentUser);
       const role = getUserRole(currentUser.username);
+      
+      // Redirect Sales Reps to their personal dashboard
+      if (role === 'Flash Sales Rep') {
+        router.replace('/dashboard/rep-dashboard');
+        return;
+      }
+      
       // Only admins can create notifications
       setCanCreateNotifications(hasPermission(role, 'canAssignRoles'));
     }
-  }, []);
+  }, [router]);
   
   // Filter submissions based on user role
   const getFilters = () => {
