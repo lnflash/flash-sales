@@ -35,8 +35,8 @@ export default function RepFilter({
           <option value={currentUsername}>Me ({currentUsername})</option>
           <option disabled>──────────</option>
           {availableReps
-            .filter(rep => rep !== currentUsername)
-            .sort()
+            .filter(rep => rep.toLowerCase() !== currentUsername.toLowerCase())
+            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map(rep => (
               <option key={rep} value={rep}>{rep}</option>
             ))}

@@ -45,14 +45,29 @@ export const ROLE_PERMISSIONS = {
 } as const;
 
 export function getUserRole(username: string): UserRole {
+  const normalizedUsername = username.toLowerCase();
+  
   // Check if user is a hard-coded admin
-  if (ADMIN_USERNAMES.includes(username.toLowerCase())) {
+  if (ADMIN_USERNAMES.includes(normalizedUsername)) {
     return "Flash Admin";
   }
 
-  // Otherwise, check stored role assignments
+  // Otherwise, check stored role assignments (case-insensitive)
   const roleAssignments = getRoleAssignments();
-  return roleAssignments[username] || DEFAULT_ROLE;
+  
+  // Check for exact match first, then case-insensitive
+  if (roleAssignments[username]) {
+    return roleAssignments[username];
+  }
+  
+  // Check case-insensitive
+  for (const [storedUsername, role] of Object.entries(roleAssignments)) {
+    if (storedUsername.toLowerCase() === normalizedUsername) {
+      return role;
+    }
+  }
+  
+  return DEFAULT_ROLE;
 }
 
 export function getRoleAssignments(): Record<string, UserRole> {
@@ -70,7 +85,8 @@ export function saveRoleAssignment(username: string, role: UserRole): void {
   if (typeof window === "undefined") return;
 
   const assignments = getRoleAssignments();
-  assignments[username] = role;
+  // Store with lowercase username for consistency
+  assignments[username.toLowerCase()] = role;
   localStorage.setItem("flash_role_assignments", JSON.stringify(assignments));
 }
 

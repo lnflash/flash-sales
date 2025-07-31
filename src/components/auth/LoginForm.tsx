@@ -39,11 +39,12 @@ export default function LoginForm() {
     setError('');
     
     try {
-      console.log("Checking username:", username.trim());
+      const normalizedUsername = username.trim().toLowerCase();
+      console.log("Checking username:", normalizedUsername);
       
       const { data } = await client.query({
         query: CHECK_USERNAME_QUERY,
-        variables: { username: username.trim() },
+        variables: { username: normalizedUsername },
         fetchPolicy: 'network-only',
       });
       
@@ -51,7 +52,7 @@ export default function LoginForm() {
       
       if (data?.accountDefaultWallet?.id) {
         saveUserToStorage({
-          username: username.trim(),
+          username: normalizedUsername,
           userId: data.accountDefaultWallet.id,
           loggedInAt: Date.now(),
         });

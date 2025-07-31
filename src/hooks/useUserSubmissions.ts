@@ -21,11 +21,11 @@ export function useUserSubmissions(username: string | undefined) {
 
       console.log(`[useUserSubmissions] Fetching submissions for username: ${username}`);
 
-      // First get the user ID
+      // First get the user ID (case-insensitive)
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('id')
-        .eq('username', username)
+        .ilike('username', username)
         .single();
 
       if (userError || !userData) {

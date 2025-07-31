@@ -14,10 +14,16 @@ export interface User {
 
 export function saveUserToStorage(user: Omit<User, 'role'>): void {
   if (typeof window !== 'undefined') {
+    // Normalize username to lowercase for consistency
+    const normalizedUser = {
+      ...user,
+      username: user.username.toLowerCase(),
+    };
+    
     // Add role based on username
     const userWithRole: User = {
-      ...user,
-      role: getUserRole(user.username),
+      ...normalizedUser,
+      role: getUserRole(normalizedUser.username),
     };
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userWithRole));
   }

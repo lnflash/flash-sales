@@ -338,13 +338,13 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
       }
     }
     
-    // Get user ID from username
+    // Get user ID from username (case-insensitive)
     let ownerId = null;
     if (data.username) {
       const { data: user } = await supabase
         .from("users")
         .select("id")
-        .or(`username.eq.${data.username},email.eq.${data.username}@getflash.io`)
+        .or(`username.ilike.${data.username},email.ilike.${data.username}@getflash.io`)
         .single();
       
       if (user) {
@@ -448,11 +448,11 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
     // Handle username/owner change
     let newOwnerId = currentDeal.owner_id;
     if (data.username !== undefined) {
-      // Look up the new owner by username
+      // Look up the new owner by username (case-insensitive)
       const { data: newOwner } = await supabase
         .from("users")
         .select("id")
-        .or(`username.eq.${data.username},email.eq.${data.username}@getflash.io`)
+        .or(`username.ilike.${data.username},email.ilike.${data.username}@getflash.io`)
         .single();
       
       if (newOwner) {
