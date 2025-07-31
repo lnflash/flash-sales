@@ -110,7 +110,9 @@ export default function RepDashboard() {
   const canViewAllReps = user?.role && hasPermission(user.role, 'canViewAllReps');
   
   // Determine which username to filter by
-  const usernameToFilter = canViewAllReps && selectedUsername ? selectedUsername : (canViewAllReps ? '' : user?.username);
+  // For non-admin users, always filter by their username
+  // For admin users, filter by selected username if provided, otherwise their own username
+  const usernameToFilter = canViewAllReps && selectedUsername ? selectedUsername : user?.username;
   const filters = usernameToFilter ? { username: usernameToFilter } : {};
   
   const { submissions, isLoading } = useSubmissions(
@@ -195,8 +197,8 @@ export default function RepDashboard() {
   }
 
   // Determine display name for dashboard
-  const displayUsername = selectedUsername || user.username;
-  const isViewingOwnDashboard = !selectedUsername || selectedUsername === user.username;
+  const displayUsername = (canViewAllReps && selectedUsername) ? selectedUsername : user.username;
+  const isViewingOwnDashboard = !canViewAllReps || !selectedUsername || selectedUsername === user.username;
 
   return (
     <DashboardLayout title={`${displayUsername}'s Dashboard`}>
@@ -220,15 +222,14 @@ export default function RepDashboard() {
               {isViewingOwnDashboard ? `Welcome back, ${user.username}!` : `Viewing ${displayUsername}'s Dashboard`}
             </p>
             <p className="text-xs text-light-text-secondary">
-              {canViewAllReps && selectedUsername ? `Admin view of ${displayUsername}'s data` : 
-               canViewAllReps && !selectedUsername ? 'Viewing all submissions (Admin)' : 
+              {canViewAllReps && selectedUsername && selectedUsername !== user.username ? `Admin view of ${selectedUsername}'s data` : 
                'Viewing your personal dashboard'}
             </p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-xs text-light-text-secondary">
-            {canViewAllReps ? 'Total Submissions (All Reps)' : 'Your Submissions'}
+            Your Submissions
           </p>
           <p className="text-lg font-semibold text-light-text-primary">{submissions.length}</p>
         </div>

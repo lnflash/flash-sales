@@ -28,11 +28,10 @@ export default function RepFilter({
         </div>
         <select
           id="rep-filter"
-          value={selectedUsername}
-          onChange={(e) => onUsernameChange(e.target.value)}
+          value={selectedUsername || currentUsername}
+          onChange={(e) => onUsernameChange(e.target.value === currentUsername ? '' : e.target.value)}
           className="ml-4 px-3 py-1.5 bg-white border border-light-border rounded-md text-sm text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
         >
-          <option value="">All Reps</option>
           <option value={currentUsername}>Me ({currentUsername})</option>
           <option disabled>──────────</option>
           {availableReps
