@@ -6,7 +6,7 @@ import DealProbabilityAnalyzer from '@/components/sales-intelligence/DealProbabi
 import FollowUpRecommendations from '@/components/sales-intelligence/FollowUpRecommendations';
 import LeadAssignment from '@/components/sales-intelligence/LeadAssignment';
 import TerritoryDashboard from '@/components/sales-intelligence/TerritoryDashboard';
-import { useSubmissions } from '@/hooks/useSubmissions';
+import { useUserSubmissions } from '@/hooks/useUserSubmissions';
 import { LeadWorkflow, LeadStage } from '@/types/lead-qualification';
 import { Submission } from '@/types/submission';
 import { calculateDealProbability } from '@/utils/deal-probability';
@@ -178,16 +178,29 @@ export default function LeadsPage() {
     }
   }, []);
   
-  // Filter submissions based on user role
-  const getFilters = () => {
-    if (user && !hasPermission(user.role, 'canViewAllReps')) {
-      return { username: user.username };
-    }
-    return {};
-  };
+  // Determine which username to filter by
+  const canViewAllReps = user?.role && hasPermission(user.role, 'canViewAllReps');
+  const usernameToFilter = canViewAllReps ? undefined : user?.username;
   
-  // Fetch all submissions without pagination for lead management
-  const { submissions, isLoading } = useSubmissions(getFilters(), { pageIndex: 0, pageSize: 2000 });
+  // Debug logging
+  console.log('Lead Management Debug:', {
+    user: user,
+    canViewAllReps,
+    usernameToFilter,
+  });
+  
+  // Fetch all submissions for lead management
+  const { data, isLoading } = useUserSubmissions(usernameToFilter);
+  const submissions = data?.submissions || [];
+  const totalCount = data?.count || 0;
+  
+  console.log('[LeadManagement] useUserSubmissions returned:', {
+    data,
+    submissionsLength: submissions.length,
+    totalCount,
+    isLoading,
+    usernameToFilter
+  });
   
   // Convert submissions to workflows
   const workflows = submissions.map(submissionToWorkflow);
@@ -230,8 +243,34 @@ export default function LeadsPage() {
       : '0',
   };
 
+  // Show loading state while user data or submissions are loading
+  if (!user || isLoading) {
+    return (
+      <DashboardLayout title="Lead Management">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
+            <p className="mt-4 text-light-text-secondary">Loading lead data...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout title="Lead Management">
+      {/* Debug Info - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-xs font-mono">
+          <p className="font-semibold mb-2">Debug Info:</p>
+          <p>User: {JSON.stringify(user)}</p>
+          <p>Can view all reps: {canViewAllReps ? 'true' : 'false'}</p>
+          <p>Username to filter: {usernameToFilter || 'ALL'}</p>
+          <p>Total submissions: {submissions.length}</p>
+          <p>Total count from DB: {totalCount}</p>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
