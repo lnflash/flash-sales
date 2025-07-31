@@ -25,7 +25,7 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement>>;
-  requiresPermission?: keyof typeof ROLE_PERMISSIONS['Flash Admin'];
+  requiresPermission?: keyof (typeof ROLE_PERMISSIONS)["Flash Admin"];
   hideForRoles?: UserRole[];
 }
 
@@ -34,13 +34,13 @@ const navigation: NavItem[] = [
   { name: "My Dashboard", href: "/dashboard/rep-dashboard", icon: ChartPieIcon },
   { name: "Canvas Form", href: "/intake", icon: DocumentTextIcon },
   { name: "Intake Form ", href: "/intake-dynamic", icon: DocumentTextIcon },
-  { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, requiresPermission: 'canViewAnalytics' },
+  { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, requiresPermission: "canViewAnalytics" },
   { name: "Submissions", href: "/dashboard/submissions", icon: TableCellsIcon },
   { name: "Lead Management", href: "/dashboard/leads", icon: UserGroupIcon },
   { name: "Rep Tracking", href: "/dashboard/rep-tracking", icon: ClipboardDocumentCheckIcon, hideForRoles: ["Flash Sales Rep"] },
   { name: "Profile", href: "/dashboard/profile", icon: UserIcon },
-  { name: "Settings", href: "/dashboard/settings", icon: Cog6ToothIcon, requiresPermission: 'canViewSettings' },
-  { name: "Role Management", href: "/dashboard/roles", icon: UserGroupIcon, requiresPermission: 'canAssignRoles' },
+  { name: "Settings", href: "/dashboard/settings", icon: Cog6ToothIcon, requiresPermission: "canViewSettings" },
+  { name: "Role Management", href: "/dashboard/roles", icon: UserGroupIcon, requiresPermission: "canAssignRoles" },
 ];
 
 export default function Sidebar() {
@@ -65,7 +65,8 @@ export default function Sidebar() {
     <div className={`h-screen bg-white border-r border-light-border transition-all duration-300 flex flex-col ${collapsed ? "w-16" : "w-64"}`}>
       <div className="p-4 flex items-center justify-between border-b border-light-border">
         {!collapsed && (
-          <span className="text-xl font-bold bg-gradient-to-r from-flash-green to-flash-green-light text-transparent bg-clip-text">Flash Sales</span>
+          // <span className="text-xl font-bold bg-gradient-to-r from-flash-green to-flash-green-light text-transparent bg-clip-text">Flash Sales</span>
+          <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-8 w-8 rounded-full" />
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
