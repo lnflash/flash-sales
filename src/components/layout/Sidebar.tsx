@@ -64,13 +64,16 @@ export default function Sidebar() {
   return (
     <div className={`h-screen bg-white border-r border-light-border transition-all duration-300 flex flex-col ${collapsed ? "w-16" : "w-64"}`}>
       <div className="p-4 flex items-center justify-between border-b border-light-border">
-        {!collapsed && (
-          // <span className="text-xl font-bold bg-gradient-to-r from-flash-green to-flash-green-light text-transparent bg-clip-text">Flash Sales</span>
-          <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-8 w-8 rounded-full" />
-        )}
+        <div className="flex items-center justify-center flex-1">
+          {!collapsed ? (
+            <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-8 w-auto" />
+          ) : (
+            <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-6 w-6 rounded-full" />
+          )}
+        </div>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg hover:bg-light-bg-secondary transition-colors"
+          className="p-1.5 rounded-lg hover:bg-light-bg-secondary transition-colors flex-shrink-0"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-flash-green" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-flash-green" />}
