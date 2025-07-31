@@ -115,6 +115,15 @@ export default function RepDashboard() {
   const usernameToFilter = canViewAllReps && selectedUsername ? selectedUsername : user?.username;
   const filters = usernameToFilter ? { username: usernameToFilter } : {};
   
+  // Debug logging
+  console.log('Rep Dashboard Debug:', {
+    user: user,
+    canViewAllReps,
+    selectedUsername,
+    usernameToFilter,
+    filters
+  });
+  
   const { submissions, isLoading } = useSubmissions(
     filters,
     { pageIndex: 0, pageSize: 1000 }
@@ -135,10 +144,14 @@ export default function RepDashboard() {
 
   // Log for debugging
   useEffect(() => {
-    if (!isLoading && submissions.length > 0) {
-      console.log(`Rep Dashboard - Loaded ${submissions.length} submissions for user: ${user?.username}`);
-    }
-  }, [submissions, isLoading, user]);
+    console.log('Rep Dashboard - Submissions loaded:', {
+      isLoading,
+      submissionsCount: submissions.length,
+      user: user?.username,
+      filters,
+      firstSubmission: submissions[0]
+    });
+  }, [submissions, isLoading, user, filters]);
 
   const groupedSubmissions = groupByLeadStatus(submissions);
   const todaysFollowUps = getTodaysFollowUps(submissions);
@@ -202,6 +215,18 @@ export default function RepDashboard() {
 
   return (
     <DashboardLayout title={`${displayUsername}'s Dashboard`}>
+      {/* Debug Info - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-xs font-mono">
+          <p className="font-semibold mb-2">Debug Info:</p>
+          <p>User: {JSON.stringify(user)}</p>
+          <p>Username to filter: {usernameToFilter}</p>
+          <p>Filters: {JSON.stringify(filters)}</p>
+          <p>Submissions count: {submissions.length}</p>
+          <p>Can view all reps: {canViewAllReps ? 'true' : 'false'}</p>
+        </div>
+      )}
+
       {/* Rep Filter for Admins */}
       <RepFilter
         currentUsername={user.username}

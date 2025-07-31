@@ -163,17 +163,23 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
     // If we need to filter by username (and it's not 'Unassigned'), we need to get the user ID first
     let userIdForFilter: string | null = null;
     if (filters?.username && filters.username !== 'Unassigned') {
-      const { data: userData } = await supabase
+      const trimmedUsername = filters.username.trim();
+      console.log(`Looking up user ID for username: '${trimmedUsername}'`);
+      
+      // Try case-insensitive username match
+      let { data: userData, error } = await supabase
         .from("users")
-        .select("id")
-        .or(`username.eq.${filters.username},email.eq.${filters.username}@getflash.io`)
+        .select("id, username, email")
+        .or(`username.ilike.${trimmedUsername},email.ilike.${trimmedUsername}@getflash.io`)
         .single();
+      
+      console.log('User lookup result:', { userData, error });
       
       if (userData) {
         userIdForFilter = userData.id;
-        console.log(`Found user ID for username '${filters.username}':`, userIdForFilter);
+        console.log(`Found user ID for username '${trimmedUsername}':`, userIdForFilter);
       } else {
-        console.log(`No user found for username '${filters.username}'`);
+        console.log(`No user found for username '${trimmedUsername}'`);
         // Return empty results if user not found
         return {
           data: [],
