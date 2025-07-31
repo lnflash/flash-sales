@@ -15,9 +15,27 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isPublicRoute = publicRoutes.includes(router.pathname);
   
-  // Fetch runtime config on app mount
+  // Fetch runtime config on app mount and register service worker
   useEffect(() => {
     fetchRuntimeConfig();
+    
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('Service Worker registered:', registration);
+            
+            // Check for updates periodically
+            setInterval(() => {
+              registration.update();
+            }, 60 * 60 * 1000); // Check every hour
+          })
+          .catch((error) => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    }
   }, []);
 
   return (
@@ -26,7 +44,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <title>Flash Sales Dashboard</title>
         <meta name="description" content="Admin dashboard for Flash sales management" />
         <link rel="icon" href="/favicon.ico" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Head>
       <ApolloProviderWrapper>
         <QueryProvider>
