@@ -41,39 +41,39 @@ export default function StatsCard({
 
   return (
     <Card className="bg-white border-light-border hover:shadow-lg transition-all duration-200 group">
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-light-text-secondary">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-light-text-secondary truncate">
               {title}
             </p>
-            <div className="flex items-baseline mt-2">
-              <p className="text-3xl font-semibold text-light-text-primary">
+            <div className="flex items-baseline mt-1 sm:mt-2">
+              <p className="text-2xl sm:text-3xl font-semibold text-light-text-primary">
                 {value}
               </p>
               {subtitle && (
-                <span className="ml-1 text-lg text-light-text-secondary">
+                <span className="ml-1 text-base sm:text-lg text-light-text-secondary">
                   {subtitle}
                 </span>
               )}
             </div>
             
             {change && (
-              <div className="flex items-center mt-3 space-x-1">
+              <div className="flex items-center mt-2 sm:mt-3 space-x-1">
                 {change.positive ? (
-                  <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
+                  <ArrowTrendingUpIcon className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                 ) : (
-                  <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
+                  <ArrowTrendingDownIcon className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
                 )}
                 <span 
                   className={cn(
-                    "text-sm font-semibold",
+                    "text-xs sm:text-sm font-semibold",
                     change.positive ? 'text-green-600' : 'text-red-600'
                   )}
                 >
                   {change.positive ? '+' : ''}{change.value}%
                 </span>
-                <span className="text-xs text-light-text-tertiary">
+                <span className="text-xs text-light-text-tertiary hidden sm:inline">
                   vs last month
                 </span>
               </div>

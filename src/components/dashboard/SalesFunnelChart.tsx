@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { useMobileMenu } from '@/contexts/MobileMenuContext';
 
 ChartJS.register(
   CategoryScale,
@@ -43,6 +44,7 @@ interface SalesFunnelChartProps {
 }
 
 export default function SalesFunnelChart({ submissions, isLoading = false }: SalesFunnelChartProps) {
+  const { isMobile } = useMobileMenu();
   const funnelData = useMemo(() => {
     if (!submissions || submissions.length === 0) return [];
 
@@ -148,8 +150,10 @@ export default function SalesFunnelChart({ submissions, isLoading = false }: Sal
         ticks: {
           color: '#6B7280',
           font: {
-            size: 11,
+            size: isMobile ? 9 : 11,
           },
+          autoSkip: true,
+          maxRotation: isMobile ? 45 : 0,
         },
       },
       y: {
@@ -159,8 +163,9 @@ export default function SalesFunnelChart({ submissions, isLoading = false }: Sal
         ticks: {
           color: '#6B7280',
           font: {
-            size: 12,
+            size: isMobile ? 10 : 12,
           },
+          maxTicksLimit: isMobile ? 5 : undefined,
         },
       },
     },
@@ -188,48 +193,48 @@ export default function SalesFunnelChart({ submissions, isLoading = false }: Sal
 
   return (
     <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
-      <CardHeader>
-        <div className="flex items-center justify-between">
+      <CardHeader className="pb-3 sm:pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
-            <FunnelIcon className="h-5 w-5 text-flash-green" />
-            <CardTitle className="text-lg font-semibold text-light-text-primary">
+            <FunnelIcon className="h-4 sm:h-5 w-4 sm:w-5 text-flash-green" />
+            <CardTitle className="text-base sm:text-lg font-semibold text-light-text-primary">
               Sales Funnel Analysis
             </CardTitle>
           </div>
           <Badge 
             variant="success"
-            className="text-xs"
+            className="text-xs w-fit"
           >
             {overallConversion}% Overall
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-80 mb-6">
+      <CardContent className="pt-0">
+        <div className="h-64 sm:h-80 mb-4 sm:mb-6">
           <Bar data={chartData} options={options} />
         </div>
         
         {/* Funnel stages breakdown */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {funnelData.map((stage, index) => (
             <div key={stage.stage} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className={cn(
-                  "w-2 h-2 rounded-full",
+                  "w-2 h-2 rounded-full flex-shrink-0",
                   index === 0 ? "bg-flash-green" :
                   index === 1 ? "bg-flash-green-light" :
                   index === 2 ? "bg-blue-500" :
                   index === 3 ? "bg-purple-500" :
                   "bg-amber-500"
                 )} />
-                <span className="text-sm text-light-text-secondary">{stage.stage}</span>
+                <span className="text-xs sm:text-sm text-light-text-secondary truncate">{stage.stage}</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-light-text-primary">
+              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                <span className="text-xs sm:text-sm font-medium text-light-text-primary">
                   {stage.count}
                 </span>
                 {index < funnelData.length - 1 && (
-                  <ArrowRightIcon className="h-3 w-3 text-light-text-tertiary" />
+                  <ArrowRightIcon className="h-3 w-3 text-light-text-tertiary hidden sm:block" />
                 )}
               </div>
             </div>
@@ -237,23 +242,23 @@ export default function SalesFunnelChart({ submissions, isLoading = false }: Sal
         </div>
         
         {/* Conversion insights */}
-        <div className="mt-6 p-4 bg-light-bg-secondary rounded-lg border border-light-border">
+        <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-light-bg-secondary rounded-lg border border-light-border">
           <div className="flex items-center gap-2 mb-2">
-            <ArrowTrendingUpIcon className="h-4 w-4 text-flash-green" />
-            <p className="text-sm font-medium text-light-text-primary">
+            <ArrowTrendingUpIcon className="h-3 sm:h-4 w-3 sm:w-4 text-flash-green" />
+            <p className="text-xs sm:text-sm font-medium text-light-text-primary">
               Conversion Insights
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs">
             <div>
-              <p className="text-light-text-secondary">Best Performing Stage</p>
-              <p className="font-medium text-light-text-primary">
+              <p className="text-light-text-secondary">Best Performing</p>
+              <p className="font-medium text-light-text-primary truncate">
                 {funnelData.length > 1 ? funnelData[1].stage : 'N/A'}
               </p>
             </div>
             <div>
               <p className="text-light-text-secondary">Biggest Drop-off</p>
-              <p className="font-medium text-light-text-primary">
+              <p className="font-medium text-light-text-primary truncate">
                 {funnelData.reduce((max, stage, index) => 
                   index > 0 && stage.dropoffRate > (max?.dropoffRate || 0) ? stage : max
                 , funnelData[0])?.stage || 'N/A'}

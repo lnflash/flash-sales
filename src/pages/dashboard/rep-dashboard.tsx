@@ -288,56 +288,56 @@ export default function RepDashboard() {
       ) : (
         <>
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-light-text-secondary">Total Leads</p>
-              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.totalLeads}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Total Leads</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.totalLeads}</p>
             </div>
-            <ChartBarIcon className="w-8 h-8 text-flash-green opacity-50" />
+            <ChartBarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-flash-green opacity-50 flex-shrink-0 ml-2" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-light-text-secondary">Hot Leads</p>
-              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.hotLeads}</p>
-              <p className="text-xs text-light-text-tertiary">Interest 4-5</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Hot Leads</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.hotLeads}</p>
+              <p className="text-xs text-light-text-tertiary hidden sm:block">Interest 4-5</p>
             </div>
-            <FireIcon className="w-8 h-8 text-red-500 opacity-50" />
+            <FireIcon className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 opacity-50 flex-shrink-0 ml-2" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-light-text-secondary">Need Follow-up</p>
-              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.needsFollowUp}</p>
-              <p className="text-xs text-light-text-tertiary">Urgent/High</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Follow-up</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.needsFollowUp}</p>
+              <p className="text-xs text-light-text-tertiary hidden sm:block">Urgent/High</p>
             </div>
-            <ExclamationTriangleIcon className="w-8 h-8 text-yellow-500 opacity-50" />
+            <ExclamationTriangleIcon className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500 opacity-50 flex-shrink-0 ml-2" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-light-text-secondary">Closed This Month</p>
-              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.closedThisMonth}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Closed/Month</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.closedThisMonth}</p>
             </div>
-            <CheckCircleIcon className="w-8 h-8 text-green-500 opacity-50" />
+            <CheckCircleIcon className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 opacity-50 flex-shrink-0 ml-2" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-light-text-secondary">Conversion Rate</p>
-              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.conversionRate}%</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Conversion</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.conversionRate}%</p>
             </div>
-            <div className={`w-12 h-12 rounded-full ${
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 ml-2 ${
               stats.conversionRate >= 20 ? 'bg-green-100' : 
               stats.conversionRate >= 10 ? 'bg-yellow-100' : 'bg-red-100'
             } flex items-center justify-center`}>

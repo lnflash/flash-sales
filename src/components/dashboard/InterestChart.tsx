@@ -14,6 +14,7 @@ import {
   ChartType,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { useMobileMenu } from '@/contexts/MobileMenuContext';
 
 ChartJS.register(
   CategoryScale, 
@@ -41,6 +42,7 @@ type TimePeriod = 'week' | 'month' | 'year';
 export default function InterestChart({ data, isLoading = false }: InterestChartProps) {
   // Use a more specific type for the Chart.js component
   const chartRef = useRef<any>(null);
+  const { isMobile } = useMobileMenu();
   
   // State for time period selection
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month');
@@ -202,6 +204,7 @@ export default function InterestChart({ data, isLoading = false }: InterestChart
         ticks: {
           color: '#6B7280',
           precision: 0,
+          maxTicksLimit: isMobile ? 5 : undefined,
         },
       },
     },
@@ -216,16 +219,16 @@ export default function InterestChart({ data, isLoading = false }: InterestChart
   }
 
   return (
-    <div className="bg-flash-dark-3 rounded-lg p-6 shadow-md">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-medium text-white">
+    <div className="bg-flash-dark-3 rounded-lg p-4 sm:p-6 shadow-md">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <h3 className="text-base sm:text-lg font-medium text-white">
           Submission Trends
-          {selectedPeriod === 'week' && ' - Weekly View'}
-          {selectedPeriod === 'month' && ' - Monthly View'}
-          {selectedPeriod === 'year' && ' - Yearly View'}
+          {selectedPeriod === 'week' && ' - Weekly'}
+          {selectedPeriod === 'month' && ' - Monthly'}
+          {selectedPeriod === 'year' && ' - Yearly'}
         </h3>
         <select 
-          className="bg-flash-dark-2 text-white border border-flash-dark-3 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-flash-green"
+          className="bg-flash-dark-2 text-white border border-flash-dark-3 rounded-md px-2 sm:px-3 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-flash-green"
           value={selectedPeriod}
           onChange={(e) => setSelectedPeriod(e.target.value as TimePeriod)}
         >
@@ -235,7 +238,7 @@ export default function InterestChart({ data, isLoading = false }: InterestChart
         </select>
       </div>
       
-      <div className="h-64">
+      <div className="h-48 sm:h-64">
         {filteredData.length === 0 && !isLoading ? (
           <div className="flex items-center justify-center h-full text-gray-400">
             <p>No data available for selected time period</p>

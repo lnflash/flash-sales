@@ -20,6 +20,8 @@ import {
   PencilSquareIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import { useMobileMenu } from '@/contexts/MobileMenuContext';
+import { MobileCard, MobileCardRow } from '@/components/ui/responsive-table';
 
 interface SubmissionTableProps {
   data: Submission[];
@@ -32,6 +34,7 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'timestamp', desc: true }
   ]);
+  const { isMobile } = useMobileMenu();
 
   const columnHelper = createColumnHelper<Submission>();
 
@@ -182,6 +185,117 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
     );
   }
 
+  // Mobile Card View
+  if (isMobile) {
+    return (
+      <div className="flex flex-col space-y-4">
+        {data.length === 0 ? (
+          <div className="text-center py-8 bg-white rounded-lg shadow-sm border border-light-border">
+            <p className="text-light-text-secondary">No submissions found</p>
+          </div>
+        ) : (
+          <>
+            <div className="text-sm text-light-text-secondary mb-2">
+              Showing {data.length} of {totalItems || data.length} submissions
+            </div>
+            {data.map((submission) => {
+              const displayStatus = submission.leadStatus || (submission.signedUp ? 'signed_up' : 'canvas');
+              
+              return (
+                <div key={submission.id} className="bg-white rounded-lg shadow-sm border border-light-border overflow-hidden">
+                  <MobileCard>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-light-text-primary text-lg">
+                          {submission.ownerName}
+                        </h3>
+                        <p className="text-sm text-light-text-secondary mt-1">
+                          {formatDate(submission.timestamp)}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          displayStatus === 'signed_up'
+                            ? 'bg-flash-green/10 text-flash-green border border-flash-green/20'
+                            : displayStatus === 'opportunity'
+                            ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                            : displayStatus === 'prospect'
+                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                            : displayStatus === 'contacted'
+                            ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                            : 'bg-gray-100 text-light-text-secondary border border-light-border'
+                        }`}
+                      >
+                        {displayStatus.split('_').map(word => 
+                          word.charAt(0).toUpperCase() + word.slice(1)
+                        ).join(' ')}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <MobileCardRow label="Package Seen" value={
+                        <span className={submission.packageSeen ? 'text-flash-green' : 'text-light-text-tertiary'}>
+                          {submission.packageSeen ? 'Yes' : 'No'}
+                        </span>
+                      } />
+                      
+                      <MobileCardRow label="Interest Level" value={
+                        <div className="flex items-center">
+                          <div className="w-16 bg-light-bg-tertiary rounded-full h-2 mr-2">
+                            <div
+                              className="bg-gradient-to-r from-flash-green to-flash-yellow h-2 rounded-full"
+                              style={{ width: `${(submission.interestLevel / 5) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-sm">{submission.interestLevel}/5</span>
+                        </div>
+                      } />
+                      
+                      <MobileCardRow label="Sales Rep" value={submission.username || 'N/A'} />
+                      <MobileCardRow label="Territory" value={submission.territory || 'N/A'} />
+                    </div>
+                    
+                    <div className="flex items-center space-x-3 mt-4 pt-4 border-t border-light-border">
+                      <Link
+                        href={`/dashboard/submissions/${submission.id}`}
+                        className="flex-1 text-center py-2 text-sm font-medium text-flash-green hover:text-flash-green-light transition-colors"
+                      >
+                        View Details
+                      </Link>
+                      <div className="h-4 w-px bg-light-border" />
+                      <Link
+                        href={`/dashboard/submissions/${submission.id}/edit`}
+                        className="flex-1 text-center py-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+                      >
+                        Edit
+                      </Link>
+                      {onDelete && (
+                        <>
+                          <div className="h-4 w-px bg-light-border" />
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this submission?')) {
+                                onDelete(submission.id);
+                              }
+                            }}
+                            className="flex-1 text-center py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </MobileCard>
+                </div>
+              );
+            })}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop Table View
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-light-border">
       <div className="overflow-x-auto">

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { BellIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { BellIcon, MagnifyingGlassIcon, XMarkIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { formatDate } from '@/utils/date-formatter';
 import { getUserFromStorage } from '@/lib/auth';
 import { getUserNotifications, markAsRead, markAllAsRead, getUnreadCount } from '@/lib/notifications';
 import { Notification } from '@/types/notifications';
+import { useMobileMenu } from '@/contexts/MobileMenuContext';
 
 interface HeaderProps {
   title: string;
@@ -18,8 +19,10 @@ export default function Header({ title }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const router = useRouter();
   const currentDate = formatDate(new Date().toISOString());
+  const { toggleMobileMenu, isMobile } = useMobileMenu();
 
   useEffect(() => {
     const user = getUserFromStorage();
@@ -90,14 +93,26 @@ export default function Header({ title }: HeaderProps) {
 
   return (
     <header className="bg-white border-b border-light-border">
-      <div className="px-6 py-4">
+      <div className="px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-light-text-primary">{title}</h1>
-            <p className="text-sm text-light-text-secondary mt-1">{currentDate}</p>
+          <div className="flex items-center">
+            {/* Mobile menu toggle */}
+            <button
+              onClick={toggleMobileMenu}
+              className="md:hidden p-2 rounded-lg hover:bg-light-bg-secondary transition-colors mr-3"
+              aria-label="Toggle menu"
+            >
+              <Bars3Icon className="h-6 w-6 text-light-text-secondary" />
+            </button>
+            
+            <div>
+              <h1 className="text-xl sm:text-2xl font-semibold text-light-text-primary">{title}</h1>
+              <p className="text-sm text-light-text-secondary mt-1 hidden sm:block">{currentDate}</p>
+            </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Desktop search */}
             <form onSubmit={handleSearch} className="relative hidden md:block">
               <input
                 type="text"
@@ -109,6 +124,15 @@ export default function Header({ title }: HeaderProps) {
               />
               <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary absolute left-3 top-1/2 transform -translate-y-1/2" />
             </form>
+
+            {/* Mobile search toggle */}
+            <button
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              className="md:hidden p-2 rounded-lg hover:bg-light-bg-secondary transition-colors"
+              aria-label="Search"
+            >
+              <MagnifyingGlassIcon className="h-6 w-6 text-light-text-secondary" />
+            </button>
 
             <div className="relative">
               <button 
@@ -124,7 +148,7 @@ export default function Header({ title }: HeaderProps) {
               </button>
               
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-light-border z-50">
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-lg border border-light-border z-50">
                   <div className="p-4 border-b border-light-border">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-semibold text-light-text-primary">Notifications</h3>
@@ -185,6 +209,31 @@ export default function Header({ title }: HeaderProps) {
             </div>
           </div>
         </div>
+        
+        {/* Mobile search bar */}
+        {showMobileSearch && (
+          <div className="mt-4 md:hidden">
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                placeholder="Search submissions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full pl-10 pr-10 py-2 bg-light-bg-secondary border border-light-border rounded-lg text-light-text-primary placeholder-light-text-tertiary focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-transparent transition-all"
+                autoFocus
+              />
+              <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <button
+                type="button"
+                onClick={() => setShowMobileSearch(false)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              >
+                <XMarkIcon className="h-5 w-5 text-light-text-tertiary" />
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </header>
   );

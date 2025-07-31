@@ -11,6 +11,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, UserIcon, ArrowPathIcon } from 
 import { createSubmission, updateSubmission, getSubmissionById } from "@/lib/api";
 import { LeadStatus, Submission } from "@/types/submission";
 import SubmissionSearch from "./SubmissionSearch";
+import { useMobileMenu } from "@/contexts/MobileMenuContext";
 
 interface FormData {
   ownerName: string;
@@ -31,6 +32,7 @@ interface IntakeFormProps {
 
 export default function IntakeForm({ submissionId }: IntakeFormProps) {
   const router = useRouter();
+  const { isMobile } = useMobileMenu();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -255,33 +257,33 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <Card className="bg-white shadow-lg border-light-border">
-        <CardHeader className="border-b border-light-border pb-6">
+        <CardHeader className="border-b border-light-border pb-4 sm:pb-6">
           <div className="relative">
             {/* Username display in top right */}
             {formData.username && (
-              <div className="absolute top-0 right-0 flex items-center text-sm text-light-text-secondary bg-light-bg-secondary px-3 py-1 rounded-full">
-                <UserIcon className="w-4 h-4 mr-2" />
+              <div className="absolute top-0 right-0 flex items-center text-xs sm:text-sm text-light-text-secondary bg-light-bg-secondary px-2 sm:px-3 py-1 rounded-full">
+                <UserIcon className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
                 <span className="font-medium text-light-text-primary">{formData.username}</span>
               </div>
             )}
 
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-flash-green rounded-full flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">F</span>
+            <div className="text-center pt-8 sm:pt-0">
+              <div className="flex justify-center mb-3 sm:mb-4">
+                <div className="w-12 sm:w-16 h-12 sm:h-16 bg-flash-green rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl sm:text-2xl font-bold">F</span>
                 </div>
               </div>
-              <CardTitle className="text-2xl font-bold text-light-text-primary">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-light-text-primary">
                 {isEditMode ? "Edit Submission" : "Flash Sales Canvas Form"}
               </CardTitle>
-              <p className="text-light-text-secondary mt-2">
+              <p className="text-light-text-secondary mt-1 sm:mt-2 text-sm sm:text-base px-4 sm:px-0">
                 {isEditMode ? "Update existing lead information" : "Capture lead information quickly and efficiently"}
               </p>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           {success && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start">
               <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
@@ -306,8 +308,8 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
           {/* Search Section - Only show for new submissions */}
           {!isEditMode && !submissionId && (
-            <div className="mb-6 p-4 bg-light-bg-secondary rounded-lg border border-light-border">
-              <div className="flex items-center justify-between mb-3">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-light-bg-secondary rounded-lg border border-light-border">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3">
                 <div>
                   <label className="block text-sm font-medium text-light-text-primary">
                     Search Existing Submissions
@@ -319,7 +321,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 <button
                   type="button"
                   onClick={() => setShowSearch(!showSearch)}
-                  className="text-sm text-light-text-secondary hover:text-light-text-primary flex items-center"
+                  className="text-xs sm:text-sm text-light-text-secondary hover:text-light-text-primary flex items-center self-end sm:self-auto"
                 >
                   {showSearch ? "Hide" : "Show"} Search
                 </button>
@@ -334,7 +336,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Business Name and Owner */}
             <div>
               <label htmlFor="ownerName" className="block text-sm font-medium text-light-text-secondary mb-2">

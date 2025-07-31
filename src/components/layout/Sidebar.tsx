@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { getUserFromStorage, logout, User } from "@/lib/auth";
 import { hasPermission, ROLE_PERMISSIONS, UserRole } from "@/types/roles";
+import { useMobileMenu } from "@/contexts/MobileMenuContext";
 import {
   ChartBarIcon,
   TableCellsIcon,
@@ -48,6 +49,7 @@ export default function Sidebar() {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const { isMobileMenuOpen, setIsMobileMenuOpen, isMobile } = useMobileMenu();
 
   useEffect(() => {
     const userData = getUserFromStorage();
@@ -61,8 +63,30 @@ export default function Sidebar() {
     router.push("/login");
   };
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [pathname, isMobile, setIsMobileMenuOpen]);
+
   return (
-    <div className={`h-screen bg-white border-r border-light-border transition-all duration-300 flex flex-col ${collapsed ? "w-16" : "w-64"}`}>
+    <>
+      {/* Mobile overlay */}
+      {isMobile && isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`
+        ${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'relative'}
+        h-screen bg-white border-r border-light-border transition-all duration-300 flex flex-col
+        ${collapsed && !isMobile ? "w-16" : "w-64"}
+        ${isMobile && !isMobileMenuOpen ? '-translate-x-full' : 'translate-x-0'}
+      `}>
       <div className="p-4 flex items-center justify-between border-b border-light-border">
         <div className="flex items-center justify-center flex-1">
           {!collapsed ? (
@@ -71,13 +95,15 @@ export default function Sidebar() {
             <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-6 w-6 rounded-full" />
           )}
         </div>
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg hover:bg-light-bg-secondary transition-colors flex-shrink-0"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-flash-green" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-flash-green" />}
-        </button>
+        {!isMobile && (
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="p-1.5 rounded-lg hover:bg-light-bg-secondary transition-colors flex-shrink-0"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-flash-green" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-flash-green" />}
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 p-3 overflow-y-auto">
@@ -110,6 +136,7 @@ export default function Sidebar() {
                     className={`flex items-center px-3 py-2.5 rounded-lg transition-all font-medium ${
                       isActive ? "bg-flash-green text-white shadow-sm" : "text-light-text-secondary hover:bg-light-bg-secondary hover:text-light-text-primary"
                     }`}
+                    onClick={() => isMobile && setIsMobileMenuOpen(false)}
                   >
                     <item.icon className={`h-5 w-5 ${collapsed ? "mx-auto" : "mr-3"} ${isActive ? "text-white" : ""}`} aria-hidden="true" />
                     {!collapsed && <span className="text-sm">{item.name}</span>}
@@ -144,5 +171,6 @@ export default function Sidebar() {
         </button>
       </div>
     </div>
+    </>
   );
 }
