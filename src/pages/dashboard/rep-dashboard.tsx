@@ -126,6 +126,14 @@ export default function RepDashboard() {
   const { data, isLoading } = useUserSubmissions(usernameToFilter);
   const submissions = data?.submissions || [];
   const totalCount = data?.count || 0;
+  
+  console.log('[RepDashboard] useUserSubmissions returned:', {
+    data,
+    submissionsLength: submissions.length,
+    totalCount,
+    isLoading,
+    usernameToFilter
+  });
 
   // For admins, we'll use a different approach to get available reps
   const [availableReps, setAvailableReps] = useState<string[]>([]);

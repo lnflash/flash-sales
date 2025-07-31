@@ -24,7 +24,7 @@ export function useUserSubmissions(username: string | undefined) {
       
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-      console.log(`Fetching submissions for username: ${username}`);
+      console.log(`[useUserSubmissions] Fetching submissions for username: ${username}`);
 
       // First get the user ID
       const { data: userData, error: userError } = await supabase
@@ -38,7 +38,7 @@ export function useUserSubmissions(username: string | undefined) {
         return { submissions: [], count: 0 };
       }
 
-      console.log(`Found user ID: ${userData.id} for username: ${username}`);
+      console.log(`[useUserSubmissions] Found user ID: ${userData.id} for username: ${username}`);
 
       // Then get their deals
       const { data: deals, error: dealsError, count } = await supabase
@@ -57,10 +57,13 @@ export function useUserSubmissions(username: string | undefined) {
         return { submissions: [], count: 0 };
       }
 
-      console.log(`Found ${count} deals for user ${username}`);
+      console.log(`[useUserSubmissions] Found ${count} deals for user ${username}`);
 
       // Map deals to submissions
       const submissions: Submission[] = deals?.map(mapDealToSubmission) || [];
+      
+      console.log(`[useUserSubmissions] Mapped ${submissions.length} submissions for ${username}`);
+      console.log(`[useUserSubmissions] First submission:`, submissions[0]);
       
       return { submissions, count: count || 0 };
     },
