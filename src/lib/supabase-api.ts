@@ -98,8 +98,8 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
         // Filter for deals without owners
         query = query.is("owner_id", null);
       } else {
-        // Filter for specific username
-        query = query.eq("owner.email", `${filters.username}@getflash.io`);
+        // We'll handle username filtering in the main function
+        // by filtering the results after fetching
       }
     }
   }
@@ -154,18 +154,18 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
     let countQuery = supabase.from("deals").select(
       `
         *,
-        organization:organizations!deals_organization_id_fkey(name, state_province),
-        primary_contact:contacts!deals_primary_contact_id_fkey(phone_primary),
-        owner:users!deals_owner_id_fkey(email, username)
+        organization:organizations!organization_id(name, state_province),
+        primary_contact:contacts!primary_contact_id(phone_primary),
+        owner:users!owner_id(email, username)
       `,
       { count: "exact", head: true }
     );
 
     let dataQuery = supabase.from("deals").select(`
         *,
-        organization:organizations!deals_organization_id_fkey(name, state_province),
-        primary_contact:contacts!deals_primary_contact_id_fkey(phone_primary),
-        owner:users!deals_owner_id_fkey(email, username)
+        organization:organizations!organization_id(name, state_province),
+        primary_contact:contacts!primary_contact_id(phone_primary),
+        owner:users!owner_id(email, username)
       `);
 
     // Apply filters to both queries
@@ -204,8 +204,14 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
         hasOwner: !!d.owner_id
       })));
     }
-    const submissions = (data || []).map(mapDealToSubmission);
+    let submissions = (data || []).map(mapDealToSubmission);
     console.log("Mapped submissions count:", submissions.length);
+
+    // Apply username filtering on the mapped data if needed
+    if (filters?.username && filters.username !== 'Unassigned') {
+      submissions = submissions.filter((sub: Submission) => sub.username === filters.username);
+      console.log(`Filtered by username '${filters.username}':`, submissions.length);
+    }
 
     return {
       data: submissions,
@@ -226,9 +232,9 @@ export async function getSubmissionById(id: number | string): Promise<Submission
       .select(
         `
         *,
-        organization:organizations!deals_organization_id_fkey(name, state_province),
-        primary_contact:contacts!deals_primary_contact_id_fkey(phone_primary),
-        owner:users!deals_owner_id_fkey(email, username)
+        organization:organizations!organization_id(name, state_province),
+        primary_contact:contacts!primary_contact_id(phone_primary),
+        owner:users!owner_id(email, username)
       `
       )
       .eq("id", id)
@@ -329,9 +335,9 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
       })
       .select(`
         *,
-        organization:organizations!deals_organization_id_fkey(name, state_province),
-        primary_contact:contacts!deals_primary_contact_id_fkey(phone_primary),
-        owner:users!deals_owner_id_fkey(email, username)
+        organization:organizations!organization_id(name, state_province),
+        primary_contact:contacts!primary_contact_id(phone_primary),
+        owner:users!owner_id(email, username)
       `)
       .single();
     
