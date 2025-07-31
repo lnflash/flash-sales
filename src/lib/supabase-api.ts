@@ -373,9 +373,81 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
 
 export async function updateSubmission(id: number | string, data: Partial<Submission>): Promise<Submission> {
   try {
-    // Update only the deal fields that map to submission fields
-    const updateData: any = {};
+    console.log("Updating submission in Supabase:", id, data);
+    
+    // First, get the current deal to find related IDs
+    const { data: currentDeal } = await supabase
+      .from("deals")
+      .select("organization_id, primary_contact_id, owner_id")
+      .eq("id", id)
+      .single();
+    
+    if (!currentDeal) throw new Error("Deal not found");
 
+    // Update organization name if changed
+    if (data.ownerName !== undefined && currentDeal.organization_id) {
+      const { error: orgError } = await supabase
+        .from("organizations")
+        .update({ 
+          name: data.ownerName,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", currentDeal.organization_id);
+      
+      if (orgError) {
+        console.error("Error updating organization:", orgError);
+      }
+    }
+
+    // Update territory in organization if changed
+    if (data.territory !== undefined && currentDeal.organization_id) {
+      const { error: territoryError } = await supabase
+        .from("organizations")
+        .update({ 
+          state_province: data.territory,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", currentDeal.organization_id);
+      
+      if (territoryError) {
+        console.error("Error updating territory:", territoryError);
+      }
+    }
+
+    // Update phone number in contact if changed
+    if (data.phoneNumber !== undefined && currentDeal.primary_contact_id) {
+      const { error: contactError } = await supabase
+        .from("contacts")
+        .update({ 
+          phone_primary: data.phoneNumber,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", currentDeal.primary_contact_id);
+      
+      if (contactError) {
+        console.error("Error updating contact:", contactError);
+      }
+    }
+
+    // Handle username/owner change
+    let newOwnerId = currentDeal.owner_id;
+    if (data.username !== undefined) {
+      // Look up the new owner by username
+      const { data: newOwner } = await supabase
+        .from("users")
+        .select("id")
+        .or(`username.eq.${data.username},email.eq.${data.username}@getflash.io`)
+        .single();
+      
+      if (newOwner) {
+        newOwnerId = newOwner.id;
+      }
+    }
+
+    // Update deal fields
+    const updateData: any = {};
+    if (data.ownerName !== undefined) updateData.name = data.ownerName;
+    if (newOwnerId !== currentDeal.owner_id) updateData.owner_id = newOwnerId;
     if (data.packageSeen !== undefined) updateData.package_seen = data.packageSeen;
     if (data.decisionMakers !== undefined) updateData.decision_makers = data.decisionMakers;
     if (data.interestLevel !== undefined) updateData.interest_level = data.interestLevel;
@@ -384,14 +456,17 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
 
     const { data: updatedDeal, error } = await supabase
       .from("deals")
-      .update(updateData)
+      .update({
+        ...updateData,
+        updated_at: new Date().toISOString()
+      })
       .eq("id", id)
       .select(
         `
         *,
-        organization:organizations!organization_id!left(*),
-        primary_contact:contacts!primary_contact_id!left(*),
-        owner:users!owner_id!left(*)
+        organization:organizations!organization_id(name, state_province),
+        primary_contact:contacts!primary_contact_id(phone_primary),
+        owner:users!owner_id(email, username)
       `
       )
       .single();
