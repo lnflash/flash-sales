@@ -91,7 +91,7 @@ async function testUsernameFiltering() {
     .not('owner_id', 'is', null)
     .limit(10);
   
-  sampleDeals?.forEach(deal => {
+  sampleDeals?.forEach((deal: any) => {
     console.log(`  - Deal ${deal.id}: ${deal.organization?.name} → Owner: ${deal.owner?.username || deal.owner?.email}`);
   });
 
