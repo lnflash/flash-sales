@@ -1,0 +1,64 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { createClient } from '@supabase/supabase-js';
+import { Submission } from '@/types/submission';
+import { mapDealToSubmission } from '@/lib/supabase-api';
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export function useUserSubmissions(username: string | undefined) {
+  return useQuery({
+    queryKey: ['userSubmissions', username],
+    queryFn: async () => {
+      if (!username) {
+        return { submissions: [], count: 0 };
+      }
+
+      console.log(`Fetching submissions for username: ${username}`);
+
+      // First get the user ID
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username)
+        .single();
+
+      if (userError || !userData) {
+        console.log(`No user found for username: ${username}`);
+        return { submissions: [], count: 0 };
+      }
+
+      console.log(`Found user ID: ${userData.id} for username: ${username}`);
+
+      // Then get their deals
+      const { data: deals, error: dealsError, count } = await supabase
+        .from('deals')
+        .select(`
+          *,
+          organization:organizations!organization_id(name, state_province),
+          primary_contact:contacts!primary_contact_id(phone_primary),
+          owner:users!owner_id(email, username)
+        `, { count: 'exact' })
+        .eq('owner_id', userData.id)
+        .order('created_at', { ascending: false });
+
+      if (dealsError) {
+        console.error('Error fetching user deals:', dealsError);
+        return { submissions: [], count: 0 };
+      }
+
+      console.log(`Found ${count} deals for user ${username}`);
+
+      // Map deals to submissions
+      const submissions: Submission[] = deals?.map(mapDealToSubmission) || [];
+      
+      return { submissions, count: count || 0 };
+    },
+    enabled: !!username,
+    staleTime: 1000 * 60, // 1 minute
+  });
+}

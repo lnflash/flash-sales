@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useSubmissions } from '@/hooks/useSubmissions';
+import { useUserSubmissions } from '@/hooks/useUserSubmissions';
 import { getUserFromStorage } from '@/lib/auth';
 import { hasPermission } from '@/types/roles';
 import { Submission, LeadStatus } from '@/types/submission';
@@ -113,45 +113,42 @@ export default function RepDashboard() {
   // For non-admin users, always filter by their username
   // For admin users, filter by selected username if provided, otherwise their own username
   const usernameToFilter = canViewAllReps && selectedUsername ? selectedUsername : user?.username;
-  const filters = usernameToFilter ? { username: usernameToFilter } : {};
   
   // Debug logging
   console.log('Rep Dashboard Debug:', {
     user: user,
     canViewAllReps,
     selectedUsername,
-    usernameToFilter,
-    filters
+    usernameToFilter
   });
   
-  const { submissions, isLoading } = useSubmissions(
-    filters,
-    { pageIndex: 0, pageSize: 1000 }
-  );
+  // Use the new hook that directly queries by username
+  const { data, isLoading } = useUserSubmissions(usernameToFilter);
+  const submissions = data?.submissions || [];
+  const totalCount = data?.count || 0;
 
-  // Get all submissions to find unique reps (for admins only)
-  const { submissions: allSubmissions } = useSubmissions(
-    {},
-    { pageIndex: 0, pageSize: 1000 }
-  );
+  // For admins, we'll use a different approach to get available reps
+  const [availableReps, setAvailableReps] = useState<string[]>([]);
   
-  // Extract unique rep usernames
-  const availableReps = Array.from(new Set(
-    allSubmissions
-      .map(s => s.username)
-      .filter((username): username is string => !!username && username !== 'Unassigned')
-  )).sort();
+  useEffect(() => {
+    // Only fetch available reps if user is admin
+    if (canViewAllReps && user) {
+      // For now, use a hardcoded list. In production, this would be a separate API call
+      setAvailableReps(['charms', 'Tatiana_1', 'rogimon', 'Chala', 'seakah', 'flash'].sort());
+    }
+  }, [canViewAllReps, user]);
 
   // Log for debugging
   useEffect(() => {
     console.log('Rep Dashboard - Submissions loaded:', {
       isLoading,
       submissionsCount: submissions.length,
+      totalCount,
       user: user?.username,
-      filters,
+      usernameToFilter,
       firstSubmission: submissions[0]
     });
-  }, [submissions, isLoading, user, filters]);
+  }, [submissions, isLoading, user, usernameToFilter, totalCount]);
 
   const groupedSubmissions = groupByLeadStatus(submissions);
   const todaysFollowUps = getTodaysFollowUps(submissions);
@@ -221,8 +218,8 @@ export default function RepDashboard() {
           <p className="font-semibold mb-2">Debug Info:</p>
           <p>User: {JSON.stringify(user)}</p>
           <p>Username to filter: {usernameToFilter}</p>
-          <p>Filters: {JSON.stringify(filters)}</p>
           <p>Submissions count: {submissions.length}</p>
+          <p>Total count from DB: {totalCount}</p>
           <p>Can view all reps: {canViewAllReps ? 'true' : 'false'}</p>
         </div>
       )}

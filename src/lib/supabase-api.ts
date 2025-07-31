@@ -3,7 +3,7 @@ import { Submission, SubmissionFilters, PaginationState, SortOption, SubmissionS
 import { normalizeSearchTerm } from "@/lib/search-utils";
 
 // Helper function to convert Supabase deal data to Submission format
-function mapDealToSubmission(deal: any): Submission {
+export function mapDealToSubmission(deal: any): Submission {
   if (!deal) return null as any;
 
   // Get territory with fallback logic
