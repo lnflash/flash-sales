@@ -39,20 +39,21 @@ export default function LoginForm() {
     setError('');
     
     try {
-      const normalizedUsername = username.trim().toLowerCase();
-      console.log("Checking username:", normalizedUsername);
+      const trimmedUsername = username.trim();
+      console.log("Checking username:", trimmedUsername);
       
       const { data } = await client.query({
         query: CHECK_USERNAME_QUERY,
-        variables: { username: normalizedUsername },
+        variables: { username: trimmedUsername },
         fetchPolicy: 'network-only',
       });
       
       console.log("GraphQL result:", data);
       
       if (data?.accountDefaultWallet?.id) {
+        // Store the username as entered (the API needs the exact case)
         saveUserToStorage({
-          username: normalizedUsername,
+          username: trimmedUsername,
           userId: data.accountDefaultWallet.id,
           loggedInAt: Date.now(),
         });
