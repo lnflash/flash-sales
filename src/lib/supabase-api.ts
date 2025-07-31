@@ -25,6 +25,14 @@ function mapDealToSubmission(deal: any): Submission {
     territory = territoryMap[deal.owner.email] || "";
   }
 
+  // Map deal status to lead status
+  let leadStatus: string | undefined;
+  if (deal.lead_status) {
+    leadStatus = deal.lead_status;
+  } else if (deal.status === "won") {
+    leadStatus = "signed_up";
+  }
+
   return {
     id: deal.id, // Keep as string UUID
     ownerName: deal.organization?.name || deal.name || "",
@@ -33,6 +41,7 @@ function mapDealToSubmission(deal: any): Submission {
     decisionMakers: deal.decision_makers || "",
     interestLevel: deal.interest_level || 0,
     signedUp: deal.status === "won" || false,
+    leadStatus: leadStatus as any,
     specificNeeds: deal.specific_needs || "",
     username: deal.owner?.username || deal.owner?.email?.split("@")[0] || "Unassigned",
     territory: territory,
@@ -349,6 +358,7 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
         decision_makers: data.decisionMakers || "",
         interest_level: data.interestLevel || 0,
         status: data.signedUp ? "won" : "open",
+        lead_status: data.leadStatus || (data.signedUp ? "signed_up" : undefined),
         specific_needs: data.specificNeeds || "",
         stage: "initial_contact",
         created_at: new Date().toISOString(),
@@ -452,6 +462,7 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
     if (data.decisionMakers !== undefined) updateData.decision_makers = data.decisionMakers;
     if (data.interestLevel !== undefined) updateData.interest_level = data.interestLevel;
     if (data.signedUp !== undefined) updateData.status = data.signedUp ? "won" : "open";
+    if (data.leadStatus !== undefined) updateData.lead_status = data.leadStatus;
     if (data.specificNeeds !== undefined) updateData.specific_needs = data.specificNeeds;
 
     const { data: updatedDeal, error } = await supabase

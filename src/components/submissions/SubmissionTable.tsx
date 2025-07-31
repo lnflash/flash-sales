@@ -10,7 +10,7 @@ import {
   useReactTable,
   SortingState,
 } from '@tanstack/react-table';
-import { Submission } from '@/types/submission';
+import { Submission, LeadStatus } from '@/types/submission';
 import { formatDate } from '@/utils/date-formatter';
 import { 
   ChevronDownIcon, 
@@ -71,19 +71,33 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
           );
         },
       }),
-      columnHelper.accessor('signedUp', {
+      columnHelper.accessor('leadStatus', {
         header: 'Status',
-        cell: (info) => (
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              info.getValue()
-                ? 'bg-flash-green/10 text-flash-green border border-flash-green/20'
-                : 'bg-gray-100 text-light-text-secondary border border-light-border'
-            }`}
-          >
-            {info.getValue() ? 'Signed Up' : 'Prospect'}
-          </span>
-        ),
+        cell: (info) => {
+          const submission = info.row.original;
+          const status = info.getValue() as LeadStatus | undefined;
+          const displayStatus = status || (submission.signedUp ? 'signed_up' : 'canvas');
+          
+          return (
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                displayStatus === 'signed_up'
+                  ? 'bg-flash-green/10 text-flash-green border border-flash-green/20'
+                  : displayStatus === 'opportunity'
+                  ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                  : displayStatus === 'prospect'
+                  ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                  : displayStatus === 'contacted'
+                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                  : 'bg-gray-100 text-light-text-secondary border border-light-border'
+              }`}
+            >
+              {displayStatus.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ')}
+            </span>
+          );
+        },
       }),
       columnHelper.accessor('username', {
         header: 'Rep',

@@ -5,7 +5,7 @@ import { useSubmissionDetail } from '@/hooks/useSubmissionDetail';
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { updateSubmission } from '@/lib/api';
-import { Submission } from '@/types/submission';
+import { Submission, LeadStatus } from '@/types/submission';
 
 export default function EditSubmissionPage() {
   const router = useRouter();
@@ -32,6 +32,14 @@ export default function EditSubmissionPage() {
       setFormState(prev => ({ ...prev, [name]: isChecked }));
     } else if (name === 'interestLevel') {
       setFormState(prev => ({ ...prev, [name]: parseInt(value) }));
+    } else if (name === 'leadStatus') {
+      // Sync signedUp field when leadStatus changes for backward compatibility
+      const isSignedUp = value === 'signed_up';
+      setFormState(prev => ({ 
+        ...prev, 
+        [name]: value as LeadStatus,
+        signedUp: isSignedUp 
+      }));
     } else {
       setFormState(prev => ({ ...prev, [name]: value }));
     }
@@ -237,18 +245,24 @@ export default function EditSubmissionPage() {
                   </label>
                 </div>
                 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="signedUp"
-                    name="signedUp"
-                    checked={formState.signedUp || false}
-                    onChange={handleInputChange}
-                    className="h-4 w-4 text-flash-green focus:ring-flash-green border-gray-300 rounded"
-                  />
-                  <label htmlFor="signedUp" className="ml-2 block text-light-text-primary text-sm font-medium">
-                    Signed Up
+                <div>
+                  <label htmlFor="leadStatus" className="block text-light-text-primary text-sm font-medium mb-2">
+                    Lead Status
                   </label>
+                  <select
+                    id="leadStatus"
+                    name="leadStatus"
+                    value={formState.leadStatus || ''}
+                    onChange={handleInputChange}
+                    className="w-full bg-white border border-light-border rounded-md px-3 py-2 text-light-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="canvas">Canvas</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="prospect">Prospect</option>
+                    <option value="opportunity">Opportunity</option>
+                    <option value="signed_up">Signed Up</option>
+                  </select>
                 </div>
                 
                 <div className="md:col-span-2">

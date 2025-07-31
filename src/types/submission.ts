@@ -1,3 +1,6 @@
+// Lead status options
+export type LeadStatus = 'canvas' | 'contacted' | 'prospect' | 'opportunity' | 'signed_up';
+
 // Mirror the intake form submission type
 export interface Submission {
   id: number | string; // Support both for compatibility
@@ -6,7 +9,8 @@ export interface Submission {
   packageSeen: boolean;
   decisionMakers?: string;
   interestLevel: number;
-  signedUp: boolean;
+  signedUp: boolean; // Keep for backward compatibility
+  leadStatus?: LeadStatus; // New field for lead status
   specificNeeds?: string;
   timestamp: string;
   username?: string;

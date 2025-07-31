@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircleIcon, ExclamationCircleIcon, UserIcon } from "@heroicons/react/24/outline";
 import { createSubmission } from "@/lib/api";
+import { LeadStatus } from "@/types/submission";
 
 interface FormData {
   ownerName: string;
@@ -17,6 +18,7 @@ interface FormData {
   decisionMakers: string;
   interestLevel: number;
   signedUp: boolean;
+  leadStatus?: LeadStatus;
   specificNeeds: string;
   username: string;
   territory: string;
@@ -35,6 +37,7 @@ export default function IntakeForm() {
     decisionMakers: "",
     interestLevel: 3,
     signedUp: false,
+    leadStatus: undefined,
     specificNeeds: "",
     username: "",
     territory: "",
@@ -80,6 +83,14 @@ export default function IntakeForm() {
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
+    } else if (name === "leadStatus") {
+      // Sync signedUp field when leadStatus changes
+      const isSignedUp = value === "signed_up";
+      setFormData((prev) => ({ 
+        ...prev, 
+        [name]: value as LeadStatus,
+        signedUp: isSignedUp 
+      }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -102,6 +113,12 @@ export default function IntakeForm() {
         setIsSubmitting(false);
         return;
       }
+      
+      if (!formData.leadStatus) {
+        setError("Lead status is required");
+        setIsSubmitting(false);
+        return;
+      }
 
       // Submit the form
       await createSubmission(formData);
@@ -116,6 +133,7 @@ export default function IntakeForm() {
         decisionMakers: "",
         interestLevel: 3,
         signedUp: false,
+        leadStatus: undefined,
         specificNeeds: "",
         username: "Flash Rep",
         territory: "",
@@ -321,21 +339,29 @@ export default function IntakeForm() {
               </div>
             </div>
 
-            {/* Signed Up */}
+            {/* Lead Status */}
             <div>
-              <label className="block text-sm font-medium text-light-text-secondary mb-2">Signed Up</label>
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="signedUp"
-                    checked={formData.signedUp}
-                    onChange={handleInputChange}
-                    className="h-4 w-4 text-flash-green bg-white border-light-border rounded focus:ring-flash-green"
-                  />
-                  <span className="ml-2 text-light-text-primary">Customer signed up for service</span>
-                </label>
-              </div>
+              <label htmlFor="leadStatus" className="block text-sm font-medium text-light-text-secondary mb-2">
+                Lead Status *
+              </label>
+              <select
+                id="leadStatus"
+                name="leadStatus"
+                value={formData.leadStatus || ""}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+              >
+                <option value="">Select Status</option>
+                <option value="canvas">Canvas</option>
+                <option value="contacted">Contacted</option>
+                <option value="prospect">Prospect</option>
+                <option value="opportunity">Opportunity</option>
+                <option value="signed_up">Signed Up</option>
+              </select>
+              <p className="mt-1 text-xs text-light-text-tertiary">
+                Select the current status of this lead
+              </p>
             </div>
 
             {/* Specific Needs */}

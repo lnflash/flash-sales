@@ -22,8 +22,36 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 
+// Lead status options that should replace the signed up checkbox
+export type LeadStatus = 'canvas' | 'contacted' | 'prospect' | 'opportunity' | 'signed_up';
+
+// Helper function to determine if a lead is active (created/edited in last 30 days)
+const isActiveLead = (submission: Submission): boolean => {
+  const submissionDate = new Date(submission.timestamp);
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  return submissionDate >= thirtyDaysAgo && submission.signedUp !== true;
+};
+
+// Helper function to determine if a lead is new (created in last 7 days)
+const isNewLead = (submission: Submission): boolean => {
+  const submissionDate = new Date(submission.timestamp);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  return submissionDate >= sevenDaysAgo;
+};
+
+// Helper function to determine if a lead is stale (30+ days old and not signed up)
+const isStaleLead = (submission: Submission): boolean => {
+  const submissionDate = new Date(submission.timestamp);
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  return submissionDate < thirtyDaysAgo && submission.signedUp !== true;
+};
+
 // Helper function to determine lead stage based on submission data
 const getLeadStage = (submission: Submission): LeadStage => {
+  // TODO: Once we add the status field, use that instead
   if (submission.signedUp) return 'customer';
   if (submission.interestLevel >= 4 && submission.packageSeen) return 'opportunity';
   if (submission.interestLevel >= 3) return 'qualified';
@@ -158,7 +186,8 @@ export default function LeadsPage() {
     return {};
   };
   
-  const { submissions, isLoading } = useSubmissions(getFilters());
+  // Fetch all submissions without pagination for lead management
+  const { submissions, isLoading } = useSubmissions(getFilters(), { pageIndex: 0, pageSize: 2000 });
   
   // Convert submissions to workflows
   const workflows = submissions.map(submissionToWorkflow);
@@ -185,21 +214,26 @@ export default function LeadsPage() {
     setSelectedSubmission(null);
   };
 
+  // Calculate lead statistics
+  const activeLeads = submissions.filter(isActiveLead);
+  const newLeads = submissions.filter(isNewLead);
+  const staleLeads = submissions.filter(isStaleLead);
+  const signedUpLeads = submissions.filter(s => s.signedUp);
+  
   const stats = {
-    totalLeads: workflows.length,
-    qualifiedLeads: workflows.filter(w => ['qualified', 'opportunity', 'customer'].includes(w.currentStage)).length,
-    conversionRate: workflows.length > 0 
-      ? (workflows.filter(w => w.currentStage === 'customer').length / workflows.length * 100).toFixed(1)
+    totalLeads: submissions.length,
+    activeLeads: activeLeads.length,
+    newLeads: newLeads.length,
+    staleLeads: staleLeads.length,
+    conversionRate: submissions.length > 0 
+      ? (signedUpLeads.length / submissions.length * 100).toFixed(1)
       : '0',
-    avgQualificationScore: workflows.length > 0
-      ? Math.round(workflows.reduce((sum, w) => sum + w.qualificationScore, 0) / workflows.length)
-      : 0,
   };
 
   return (
     <DashboardLayout title="Lead Management">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
           <div className="flex items-center justify-between">
             <div>
@@ -213,10 +247,35 @@ export default function LeadsPage() {
         <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-light-text-secondary">Qualified Leads</p>
-              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.qualifiedLeads}</p>
+              <p className="text-sm text-light-text-secondary">Active Leads</p>
+              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.activeLeads}</p>
+              <p className="text-xs text-light-text-tertiary">Last 30 days</p>
             </div>
             <ClipboardDocumentCheckIcon className="w-8 h-8 text-blue-500 opacity-50" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-light-text-secondary">New Leads</p>
+              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.newLeads}</p>
+              <p className="text-xs text-light-text-tertiary">Last 7 days</p>
+            </div>
+            <PlusIcon className="w-8 h-8 text-green-500 opacity-50" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-light-text-secondary">Stale Leads</p>
+              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.staleLeads}</p>
+              <p className="text-xs text-light-text-tertiary">30+ days</p>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
+              <span className="text-sm font-bold text-yellow-600">!</span>
+            </div>
           </div>
         </div>
 
@@ -229,36 +288,26 @@ export default function LeadsPage() {
             <ArrowTrendingUpIcon className="w-8 h-8 text-green-500 opacity-50" />
           </div>
         </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-light-text-secondary">Avg Score</p>
-              <p className="text-2xl font-bold text-light-text-primary mt-1">{stats.avgQualificationScore}</p>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-flash-green/20 flex items-center justify-center">
-              <span className="text-sm font-bold text-flash-green">{stats.avgQualificationScore}</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Territory Dashboard */}
       <div className="mb-8">
         <TerritoryDashboard 
           salesReps={(() => {
-            // Group submissions by rep and territory
+            // Group active submissions by rep and territory
             const repMap = new Map<string, any>();
             
-            submissions.forEach(sub => {
+            // Only process active leads for territory dashboard
+            activeLeads.forEach(sub => {
               const repName = sub.username || 'Unassigned';
-              const key = `${repName}-${sub.territory || 'Unassigned'}`;
+              const territory = sub.territory || 'Unassigned';
+              const key = `${repName}-${territory}`;
               
               if (!repMap.has(key)) {
                 repMap.set(key, {
                   id: key,
                   name: repName,
-                  territory: (sub.territory || 'Unassigned') as JamaicaParish | 'Unassigned',
+                  territory: territory as JamaicaParish | 'Unassigned',
                   activeLeads: 0,
                   totalRevenue: 0,
                   conversionRate: 0,
@@ -267,12 +316,20 @@ export default function LeadsPage() {
               
               const rep = repMap.get(key)!;
               rep.activeLeads += 1;
-              if (sub.signedUp) {
-                rep.totalRevenue += 5000; // Assuming $5000 per conversion
+            });
+            
+            // Add revenue and conversion data from all submissions
+            submissions.forEach(sub => {
+              const repName = sub.username || 'Unassigned';
+              const territory = sub.territory || 'Unassigned';
+              const key = `${repName}-${territory}`;
+              
+              if (repMap.has(key) && sub.signedUp) {
+                repMap.get(key)!.totalRevenue += 5000; // Assuming $5000 per conversion
               }
             });
             
-            // Calculate conversion rates
+            // Calculate conversion rates based on all submissions
             repMap.forEach(rep => {
               const repSubmissions = submissions.filter(s => 
                 (s.username || 'Unassigned') === rep.name && 
@@ -284,7 +341,8 @@ export default function LeadsPage() {
                 : 0;
             });
             
-            return Array.from(repMap.values());
+            // Filter out territories with zero active leads
+            return Array.from(repMap.values()).filter(rep => rep.activeLeads > 0);
           })()}
           onTerritoryClick={(parish) => {
             setSelectedTerritory(parish);
@@ -466,6 +524,113 @@ export default function LeadsPage() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Stale Leads Section */}
+      {staleLeads.length > 0 && (
+        <div className="mt-8 bg-white rounded-lg shadow-sm p-6 border border-yellow-300">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-light-text-primary">
+                Stale Leads ({staleLeads.length})
+              </h3>
+              <p className="text-sm text-light-text-secondary">
+                Leads that haven't been updated in over 30 days
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                Needs Attention
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-light-border">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary uppercase tracking-wider">
+                    Business Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary uppercase tracking-wider">
+                    Sales Rep
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary uppercase tracking-wider">
+                    Territory
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary uppercase tracking-wider">
+                    Last Contact
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary uppercase tracking-wider">
+                    Interest
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-light-border">
+                {staleLeads.slice(0, 10).map(lead => {
+                  const daysSinceContact = Math.floor(
+                    (new Date().getTime() - new Date(lead.timestamp).getTime()) / (1000 * 60 * 60 * 24)
+                  );
+                  
+                  return (
+                    <tr key={lead.id} className="hover:bg-light-bg-secondary">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <p className="text-sm font-medium text-light-text-primary">
+                          {lead.ownerName}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <p className="text-sm text-light-text-primary">
+                          {lead.username || 'Unassigned'}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <p className="text-sm text-light-text-primary">
+                          {lead.territory || 'N/A'}
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <p className="text-sm text-light-text-primary">
+                          {daysSinceContact} days ago
+                        </p>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-16 bg-light-bg-tertiary rounded-full h-2">
+                            <div
+                              className="bg-gradient-to-r from-flash-green to-flash-yellow h-2 rounded-full"
+                              style={{ width: `${(lead.interestLevel / 5) * 100}%` }}
+                            />
+                          </div>
+                          <span className="ml-2 text-sm text-light-text-primary">{lead.interestLevel}/5</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleQualifyLead(lead)}
+                          className="text-sm text-flash-green hover:text-flash-green-light font-medium"
+                        >
+                          Re-engage
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          
+          {staleLeads.length > 10 && (
+            <div className="mt-4 text-center">
+              <button className="text-sm text-flash-green hover:text-flash-green-light font-medium">
+                View all {staleLeads.length} stale leads
+              </button>
+            </div>
+          )}
         </div>
       )}
 

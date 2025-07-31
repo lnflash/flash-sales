@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Submission } from '@/types/submission';
+import { Submission, LeadStatus } from '@/types/submission';
 import { formatDate } from '@/utils/date-formatter';
 import { getUserFromStorage } from '@/lib/auth';
 import { getUserRole, hasPermission } from '@/types/roles';
@@ -97,12 +97,23 @@ export default function SubmissionDetail({
             <div className="flex items-center mt-2 md:mt-0">
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  submission.signedUp
+                  submission.leadStatus === 'signed_up' || submission.signedUp
                     ? 'bg-flash-green/10 text-flash-green border border-flash-green/20'
+                    : submission.leadStatus === 'opportunity'
+                    ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                    : submission.leadStatus === 'prospect'
+                    ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                    : submission.leadStatus === 'contacted'
+                    ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
                     : 'bg-gray-100 text-light-text-secondary border border-light-border'
                 }`}
               >
-                {submission.signedUp ? 'Signed Up' : 'Prospect'}
+                {submission.leadStatus ? 
+                  submission.leadStatus.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                  ).join(' ') 
+                  : (submission.signedUp ? 'Signed Up' : 'Canvas')
+                }
               </span>
 
               {userPermissions.canEdit && (
