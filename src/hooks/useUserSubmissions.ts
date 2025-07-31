@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase/client';
 import { Submission } from '@/types/submission';
 import { mapDealToSubmission } from '@/lib/supabase-api';
 
@@ -18,20 +18,6 @@ export function useUserSubmissions(username: string | undefined) {
           console.log(`[useUserSubmissions] No username provided, returning empty`);
           return { submissions: [], count: 0 };
         }
-
-      // Initialize Supabase client inside the query function
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      
-      console.log(`[useUserSubmissions] Supabase URL: ${supabaseUrl ? 'present' : 'missing'}`);
-      console.log(`[useUserSubmissions] Supabase Key: ${supabaseAnonKey ? 'present' : 'missing'}`);
-      
-      if (!supabaseUrl || !supabaseAnonKey) {
-        console.error('[useUserSubmissions] Missing Supabase environment variables');
-        return { submissions: [], count: 0 };
-      }
-      
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
       console.log(`[useUserSubmissions] Fetching submissions for username: ${username}`);
 
