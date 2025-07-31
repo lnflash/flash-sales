@@ -36,7 +36,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [showSearch, setShowSearch] = useState(true);
 
   const [formData, setFormData] = useState<FormData>({
     ownerName: "",
@@ -306,18 +306,22 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
           {/* Search Section - Only show for new submissions */}
           {!isEditMode && !submissionId && (
-            <div className="mb-6">
+            <div className="mb-6 p-4 bg-light-bg-secondary rounded-lg border border-light-border">
               <div className="flex items-center justify-between mb-3">
-                <label className="block text-sm font-medium text-light-text-secondary">
-                  Search Existing Submissions
-                </label>
+                <div>
+                  <label className="block text-sm font-medium text-light-text-primary">
+                    Search Existing Submissions
+                  </label>
+                  <p className="text-xs text-light-text-secondary mt-1">
+                    Start typing to find and update an existing lead
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowSearch(!showSearch)}
-                  className="text-sm text-flash-green hover:text-flash-green-light flex items-center"
+                  className="text-sm text-light-text-secondary hover:text-light-text-primary flex items-center"
                 >
-                  <ArrowPathIcon className="w-4 h-4 mr-1" />
-                  {showSearch ? "Hide Search" : "Build on Existing"}
+                  {showSearch ? "Hide" : "Show"} Search
                 </button>
               </div>
               {showSearch && (
