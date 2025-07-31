@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { getUserFromStorage } from '@/lib/auth';
+import { hasPermission } from '@/types/roles';
 import { Submission, LeadStatus } from '@/types/submission';
 import { 
   PhoneIcon, 
@@ -20,6 +21,7 @@ import { formatDate } from '@/utils/date-formatter';
 import LeadStatusCard from '@/components/rep-dashboard/LeadStatusCard';
 import FollowUpPriorities from '@/components/rep-dashboard/FollowUpPriorities';
 import PerformanceSnapshot from '@/components/rep-dashboard/PerformanceSnapshot';
+import RepFilter from '@/components/rep-dashboard/RepFilter';
 
 // Lead status priority order
 const leadStatusOrder: LeadStatus[] = ['opportunity', 'prospect', 'contacted', 'canvas', 'signed_up'];
@@ -92,19 +94,49 @@ const getTodaysFollowUps = (submissions: Submission[]) => {
 export default function RepDashboard() {
   const [user, setUser] = useState<any>(null);
   const [selectedStatus, setSelectedStatus] = useState<LeadStatus | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
+  const [selectedUsername, setSelectedUsername] = useState<string>('');
 
   useEffect(() => {
     const currentUser = getUserFromStorage();
     if (currentUser) {
       setUser(currentUser);
+      console.log('Rep Dashboard - Current user:', currentUser.username);
     }
+    setIsUserLoading(false);
   }, []);
 
-  // Always filter by the logged-in user for sales reps
+  // Filter by username unless user has permission to view all reps
+  const canViewAllReps = user?.role && hasPermission(user.role, 'canViewAllReps');
+  
+  // Determine which username to filter by
+  const usernameToFilter = canViewAllReps && selectedUsername ? selectedUsername : (canViewAllReps ? '' : user?.username);
+  const filters = usernameToFilter ? { username: usernameToFilter } : {};
+  
   const { submissions, isLoading } = useSubmissions(
-    user ? { username: user.username } : {},
+    filters,
     { pageIndex: 0, pageSize: 1000 }
   );
+
+  // Get all submissions to find unique reps (for admins only)
+  const { submissions: allSubmissions } = useSubmissions(
+    {},
+    { pageIndex: 0, pageSize: 1000 }
+  );
+  
+  // Extract unique rep usernames
+  const availableReps = Array.from(new Set(
+    allSubmissions
+      .map(s => s.username)
+      .filter((username): username is string => !!username && username !== 'Unassigned')
+  )).sort();
+
+  // Log for debugging
+  useEffect(() => {
+    if (!isLoading && submissions.length > 0) {
+      console.log(`Rep Dashboard - Loaded ${submissions.length} submissions for user: ${user?.username}`);
+    }
+  }, [submissions, isLoading, user]);
 
   const groupedSubmissions = groupByLeadStatus(submissions);
   const todaysFollowUps = getTodaysFollowUps(submissions);
@@ -137,8 +169,93 @@ export default function RepDashboard() {
     signed_up: { color: 'green', label: 'Signed Up', icon: CheckCircleIcon }
   };
 
+  // Show loading state while user data is loading
+  if (isUserLoading || isLoading) {
+    return (
+      <DashboardLayout title="Loading Dashboard...">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
+            <p className="mt-4 text-light-text-secondary">Loading your dashboard...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Show message if no user is logged in
+  if (!user) {
+    return (
+      <DashboardLayout title="Sales Rep Dashboard">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <p className="text-yellow-800">Please log in to view your dashboard.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Determine display name for dashboard
+  const displayUsername = selectedUsername || user.username;
+  const isViewingOwnDashboard = !selectedUsername || selectedUsername === user.username;
+
   return (
-    <DashboardLayout title={`${user?.username || 'Sales Rep'} Dashboard`}>
+    <DashboardLayout title={`${displayUsername}'s Dashboard`}>
+      {/* Rep Filter for Admins */}
+      <RepFilter
+        currentUsername={user.username}
+        selectedUsername={selectedUsername}
+        onUsernameChange={setSelectedUsername}
+        canViewAllReps={canViewAllReps}
+        availableReps={availableReps}
+      />
+
+      {/* User Info Bar */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-light-border flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold">
+            {displayUsername.charAt(0).toUpperCase()}
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-light-text-primary">
+              {isViewingOwnDashboard ? `Welcome back, ${user.username}!` : `Viewing ${displayUsername}'s Dashboard`}
+            </p>
+            <p className="text-xs text-light-text-secondary">
+              {canViewAllReps && selectedUsername ? `Admin view of ${displayUsername}'s data` : 
+               canViewAllReps && !selectedUsername ? 'Viewing all submissions (Admin)' : 
+               'Viewing your personal dashboard'}
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-light-text-secondary">
+            {canViewAllReps ? 'Total Submissions (All Reps)' : 'Your Submissions'}
+          </p>
+          <p className="text-lg font-semibold text-light-text-primary">{submissions.length}</p>
+        </div>
+      </div>
+
+      {/* Empty state if no submissions */}
+      {submissions.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-sm p-12 border border-light-border text-center">
+          <div className="max-w-md mx-auto">
+            <DocumentTextIcon className="w-16 h-16 text-light-text-tertiary mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-light-text-primary mb-2">
+              No Leads Yet
+            </h3>
+            <p className="text-light-text-secondary mb-6">
+              Start building your pipeline by adding your first lead!
+            </p>
+            <Link
+              href="/intake"
+              className="inline-flex items-center px-6 py-3 bg-flash-green text-white rounded-md hover:bg-flash-green-light transition-colors"
+            >
+              <DocumentTextIcon className="w-5 h-5 mr-2" />
+              Add Your First Lead
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
@@ -256,6 +373,8 @@ export default function RepDashboard() {
           </Link>
         </div>
       </div>
+      </>
+      )}
     </DashboardLayout>
   );
 }
