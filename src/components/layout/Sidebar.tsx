@@ -18,6 +18,7 @@ import {
   ArrowRightOnRectangleIcon,
   UserGroupIcon,
   UserIcon,
+  ChartPieIcon,
 } from "@heroicons/react/24/outline";
 
 interface NavItem {
@@ -29,6 +30,7 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
+  { name: "My Dashboard", href: "/dashboard/rep-dashboard", icon: ChartPieIcon },
   { name: "Canvas Form", href: "/intake", icon: DocumentTextIcon },
   { name: "Intake Form ", href: "/intake-dynamic", icon: DocumentTextIcon },
   { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, requiresPermission: 'canViewAnalytics' },
