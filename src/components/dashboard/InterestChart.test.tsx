@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import InterestChart from './InterestChart';
+import { MobileMenuProvider } from '@/contexts/MobileMenuContext';
 
 // Mock Chart.js
 jest.mock('react-chartjs-2', () => ({
@@ -39,8 +40,16 @@ const mockData = [
 ];
 
 describe('InterestChart', () => {
+  const renderWithProvider = (ui: React.ReactElement) => {
+    return render(
+      <MobileMenuProvider>
+        {ui}
+      </MobileMenuProvider>
+    );
+  };
+
   it('renders with default month selection', () => {
-    render(<InterestChart data={mockData} />);
+    renderWithProvider(<InterestChart data={mockData} />);
     
     expect(screen.getByText('Submission Trends - Monthly View')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Last 12 Months')).toBeInTheDocument();
@@ -48,7 +57,7 @@ describe('InterestChart', () => {
   });
 
   it('changes time period when dropdown is changed', () => {
-    render(<InterestChart data={mockData} />);
+    renderWithProvider(<InterestChart data={mockData} />);
     
     const dropdown = screen.getByRole('combobox');
     
@@ -64,21 +73,21 @@ describe('InterestChart', () => {
   });
 
   it('shows loading state when isLoading is true', () => {
-    render(<InterestChart data={[]} isLoading={true} />);
+    renderWithProvider(<InterestChart data={[]} isLoading={true} />);
     
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.queryByTestId('chart')).not.toBeInTheDocument();
   });
 
   it('shows no data message when filteredData is empty', () => {
-    render(<InterestChart data={[]} isLoading={false} />);
+    renderWithProvider(<InterestChart data={[]} isLoading={false} />);
     
     expect(screen.getByText('No data available for selected time period')).toBeInTheDocument();
     expect(screen.queryByTestId('chart')).not.toBeInTheDocument();
   });
 
   it('renders dropdown with correct focus styles', () => {
-    render(<InterestChart data={mockData} />);
+    renderWithProvider(<InterestChart data={mockData} />);
     
     const dropdown = screen.getByRole('combobox');
     expect(dropdown).toHaveClass('focus:ring-2', 'focus:ring-flash-green');
