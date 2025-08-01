@@ -25,7 +25,7 @@ interface HotLeadsListProps {
 export function HotLeadsList({ submissions, isLoading = false }: HotLeadsListProps) {
   // Prepare lead data for scoring
   const leads = submissions.map(sub => ({
-    id: sub.id,
+    id: String(sub.id), // Convert to string for consistency
     ownerName: sub.ownerName,
     phoneNumber: sub.phoneNumber,
     email: sub.email,

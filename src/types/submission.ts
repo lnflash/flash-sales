@@ -6,6 +6,7 @@ export interface Submission {
   id: number | string; // Support both for compatibility
   ownerName: string;
   phoneNumber?: string;
+  email?: string;
   packageSeen: boolean;
   decisionMakers?: string;
   interestLevel: number;
@@ -15,6 +16,14 @@ export interface Submission {
   timestamp: string;
   username?: string;
   territory?: string;
+  businessType?: string;
+  monthlyRevenue?: string;
+  numberOfEmployees?: string;
+  yearEstablished?: string;
+  currentProcessor?: string;
+  monthlyTransactions?: string;
+  averageTicketSize?: string;
+  painPoints?: string[];
 }
 
 // Types for stats and metrics

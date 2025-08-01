@@ -84,6 +84,27 @@ const nextConfig = {
   images: {
     domains: ['localhost'], // Add any domains here that you'll load images from
   },
+  // Performance optimizations
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['@heroicons/react', 'date-fns', 'recharts'],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Enable compression
+  compress: true,
+  // Optimize bundle size
+  productionBrowserSourceMaps: false,
+  // Enable modern JS for smaller bundles
+  modularizeImports: {
+    '@heroicons/react/24/outline': {
+      transform: '@heroicons/react/24/outline/{{member}}',
+    },
+    '@heroicons/react/24/solid': {
+      transform: '@heroicons/react/24/solid/{{member}}',
+    },
+  },
   // We're disabling the automatic rewrites as we're handling the proxying manually in the API handlers
   // async rewrites() {
   //   return [
