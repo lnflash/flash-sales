@@ -8,6 +8,7 @@ import { getUserFromStorage, logout } from '@/lib/auth';
 import { getUserNotifications, markAsRead, markAllAsRead, getUnreadCount } from '@/lib/notifications';
 import { Notification } from '@/types/notifications';
 import { useMobileMenu } from '@/contexts/MobileMenuContext';
+import { IconButton } from '@/components/ui/icon-button';
 
 interface HeaderProps {
   title: string;
@@ -159,9 +160,10 @@ export default function Header({ title }: HeaderProps) {
             </button>
 
             <div className="relative notifications-dropdown">
-              <button 
+              <IconButton 
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-2 rounded-lg hover:bg-light-bg-secondary transition-colors"
+                className="relative"
+                aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
               >
                 <BellIcon className="h-6 w-6 text-light-text-secondary" />
                 {unreadCount > 0 && (
@@ -169,7 +171,7 @@ export default function Header({ title }: HeaderProps) {
                     {unreadCount}
                   </span>
                 )}
-              </button>
+              </IconButton>
               
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-lg border border-light-border z-50">

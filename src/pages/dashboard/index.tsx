@@ -14,6 +14,8 @@ import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
 import { calculateRepStats, calculateSignupLeaderboard, calculateInterestLeaderboard } from '@/utils/rep-stats-calculator';
 import { useRealtimeSubscriptions } from '@/hooks/useRealtimeDeals';
+import { useRealtimeSubmissions } from '@/hooks/useRealtimeSubmissions';
+import { useRealtimePresence } from '@/hooks/useRealtimePresence';
 import { getUserFromStorage } from '@/lib/auth';
 import { getUserRole, hasPermission } from '@/types/roles';
 import CreateNotificationModal from '@/components/notifications/CreateNotificationModal';
@@ -30,6 +32,12 @@ const InterestLeaderboard = lazy(() => import('@/components/dashboard/InterestLe
 const PerformanceReview = lazy(() => 
   import('@/components/dashboard/PerformanceReview').then(module => ({ 
     default: module.PerformanceReview 
+  }))
+);
+const OnlineUsersIndicator = lazy(() => import('@/components/dashboard/OnlineUsersIndicator'));
+const HotLeadsList = lazy(() => 
+  import('@/components/dashboard/HotLeadsList').then(module => ({ 
+    default: module.HotLeadsList 
   }))
 );
 
@@ -99,6 +107,12 @@ export default function Dashboard() {
     enableNotifications: true
   });
 
+  // Enable real-time submission updates
+  useRealtimeSubmissions();
+
+  // Enable presence tracking
+  const { onlineUsers } = useRealtimePresence({ currentPage: 'dashboard' });
+
   const interestDistribution = calculateInterestDistribution(submissions);
   const repStats = calculateRepStats(submissions);
   const signupLeaderboard = calculateSignupLeaderboard(submissions);
@@ -106,6 +120,11 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout title="Dashboard">
+      {/* Online users indicator */}
+      <Suspense fallback={null}>
+        <OnlineUsersIndicator onlineUsers={onlineUsers} />
+      </Suspense>
+
       {canCreateNotifications && (
         <div className="mb-6 flex justify-end">
           <Button
@@ -181,6 +200,12 @@ export default function Dashboard() {
         <Suspense fallback={<TableSkeleton />}>
           <RecentSubmissions submissions={submissions.slice(0, 10)} isLoading={isLoadingSubmissions} />
         </Suspense>
+        <Suspense fallback={<TableSkeleton />}>
+          <HotLeadsList submissions={submissions} isLoading={isLoadingSubmissions} />
+        </Suspense>
+      </section>
+
+      <section className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
         <Suspense fallback={<TableSkeleton />}>
           <PerformanceReview />
         </Suspense>

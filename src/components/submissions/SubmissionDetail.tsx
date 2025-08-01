@@ -17,6 +17,10 @@ import {
   PencilSquareIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import { AILeadScoreCard } from '@/components/dashboard/AILeadScoreCard';
+import { useAILeadScoring } from '@/hooks/useAILeadScoring';
+import { LeadScoreCard } from '@/components/dashboard/LeadScoreCard';
+import { calculateLeadScore } from '@/utils/lead-scoring';
 
 interface SubmissionDetailProps {
   submission: Submission;
@@ -32,6 +36,46 @@ export default function SubmissionDetail({
     canEdit: false,
     canDelete: false
   });
+  const [showAIScore, setShowAIScore] = useState(true);
+
+  // Prepare lead data for AI scoring
+  const leadData = submission ? {
+    id: submission.id,
+    ownerName: submission.ownerName,
+    phoneNumber: submission.phoneNumber,
+    email: submission.email,
+    interestLevel: submission.interestLevel || 0,
+    specificNeeds: submission.specificNeeds,
+    territory: submission.territory,
+    businessType: submission.businessType,
+    monthlyRevenue: submission.monthlyRevenue,
+    numberOfEmployees: submission.numberOfEmployees,
+    painPoints: submission.painPoints || [],
+    interactions: [] // Would come from activity tracking
+  } : null;
+
+  const { scoreData, isLoading: isLoadingScore } = useAILeadScoring(leadData);
+
+  // Calculate basic score for fallback
+  const basicScore = submission ? calculateLeadScore({
+    monthlyRevenue: submission.monthlyRevenue || '',
+    numberOfEmployees: submission.numberOfEmployees || '',
+    yearEstablished: new Date().getFullYear().toString(),
+    monthlyTransactions: '100',
+    averageTicketSize: '50',
+    interestLevel: submission.interestLevel || 0,
+    painPoints: submission.painPoints || [],
+    packageSeen: submission.packageSeen || false,
+    signedUp: submission.signedUp || false,
+    currentProcessor: submission.currentProcessor || '',
+    businessType: submission.businessType || '',
+  }) : 0;
+
+  const breakdown = {
+    demographic: 75,
+    firmographic: 82,
+    behavioral: 68
+  };
 
   useEffect(() => {
     const user = getUserFromStorage();
@@ -78,7 +122,7 @@ export default function SubmissionDetail({
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       <div className="mb-4">
         <Link
           href="/dashboard/submissions"
@@ -89,7 +133,10 @@ export default function SubmissionDetail({
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg overflow-hidden shadow-md border border-light-border">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main submission details - 2 columns on large screens */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg overflow-hidden shadow-md border border-light-border">
         <div className="p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <h1 className="text-2xl font-bold text-light-text-primary">{submission.ownerName}</h1>
@@ -213,6 +260,42 @@ export default function SubmissionDetail({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+        </div>
+
+        {/* AI Lead Score Card - 1 column on large screens */}
+        <div className="lg:col-span-1">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-light-text-primary">Lead Intelligence</h2>
+            <button
+              onClick={() => setShowAIScore(!showAIScore)}
+              className="text-sm text-flash-green hover:text-flash-green-light"
+            >
+              {showAIScore ? 'Show Basic' : 'Show AI Score'}
+            </button>
+          </div>
+          
+          {showAIScore && scoreData ? (
+            <AILeadScoreCard
+              score={scoreData.score}
+              confidence={scoreData.confidence}
+              factors={scoreData.factors}
+              predictedOutcome={scoreData.predictedOutcome}
+              recommendations={scoreData.recommendations}
+              historicalComparison={scoreData.historicalComparison}
+              breakdown={breakdown}
+              trend="stable"
+              lastUpdated={new Date().toISOString()}
+            />
+          ) : (
+            <LeadScoreCard
+              score={basicScore}
+              breakdown={breakdown}
+              trend="stable"
+              lastUpdated={new Date().toISOString()}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -98,7 +98,7 @@ export default function Sidebar() {
         {!isMobile && (
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg hover:bg-light-bg-secondary transition-colors flex-shrink-0"
+            className="p-1.5 rounded-lg hover:bg-light-bg-secondary transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-flash-green focus:ring-offset-2"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-flash-green" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-flash-green" />}

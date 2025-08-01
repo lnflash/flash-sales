@@ -16,14 +16,14 @@ module.exports = {
         'flash-yellow': '#FFD700',
         'flash-yellow-light': '#FFDF33',
         'flash-yellow-dark': '#E6C200',
-        // Light theme colors
+        // Light theme colors (improved contrast for WCAG AA)
         'light-bg-primary': '#FFFFFF',
         'light-bg-secondary': '#F9FAFB',
         'light-bg-tertiary': '#F3F4F6',
-        'light-border': '#E5E7EB',
+        'light-border': '#D1D5DB', // Darker border for better visibility
         'light-text-primary': '#111827',
-        'light-text-secondary': '#6B7280',
-        'light-text-tertiary': '#9CA3AF',
+        'light-text-secondary': '#4B5563', // Darker gray for better contrast
+        'light-text-tertiary': '#6B7280', // Darker gray for better contrast
         // Legacy dark colors (for reference)
         'flash-dark-1': '#0F172A',
         'flash-dark-2': '#1E293B',

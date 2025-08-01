@@ -1,21 +1,26 @@
 {
   "summary": {
     "totalExternal": 762,
-    "totalSupabase": 764,
-    "matched": 762,
-    "missingInSupabase": [],
+    "totalSupabase": 763,
+    "matched": 761,
+    "missingInSupabase": [
+      {
+        "id": 803,
+        "ownerName": "test",
+        "phoneNumber": "6877777888",
+        "packageSeen": false,
+        "interestLevel": 3,
+        "signedUp": false,
+        "timestamp": "2025-07-30T01:23:05.836Z",
+        "username": "flash"
+      }
+    ],
     "dataDiscrepancies": [
       {
-        "externalId": 803,
-        "field": "phoneNumber",
-        "externalValue": "6877777888",
-        "supabaseValue": ""
-      },
-      {
-        "externalId": 803,
-        "field": "territory",
-        "externalValue": "",
-        "supabaseValue": "Kingston"
+        "externalId": 796,
+        "field": "interestLevel",
+        "externalValue": 5,
+        "supabaseValue": 4
       },
       {
         "externalId": 796,
@@ -55,9 +60,9 @@
       },
       {
         "externalId": 790,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 789,
@@ -73,9 +78,9 @@
       },
       {
         "externalId": 787,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 786,
@@ -103,9 +108,9 @@
       },
       {
         "externalId": 782,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 781,
@@ -115,15 +120,21 @@
       },
       {
         "externalId": 780,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 779,
         "field": "username",
         "externalValue": "Chala",
-        "supabaseValue": ""
+        "supabaseValue": "chala"
+      },
+      {
+        "externalId": 779,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Mary"
       },
       {
         "externalId": 778,
@@ -141,7 +152,13 @@
         "externalId": 777,
         "field": "username",
         "externalValue": "Chala",
-        "supabaseValue": ""
+        "supabaseValue": "chala"
+      },
+      {
+        "externalId": 777,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Mary"
       },
       {
         "externalId": 776,
@@ -159,13 +176,25 @@
         "externalId": 775,
         "field": "username",
         "externalValue": "Chala",
-        "supabaseValue": ""
+        "supabaseValue": "chala"
+      },
+      {
+        "externalId": 775,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Mary"
       },
       {
         "externalId": 774,
         "field": "username",
         "externalValue": "Chala",
-        "supabaseValue": ""
+        "supabaseValue": "chala"
+      },
+      {
+        "externalId": 774,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Mary"
       },
       {
         "externalId": 773,
@@ -183,7 +212,13 @@
         "externalId": 772,
         "field": "username",
         "externalValue": "Chala",
-        "supabaseValue": ""
+        "supabaseValue": "chala"
+      },
+      {
+        "externalId": 772,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Mary"
       },
       {
         "externalId": 771,
@@ -201,19 +236,37 @@
         "externalId": 770,
         "field": "username",
         "externalValue": "Chala",
-        "supabaseValue": ""
+        "supabaseValue": "chala"
+      },
+      {
+        "externalId": 770,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Mary"
       },
       {
         "externalId": 769,
         "field": "username",
         "externalValue": "Chala",
-        "supabaseValue": ""
+        "supabaseValue": "chala"
+      },
+      {
+        "externalId": 769,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Mary"
       },
       {
         "externalId": 768,
         "field": "username",
         "externalValue": "Chala",
-        "supabaseValue": ""
+        "supabaseValue": "chala"
+      },
+      {
+        "externalId": 768,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Mary"
       },
       {
         "externalId": 767,
@@ -223,9 +276,9 @@
       },
       {
         "externalId": 766,
-        "field": "username",
-        "externalValue": "charms",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Portland"
       },
       {
         "externalId": 765,
@@ -249,7 +302,13 @@
         "externalId": 763,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 763,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 762,
@@ -267,25 +326,49 @@
         "externalId": 761,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 761,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 760,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 760,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 759,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 759,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 758,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 758,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 757,
@@ -303,7 +386,13 @@
         "externalId": 756,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 756,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 755,
@@ -321,7 +410,13 @@
         "externalId": 754,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 754,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 753,
@@ -339,19 +434,37 @@
         "externalId": 752,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 752,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 751,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 751,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 750,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 750,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 749,
@@ -405,31 +518,61 @@
         "externalId": 745,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 745,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 744,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 744,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 743,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 743,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 742,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 742,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 741,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 741,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 740,
@@ -447,7 +590,13 @@
         "externalId": 739,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 739,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 738,
@@ -477,7 +626,13 @@
         "externalId": 737,
         "field": "username",
         "externalValue": "Tatiana_1",
-        "supabaseValue": ""
+        "supabaseValue": "tatiana_1"
+      },
+      {
+        "externalId": 737,
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "Kingston"
       },
       {
         "externalId": 736,
@@ -511,15 +666,15 @@
       },
       {
         "externalId": 733,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 732,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 731,
@@ -685,9 +840,9 @@
       },
       {
         "externalId": 708,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 707,
@@ -745,15 +900,15 @@
       },
       {
         "externalId": 698,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 697,
-        "field": "username",
-        "externalValue": "rogimon",
-        "supabaseValue": ""
+        "field": "territory",
+        "externalValue": "",
+        "supabaseValue": "St. Ann"
       },
       {
         "externalId": 696,
@@ -7249,19 +7404,24 @@
       }
     ]
   },
-  "missingSubmissions": [],
+  "missingSubmissions": [
+    {
+      "id": 803,
+      "ownerName": "test",
+      "phoneNumber": "6877777888",
+      "packageSeen": false,
+      "interestLevel": 3,
+      "signedUp": false,
+      "timestamp": "2025-07-30T01:23:05.836Z",
+      "username": "flash"
+    }
+  ],
   "discrepancies": [
     {
-      "externalId": 803,
-      "field": "phoneNumber",
-      "externalValue": "6877777888",
-      "supabaseValue": ""
-    },
-    {
-      "externalId": 803,
-      "field": "territory",
-      "externalValue": "",
-      "supabaseValue": "Kingston"
+      "externalId": 796,
+      "field": "interestLevel",
+      "externalValue": 5,
+      "supabaseValue": 4
     },
     {
       "externalId": 796,
@@ -7301,9 +7461,9 @@
     },
     {
       "externalId": 790,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 789,
@@ -7319,9 +7479,9 @@
     },
     {
       "externalId": 787,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 786,
@@ -7349,9 +7509,9 @@
     },
     {
       "externalId": 782,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 781,
@@ -7361,15 +7521,21 @@
     },
     {
       "externalId": 780,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 779,
       "field": "username",
       "externalValue": "Chala",
-      "supabaseValue": ""
+      "supabaseValue": "chala"
+    },
+    {
+      "externalId": 779,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Mary"
     },
     {
       "externalId": 778,
@@ -7387,7 +7553,13 @@
       "externalId": 777,
       "field": "username",
       "externalValue": "Chala",
-      "supabaseValue": ""
+      "supabaseValue": "chala"
+    },
+    {
+      "externalId": 777,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Mary"
     },
     {
       "externalId": 776,
@@ -7405,13 +7577,25 @@
       "externalId": 775,
       "field": "username",
       "externalValue": "Chala",
-      "supabaseValue": ""
+      "supabaseValue": "chala"
+    },
+    {
+      "externalId": 775,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Mary"
     },
     {
       "externalId": 774,
       "field": "username",
       "externalValue": "Chala",
-      "supabaseValue": ""
+      "supabaseValue": "chala"
+    },
+    {
+      "externalId": 774,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Mary"
     },
     {
       "externalId": 773,
@@ -7429,7 +7613,13 @@
       "externalId": 772,
       "field": "username",
       "externalValue": "Chala",
-      "supabaseValue": ""
+      "supabaseValue": "chala"
+    },
+    {
+      "externalId": 772,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Mary"
     },
     {
       "externalId": 771,
@@ -7447,19 +7637,37 @@
       "externalId": 770,
       "field": "username",
       "externalValue": "Chala",
-      "supabaseValue": ""
+      "supabaseValue": "chala"
+    },
+    {
+      "externalId": 770,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Mary"
     },
     {
       "externalId": 769,
       "field": "username",
       "externalValue": "Chala",
-      "supabaseValue": ""
+      "supabaseValue": "chala"
+    },
+    {
+      "externalId": 769,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Mary"
     },
     {
       "externalId": 768,
       "field": "username",
       "externalValue": "Chala",
-      "supabaseValue": ""
+      "supabaseValue": "chala"
+    },
+    {
+      "externalId": 768,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Mary"
     },
     {
       "externalId": 767,
@@ -7469,9 +7677,9 @@
     },
     {
       "externalId": 766,
-      "field": "username",
-      "externalValue": "charms",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Portland"
     },
     {
       "externalId": 765,
@@ -7495,7 +7703,13 @@
       "externalId": 763,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 763,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 762,
@@ -7513,25 +7727,49 @@
       "externalId": 761,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 761,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 760,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 760,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 759,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 759,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 758,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 758,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 757,
@@ -7549,7 +7787,13 @@
       "externalId": 756,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 756,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 755,
@@ -7567,7 +7811,13 @@
       "externalId": 754,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 754,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 753,
@@ -7585,19 +7835,37 @@
       "externalId": 752,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 752,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 751,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 751,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 750,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 750,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 749,
@@ -7651,31 +7919,61 @@
       "externalId": 745,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 745,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 744,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 744,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 743,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 743,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 742,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 742,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 741,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 741,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 740,
@@ -7693,7 +7991,13 @@
       "externalId": 739,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 739,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 738,
@@ -7723,7 +8027,13 @@
       "externalId": 737,
       "field": "username",
       "externalValue": "Tatiana_1",
-      "supabaseValue": ""
+      "supabaseValue": "tatiana_1"
+    },
+    {
+      "externalId": 737,
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "Kingston"
     },
     {
       "externalId": 736,
@@ -7757,15 +8067,15 @@
     },
     {
       "externalId": 733,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 732,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 731,
@@ -7931,9 +8241,9 @@
     },
     {
       "externalId": 708,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 707,
@@ -7991,15 +8301,15 @@
     },
     {
       "externalId": 698,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 697,
-      "field": "username",
-      "externalValue": "rogimon",
-      "supabaseValue": ""
+      "field": "territory",
+      "externalValue": "",
+      "supabaseValue": "St. Ann"
     },
     {
       "externalId": 696,
