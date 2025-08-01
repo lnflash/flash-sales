@@ -28,7 +28,9 @@ if (!process.env.NEXT_PUBLIC_GRAPHQL_URI && typeof window !== 'undefined') {
       'ondigitalocean.app',
       'vercel.app',
       'netlify.app',
-      'github.io'
+      'github.io',
+      'flashapp.me',  // Custom domain should use default API
+      'intake.flashapp.me'  // Specific subdomain
     ];
     
     // Check if we're on a blocked domain
@@ -68,14 +70,16 @@ const ipForwardingMiddleware = new ApolloLink((operation, forward) => {
 });
 
 // Determine if we should use the proxy
+// Use proxy for all production deployments (not localhost) to avoid CORS issues
 const shouldUseProxy = typeof window !== 'undefined' && 
-  window.location.hostname.includes('ondigitalocean.app');
+  !window.location.hostname.includes('localhost') &&
+  !window.location.hostname.includes('127.0.0.1');
 
-// Use proxy endpoint for DigitalOcean deployments to avoid CORS issues
+// Use proxy endpoint for production deployments to avoid CORS issues
 const graphqlEndpoint = shouldUseProxy ? '/api/graphql-proxy' : GRAPHQL_URI;
 
 if (shouldUseProxy) {
-  console.log('Using GraphQL proxy to avoid CORS issues');
+  console.log('Using GraphQL proxy to avoid CORS issues on production domain:', window.location.hostname);
 }
 
 // Create a GraphQL client instance
