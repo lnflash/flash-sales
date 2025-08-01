@@ -27,6 +27,8 @@ import { createSubmission, updateSubmission, getSubmissionById } from "@/lib/api
 import { calculateLeadScore } from "@/utils/lead-scoring";
 import { Submission } from "@/types/submission";
 import SubmissionSearch from "./SubmissionSearch";
+import { validatePhoneNumber, validateEmail, validateAddress } from "@/utils/validation";
+import { enrichCompany, enrichPerson, enrichPhoneNumber, enrichAddress } from "@/services/data-enrichment";
 
 // Extended form data with dynamic fields
 interface DynamicFormData {
@@ -184,6 +186,15 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
   const [showSearch, setShowSearch] = useState(true);
 
   const [formData, setFormData] = useState<DynamicFormData>({...initialFormData});
+  
+  // Validation states
+  const [phoneValidation, setPhoneValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
+  const [emailValidation, setEmailValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
+  const [addressValidation, setAddressValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
+  
+  // Enrichment states
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichmentData, setEnrichmentData] = useState<any>(null);
 
   // Track field interactions for analytics
   const trackFieldInteraction = (fieldName: string) => {
@@ -313,7 +324,7 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
     formData.numberOfEmployees,
   ]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     trackFieldInteraction(name);
 
@@ -322,6 +333,89 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
+      
+      // Validate phone number
+      if (name === "phoneNumber" && value) {
+        const validation = validatePhoneNumber(value);
+        setPhoneValidation({
+          isValid: validation.isValid,
+          message: validation.isValid 
+            ? validation.formatted 
+            : validation.errors?.[0]
+        });
+        
+        // If valid, update with formatted number and trigger enrichment
+        if (validation.isValid && validation.formatted) {
+          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted }));
+          enrichPhoneNumber(validation.formatted).then(result => {
+            if (result.success) {
+              console.log('Phone enrichment:', result.data);
+            }
+          });
+        }
+      }
+      
+      // Validate email
+      if (name === "email" && value) {
+        const validation = validateEmail(value);
+        setEmailValidation({
+          isValid: validation.isValid,
+          message: validation.errors?.[0]
+        });
+        
+        // If valid, trigger person enrichment
+        if (validation.isValid) {
+          enrichPerson(value).then(result => {
+            if (result.success) {
+              console.log('Person enrichment:', result.data);
+            }
+          });
+        }
+      }
+      
+      // Validate address when all fields are filled
+      if ((name === "address" || name === "city" || name === "state" || name === "zipCode") && 
+          formData.address && formData.city && formData.state && formData.zipCode) {
+        const addressData = {
+          street: name === "address" ? value : formData.address,
+          city: name === "city" ? value : formData.city,
+          state: name === "state" ? value : formData.state,
+          zip: name === "zipCode" ? value : formData.zipCode
+        };
+        
+        const validation = validateAddress(addressData);
+        setAddressValidation({
+          isValid: validation.isValid,
+          message: validation.isValid 
+            ? "Valid address" 
+            : validation.errors?.[0]
+        });
+        
+        // If valid, trigger address enrichment
+        if (validation.isValid) {
+          enrichAddress(addressData).then(result => {
+            if (result.success) {
+              console.log('Address enrichment:', result.data);
+            }
+          });
+        }
+      }
+      
+      // Auto-enrich company data when business name is entered
+      if (name === "businessName" && value.length > 3) {
+        // Debounce enrichment
+        const timeoutId = setTimeout(async () => {
+          setIsEnriching(true);
+          const result = await enrichCompany({ name: value });
+          if (result.success) {
+            setEnrichmentData(result.data);
+          }
+          setIsEnriching(false);
+        }, 1000);
+        
+        // Cleanup timeout on component unmount or new input
+        return () => clearTimeout(timeoutId);
+      }
     }
   };
 

@@ -7,11 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircleIcon, ExclamationCircleIcon, UserIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, ExclamationCircleIcon, UserIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { createSubmission, updateSubmission, getSubmissionById } from "@/lib/api";
 import { LeadStatus, Submission } from "@/types/submission";
 import SubmissionSearch from "./SubmissionSearch";
 import { useMobileMenu } from "@/contexts/MobileMenuContext";
+import { validatePhoneNumber, validateEmail, validateAddress } from "@/utils/validation";
+import { enrichCompany, enrichPerson, enrichPhoneNumber } from "@/services/data-enrichment";
 
 interface FormData {
   ownerName: string;
@@ -39,6 +41,14 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showSearch, setShowSearch] = useState(true);
+  
+  // Validation states
+  const [phoneValidation, setPhoneValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
+  const [emailValidation, setEmailValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
+  
+  // Enrichment states
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichmentData, setEnrichmentData] = useState<any>(null);
 
   const [formData, setFormData] = useState<FormData>({
     ownerName: "",
@@ -158,7 +168,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
@@ -173,6 +183,44 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
+      
+      // Validate phone number
+      if (name === "phoneNumber" && value) {
+        const validation = validatePhoneNumber(value);
+        setPhoneValidation({
+          isValid: validation.isValid,
+          message: validation.isValid 
+            ? validation.formatted 
+            : validation.errors?.[0]
+        });
+        
+        // If valid, trigger enrichment
+        if (validation.isValid && validation.formatted) {
+          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted }));
+          // Trigger phone enrichment in background
+          enrichPhoneNumber(validation.formatted).then(result => {
+            if (result.success) {
+              console.log('Phone enrichment:', result.data);
+            }
+          });
+        }
+      }
+      
+      // Auto-enrich company data when business name is entered
+      if (name === "ownerName" && value.length > 3) {
+        // Debounce enrichment
+        const timeoutId = setTimeout(async () => {
+          setIsEnriching(true);
+          const result = await enrichCompany({ name: value });
+          if (result.success) {
+            setEnrichmentData(result.data);
+          }
+          setIsEnriching(false);
+        }, 1000);
+        
+        // Cleanup timeout on component unmount or new input
+        return () => clearTimeout(timeoutId);
+      }
     }
   };
 
@@ -352,6 +400,34 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 placeholder="e.g., Flash Coffee - John Doe"
                 className="w-full"
               />
+              
+              {/* Enrichment Data Display */}
+              {isEnriching && (
+                <div className="mt-2 flex items-center text-xs text-light-text-secondary">
+                  <ArrowPathIcon className="w-3 h-3 mr-1 animate-spin" />
+                  Looking up company information...
+                </div>
+              )}
+              
+              {enrichmentData && !isEnriching && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="flex items-start">
+                    <InformationCircleIcon className="w-4 h-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <p className="font-medium text-blue-800 mb-1">Company Information Found:</p>
+                      {enrichmentData.industry && (
+                        <p className="text-blue-700">Industry: {enrichmentData.industry}</p>
+                      )}
+                      {enrichmentData.size && (
+                        <p className="text-blue-700">Company Size: {enrichmentData.size} employees</p>
+                      )}
+                      {enrichmentData.location?.city && (
+                        <p className="text-blue-700">Location: {enrichmentData.location.city}, {enrichmentData.location.state}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Phone Number */}
@@ -359,15 +435,32 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
               <label htmlFor="phoneNumber" className="block text-sm font-medium text-light-text-secondary mb-2">
                 Phone Number
               </label>
-              <Input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-                placeholder="e.g., 876-555-1234"
-                className="w-full"
-              />
+              <div className="relative">
+                <Input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  placeholder="e.g., (876) 555-1234"
+                  className={`w-full ${!phoneValidation.isValid && formData.phoneNumber ? 'border-red-500' : ''}`}
+                />
+                {phoneValidation.message && formData.phoneNumber && (
+                  <div className={`mt-1 text-xs ${phoneValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                    {phoneValidation.isValid ? (
+                      <span className="flex items-center">
+                        <CheckCircleIcon className="w-3 h-3 mr-1" />
+                        {phoneValidation.message}
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <ExclamationCircleIcon className="w-3 h-3 mr-1" />
+                        {phoneValidation.message}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Territory */}

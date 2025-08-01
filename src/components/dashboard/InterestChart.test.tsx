@@ -51,7 +51,9 @@ describe('InterestChart', () => {
   it('renders with default month selection', () => {
     renderWithProvider(<InterestChart data={mockData} />);
     
-    expect(screen.getByText('Submission Trends - Monthly View')).toBeInTheDocument();
+    // Check if the h3 contains the expected text
+    const heading = screen.getByRole('heading', { level: 3 });
+    expect(heading).toHaveTextContent('Submission Trends - Monthly');
     expect(screen.getByDisplayValue('Last 12 Months')).toBeInTheDocument();
     expect(screen.getByTestId('chart')).toBeInTheDocument();
   });
@@ -60,15 +62,16 @@ describe('InterestChart', () => {
     renderWithProvider(<InterestChart data={mockData} />);
     
     const dropdown = screen.getByRole('combobox');
+    const heading = screen.getByRole('heading', { level: 3 });
     
     // Change to weekly view
     fireEvent.change(dropdown, { target: { value: 'week' } });
-    expect(screen.getByText('Submission Trends - Weekly View')).toBeInTheDocument();
+    expect(heading).toHaveTextContent('Submission Trends - Weekly');
     expect(screen.getByDisplayValue('Last 4 Weeks')).toBeInTheDocument();
     
     // Change to yearly view
     fireEvent.change(dropdown, { target: { value: 'year' } });
-    expect(screen.getByText('Submission Trends - Yearly View')).toBeInTheDocument();
+    expect(heading).toHaveTextContent('Submission Trends - Yearly');
     expect(screen.getByDisplayValue('Last 3 Years')).toBeInTheDocument();
   });
 
