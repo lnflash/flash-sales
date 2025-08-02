@@ -68,6 +68,11 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate title
+    if (!formData.title.trim()) {
+      return;
+    }
+
     // Validate custom type
     if (formData.type === 'custom' && !formData.customType.trim()) {
       alert('Please enter a custom activity type name');

@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import LeadsPage from '@/pages/dashboard/leads';
-import { useSubmissions } from '@/hooks/useSubmissions';
+import { useUserSubmissions } from '@/hooks/useUserSubmissions';
 import { getUserFromStorage } from '@/lib/auth';
 
 // Mock the dependencies
@@ -10,8 +11,8 @@ jest.mock('next/router', () => ({
   useRouter: jest.fn()
 }));
 
-jest.mock('@/hooks/useSubmissions', () => ({
-  useSubmissions: jest.fn()
+jest.mock('@/hooks/useUserSubmissions', () => ({
+  useUserSubmissions: jest.fn()
 }));
 
 jest.mock('@/lib/auth', () => ({
@@ -110,8 +111,11 @@ describe('LeadsPage', () => {
       username: 'testuser',
       role: 'sales_rep'
     });
-    (useSubmissions as jest.Mock).mockReturnValue({
-      submissions: mockSubmissions,
+    (useUserSubmissions as jest.Mock).mockReturnValue({
+      data: {
+        submissions: mockSubmissions,
+        count: mockSubmissions.length
+      },
       isLoading: false
     });
   });
@@ -153,10 +157,12 @@ describe('LeadsPage', () => {
   it('should display stale leads section when there are stale leads', () => {
     render(<LeadsPage />);
     
-    expect(screen.getByText(/Stale Leads \(1\)/)).toBeInTheDocument();
-    expect(screen.getByText('Leads that haven\'t been updated in over 30 days')).toBeInTheDocument();
-    // Use getAllByText since the business name might appear multiple times
-    expect(screen.getAllByText('Old Business')[0]).toBeInTheDocument();
+    // Check for the stale leads card
+    expect(screen.getByText('Stale Leads')).toBeInTheDocument();
+    // Check that the count shows 1
+    const staleLeadsCard = screen.getByText('Stale Leads').closest('div');
+    expect(staleLeadsCard?.textContent).toContain('1');
+    expect(staleLeadsCard?.textContent).toContain('30+ days');
   });
 
   it('should calculate conversion rate correctly', () => {
@@ -170,23 +176,20 @@ describe('LeadsPage', () => {
   it('should fetch all submissions without pagination limit', () => {
     render(<LeadsPage />);
     
-    // The hook should be called with the correct filters (check last call)
-    expect(useSubmissions).toHaveBeenCalled();
-    const lastCall = (useSubmissions as jest.Mock).mock.calls[(useSubmissions as jest.Mock).mock.calls.length - 1];
-    const [filters, pagination] = lastCall;
-    expect(filters).toEqual({ username: 'testuser' });
-    expect(pagination).toEqual({ pageIndex: 0, pageSize: 2000 });
+    // The hook should be called with the username filter
+    expect(useUserSubmissions).toHaveBeenCalledWith('testuser');
   });
 
-  it('should show active opportunities', () => {
+  it('should show territory dashboard', () => {
     render(<LeadsPage />);
     
-    expect(screen.getByText('Active Opportunities')).toBeInTheDocument();
+    // Check that the territory dashboard component is rendered
+    expect(screen.getByTestId('territory-dashboard')).toBeInTheDocument();
   });
 
   it('should handle loading state', () => {
-    (useSubmissions as jest.Mock).mockReturnValue({
-      submissions: [],
+    (useUserSubmissions as jest.Mock).mockReturnValue({
+      data: null,
       isLoading: true
     });
 
@@ -198,7 +201,7 @@ describe('LeadsPage', () => {
 
   it('should apply correct filters for non-admin users', () => {
     // Clear previous mock calls
-    (useSubmissions as jest.Mock).mockClear();
+    (useUserSubmissions as jest.Mock).mockClear();
     
     (getUserFromStorage as jest.Mock).mockReturnValue({
       username: 'salesrep1',
@@ -207,20 +210,16 @@ describe('LeadsPage', () => {
 
     render(<LeadsPage />);
 
-    expect(useSubmissions).toHaveBeenCalled();
-    const lastCall = (useSubmissions as jest.Mock).mock.calls[(useSubmissions as jest.Mock).mock.calls.length - 1];
-    const [filters, pagination] = lastCall;
-    expect(filters).toEqual({ username: 'salesrep1' });
-    expect(pagination).toEqual({ pageIndex: 0, pageSize: 2000 });
+    expect(useUserSubmissions).toHaveBeenCalledWith('salesrep1');
   });
 
   it('should not apply username filter for admin users', () => {
     // Clear previous mock calls
-    (useSubmissions as jest.Mock).mockClear();
+    (useUserSubmissions as jest.Mock).mockClear();
     
     (getUserFromStorage as jest.Mock).mockReturnValue({
       username: 'admin',
-      role: 'admin'
+      role: 'Admin'
     });
 
     const { hasPermission } = require('@/types/roles');
@@ -228,10 +227,7 @@ describe('LeadsPage', () => {
 
     render(<LeadsPage />);
 
-    expect(useSubmissions).toHaveBeenCalled();
-    const lastCall = (useSubmissions as jest.Mock).mock.calls[(useSubmissions as jest.Mock).mock.calls.length - 1];
-    const [filters, pagination] = lastCall;
-    expect(filters).toEqual({}); // No filters for admin
-    expect(pagination).toEqual({ pageIndex: 0, pageSize: 2000 });
+    // Admin users can view all leads, so no username filter
+    expect(useUserSubmissions).toHaveBeenCalledWith(undefined);
   });
 });

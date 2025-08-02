@@ -33,6 +33,7 @@ export function getUserFromStorage(): User | null {
         // Validate user object structure
         if (!user.username) {
           console.error("Invalid user data in localStorage: missing username");
+          localStorage.removeItem(USER_STORAGE_KEY);
           return null;
         }
         

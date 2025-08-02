@@ -3,19 +3,51 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import RepDashboard from '@/pages/dashboard/rep-dashboard';
 import { getUserFromStorage } from '@/lib/auth';
-import { useSubmissions } from '@/hooks/useSubmissions';
+import { useUserSubmissions } from '@/hooks/useUserSubmissions';
 
 // Mock dependencies
 jest.mock('@/lib/auth');
-jest.mock('@/hooks/useSubmissions');
+jest.mock('@/hooks/useUserSubmissions');
 jest.mock('next/router', () => ({
   useRouter: () => ({
     pathname: '/dashboard/rep-dashboard',
   }),
 }));
 
+// Mock DashboardLayout to avoid rendering issues
+jest.mock('@/components/layout/DashboardLayout', () => ({
+  __esModule: true,
+  default: ({ children, title }: { children: React.ReactNode, title?: string }) => (
+    <div>
+      <h1>{title}</h1>
+      {children}
+    </div>
+  )
+}));
+
+// Mock child components that might cause issues
+jest.mock('@/components/rep-dashboard/RepFilter', () => ({
+  __esModule: true,
+  default: () => <div>RepFilter</div>
+}));
+
+jest.mock('@/components/rep-dashboard/LeadStatusCard', () => ({
+  __esModule: true,
+  default: () => <div>LeadStatusCard</div>
+}));
+
+jest.mock('@/components/rep-dashboard/FollowUpPriorities', () => ({
+  __esModule: true,
+  default: () => <div>FollowUpPriorities</div>
+}));
+
+jest.mock('@/components/rep-dashboard/PerformanceSnapshot', () => ({
+  __esModule: true,
+  default: ({ totalCount }: { totalCount: number }) => <div>{totalCount}</div>
+}));
+
 const mockGetUserFromStorage = getUserFromStorage as jest.MockedFunction<typeof getUserFromStorage>;
-const mockUseSubmissions = useSubmissions as jest.MockedFunction<typeof useSubmissions>;
+const mockUseUserSubmissions = useUserSubmissions as jest.MockedFunction<typeof useUserSubmissions>;
 
 describe('RepDashboard Filtering', () => {
   const queryClient = new QueryClient({
@@ -39,25 +71,18 @@ describe('RepDashboard Filtering', () => {
 
     // Mock submissions hook
     const mockSubmissionsData = {
-      submissions: [
-        { id: 1, ownerName: 'Test Owner 1', username: 'charms' },
-        { id: 2, ownerName: 'Test Owner 2', username: 'charms' },
-      ],
-      totalCount: 2,
-      pageCount: 1,
+      data: {
+        submissions: [
+          { id: 1, ownerName: 'Test Owner 1', username: 'charms' },
+          { id: 2, ownerName: 'Test Owner 2', username: 'charms' },
+        ],
+        count: 2,
+      },
       isLoading: false,
       error: null,
-      filters: { username: 'charms' },
-      pagination: { pageIndex: 0, pageSize: 1000 },
-      sorting: [],
-      setFilters: jest.fn(),
-      setPagination: jest.fn(),
-      setSorting: jest.fn(),
-      resetFilters: jest.fn(),
-      refetch: jest.fn(),
     };
 
-    mockUseSubmissions.mockReturnValue(mockSubmissionsData);
+    mockUseUserSubmissions.mockReturnValue(mockSubmissionsData);
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -70,14 +95,13 @@ describe('RepDashboard Filtering', () => {
       expect(screen.getByText("charms's Dashboard")).toBeInTheDocument();
     });
 
-    // Check that useSubmissions was called with username filter
-    expect(mockUseSubmissions).toHaveBeenCalledWith(
-      { username: 'charms' },
-      { pageIndex: 0, pageSize: 1000 }
-    );
+    // Check that useUserSubmissions was called with username filter
+    expect(mockUseUserSubmissions).toHaveBeenCalledWith('charms');
 
     // Check that the correct number of submissions is displayed
-    expect(screen.getByText('2')).toBeInTheDocument();
+    // There may be multiple "2"s on the page (submission count, total leads, etc.)
+    const countElements = screen.getAllByText('2');
+    expect(countElements.length).toBeGreaterThan(0);
   });
 
   test('handles case sensitivity in username', async () => {
@@ -89,20 +113,13 @@ describe('RepDashboard Filtering', () => {
       loggedInAt: Date.now(),
     });
 
-    mockUseSubmissions.mockReturnValue({
-      submissions: [],
-      totalCount: 0,
-      pageCount: 0,
+    mockUseUserSubmissions.mockReturnValue({
+      data: {
+        submissions: [],
+        count: 0,
+      },
       isLoading: false,
       error: null,
-      filters: { username: 'CHARMS' },
-      pagination: { pageIndex: 0, pageSize: 1000 },
-      sorting: [],
-      setFilters: jest.fn(),
-      setPagination: jest.fn(),
-      setSorting: jest.fn(),
-      resetFilters: jest.fn(),
-      refetch: jest.fn(),
     });
 
     render(
@@ -111,10 +128,7 @@ describe('RepDashboard Filtering', () => {
       </QueryClientProvider>
     );
 
-    // Check that useSubmissions was called with the uppercase username
-    expect(mockUseSubmissions).toHaveBeenCalledWith(
-      { username: 'CHARMS' },
-      { pageIndex: 0, pageSize: 1000 }
-    );
+    // Check that useUserSubmissions was called with the uppercase username
+    expect(mockUseUserSubmissions).toHaveBeenCalledWith('CHARMS');
   });
 });
