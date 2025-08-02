@@ -51,8 +51,8 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_ENV=development
 
-# Legacy API (for migration period)
-INTAKE_API_URL=https://flash-intake-form-3xgvo.ondigitalocean.app/api
+# Legacy API (removed - now using Supabase)
+# INTAKE_API_URL=<removed>
 EOF
 fi
 
@@ -64,6 +64,6 @@ echo "1. Create a Supabase project at https://app.supabase.com"
 echo "2. Update .env.local with your Supabase credentials"
 echo "3. Run 'npm run supabase:link' to link your project"
 echo "4. Run 'npm run supabase:setup' to create the schema"
-echo "5. Run 'npm run migrate:legacy' to import existing data"
+echo "5. Run 'npm run dev' to start the development server"
 echo ""
 echo "For detailed instructions, see SUPABASE_SETUP_GUIDE.md"

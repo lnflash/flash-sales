@@ -1,8 +1,9 @@
 // GraphQL client and utilities
 import { ApolloClient, ApolloLink, concat, HttpLink, InMemoryCache, gql } from '@apollo/client';
 
-// Default GraphQL endpoint URI
-const DEFAULT_GRAPHQL_URI = 'https://flash-intake-form-3xgvo.ondigitalocean.app/api/graphql';
+// GraphQL is now optional - all submission data comes from Supabase
+// Only used for authentication if configured
+const DEFAULT_GRAPHQL_URI = '';
 
 // GraphQL endpoint URI - priority order:
 // 1. Environment variable (NEXT_PUBLIC_GRAPHQL_URI)

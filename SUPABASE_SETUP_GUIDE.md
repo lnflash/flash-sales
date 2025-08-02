@@ -196,8 +196,8 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_ENV=development
 
-# Legacy API (for migration period)
-INTAKE_API_URL=https://flash-intake-form-3xgvo.ondigitalocean.app/api
+# Legacy API (removed - now using Supabase)
+# INTAKE_API_URL=<removed>
 ```
 
 2. **Update `.env.production`**:

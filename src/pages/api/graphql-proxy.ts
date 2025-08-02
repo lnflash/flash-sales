@@ -1,11 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const GRAPHQL_URI = process.env.NEXT_PUBLIC_GRAPHQL_URI || 'https://flash-intake-form-3xgvo.ondigitalocean.app/api/graphql';
+// Note: This proxy is kept for authentication purposes only
+// All submission data now comes from Supabase
+const GRAPHQL_URI = process.env.NEXT_PUBLIC_GRAPHQL_URI;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (!GRAPHQL_URI) {
+    return res.status(503).json({ 
+      error: 'GraphQL endpoint not configured',
+      message: 'The NEXT_PUBLIC_GRAPHQL_URI environment variable is not set. Note: All submission data now comes from Supabase.'
+    });
   }
 
   console.log('GraphQL proxy request:', {
