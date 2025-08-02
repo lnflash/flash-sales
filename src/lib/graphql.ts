@@ -2,7 +2,7 @@
 import { ApolloClient, ApolloLink, concat, HttpLink, InMemoryCache, gql } from '@apollo/client';
 
 // Default GraphQL endpoint URI
-const DEFAULT_GRAPHQL_URI = 'https://api.flashapp.me/graphql';
+const DEFAULT_GRAPHQL_URI = 'https://flash-intake-form-3xgvo.ondigitalocean.app/api/graphql';
 
 // GraphQL endpoint URI - priority order:
 // 1. Environment variable (NEXT_PUBLIC_GRAPHQL_URI)
@@ -70,12 +70,10 @@ const ipForwardingMiddleware = new ApolloLink((operation, forward) => {
 });
 
 // Determine if we should use the proxy
-// Use proxy for all production deployments (not localhost) to avoid CORS issues
-const shouldUseProxy = typeof window !== 'undefined' && 
-  !window.location.hostname.includes('localhost') &&
-  !window.location.hostname.includes('127.0.0.1');
+// Always use proxy to avoid CORS issues
+const shouldUseProxy = typeof window !== 'undefined';
 
-// Use proxy endpoint for production deployments to avoid CORS issues
+// Use proxy endpoint to avoid CORS issues
 const graphqlEndpoint = shouldUseProxy ? '/api/graphql-proxy' : GRAPHQL_URI;
 
 if (shouldUseProxy) {

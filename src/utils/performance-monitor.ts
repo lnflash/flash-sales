@@ -55,7 +55,7 @@ class PerformanceMonitor {
         name: `api_${name}`,
         value: duration,
         timestamp: Date.now(),
-        metadata: { api: name, success: false, error: error.message }
+        metadata: { api: name, success: false, error: error instanceof Error ? error.message : String(error) }
       });
 
       throw error;
@@ -75,7 +75,7 @@ class PerformanceMonitor {
         name: 'web_vital_lcp',
         value: lastEntry.startTime,
         timestamp: Date.now(),
-        metadata: { element: lastEntry.element?.tagName }
+        metadata: { element: (lastEntry as any).element?.tagName }
       });
     });
 
@@ -144,7 +144,7 @@ class PerformanceMonitor {
   }
 
   // Record a metric
-  private recordMetric(metric: PerformanceMetric) {
+  public recordMetric(metric: PerformanceMetric) {
     this.metrics.push(metric);
     
     // Keep only last 1000 metrics to prevent memory leaks

@@ -20,6 +20,7 @@ import {
   UserGroupIcon,
   UserIcon,
   ChartPieIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 
 interface NavItem {
@@ -33,6 +34,7 @@ interface NavItem {
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, hideForRoles: ["Flash Sales Rep"] },
   { name: "My Dashboard", href: "/dashboard/rep-dashboard", icon: ChartPieIcon },
+  { name: "Weekly Program", href: "/dashboard/weekly-program", icon: CalendarIcon },
   { name: "Canvas Form", href: "/intake", icon: DocumentTextIcon },
   { name: "Intake Form ", href: "/intake-dynamic", icon: DocumentTextIcon },
   { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, requiresPermission: "canViewAnalytics" },
@@ -83,25 +85,25 @@ export default function Sidebar() {
       {/* Sidebar */}
       <div className={`
         ${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'relative'}
-        h-screen bg-white border-r border-light-border transition-all duration-300 flex flex-col
+        h-screen bg-background border-r border-border transition-all duration-300 flex flex-col
         ${collapsed && !isMobile ? "w-16" : "w-64"}
         ${isMobile && !isMobileMenuOpen ? '-translate-x-full' : 'translate-x-0'}
       `}>
-      <div className="p-4 flex items-center justify-between border-b border-light-border">
+      <div className="p-4 flex items-center justify-between border-b border-border">
         <div className="flex items-center justify-center flex-1">
           {!collapsed ? (
-            <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-8 w-auto" />
+            <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-8 w-auto dark:invert" />
           ) : (
-            <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-6 w-6 rounded-full" />
+            <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-6 w-6 rounded-full dark:invert" />
           )}
         </div>
         {!isMobile && (
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg hover:bg-light-bg-secondary transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-flash-green focus:ring-offset-2"
+            className="p-1.5 rounded-lg hover:bg-muted transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-flash-green" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-flash-green" />}
+            {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-primary" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-primary" />}
           </button>
         )}
       </div>
@@ -134,7 +136,7 @@ export default function Sidebar() {
                   <Link
                     href={item.href}
                     className={`flex items-center px-3 py-2.5 rounded-lg transition-all font-medium ${
-                      isActive ? "bg-flash-green text-white shadow-sm" : "text-light-text-secondary hover:bg-light-bg-secondary hover:text-light-text-primary"
+                      isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                     onClick={() => isMobile && setIsMobileMenuOpen(false)}
                   >
@@ -154,14 +156,14 @@ export default function Sidebar() {
           </div>
           {!collapsed && (
             <div className="ml-3">
-              <p className="text-sm font-medium text-light-text-primary capitalize">{user?.username || "User"}</p>
-              <p className="text-xs text-light-text-secondary">{user?.role || "Flash Sales Rep"}</p>
+              <p className="text-sm font-medium text-foreground capitalize">{user?.username || "User"}</p>
+              <p className="text-xs text-muted-foreground">{user?.role || "Flash Sales Rep"}</p>
             </div>
           )}
         </div>
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors ${
+          className={`w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors ${
             collapsed ? "justify-center" : "justify-start"
           }`}
           title="Logout"

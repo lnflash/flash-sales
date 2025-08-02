@@ -15,7 +15,7 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(isows|@supabase|@tanstack)/)',
+    'node_modules/(?!(isows|@supabase|@tanstack|superjson)/)',
   ],
   collectCoverage: true,
   collectCoverageFrom: [

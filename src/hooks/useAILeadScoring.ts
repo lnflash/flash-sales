@@ -45,33 +45,27 @@ export function useAILeadScoring(
       // Notify on significant score changes
       if (scoreData && Math.abs(result.score - scoreData.score) >= 10) {
         addNotification({
-          id: `score-change-${leadData.id}`,
           type: 'info',
           title: 'Lead Score Updated',
-          message: `${leadData.ownerName}'s score changed from ${scoreData.score} to ${result.score}`,
-          timestamp: new Date().toISOString()
+          message: `${leadData.ownerName}'s score changed from ${scoreData.score} to ${result.score}`
         });
       }
 
       // Notify on hot leads
       if (result.score >= 80 && (!scoreData || scoreData.score < 80)) {
         addNotification({
-          id: `hot-lead-${leadData.id}`,
           type: 'success',
           title: '🔥 Hot Lead Alert',
-          message: `${leadData.ownerName} is now a hot lead with ${result.score} score!`,
-          timestamp: new Date().toISOString()
+          message: `${leadData.ownerName} is now a hot lead with ${result.score} score!`
         });
       }
     } catch (err) {
       console.error('Error calculating AI lead score:', err);
       setError(err instanceof Error ? err.message : 'Failed to calculate score');
       addNotification({
-        id: `score-error-${leadData?.id}`,
         type: 'error',
         title: 'Scoring Error',
-        message: 'Failed to calculate AI lead score',
-        timestamp: new Date().toISOString()
+        message: 'Failed to calculate AI lead score'
       });
     } finally {
       setIsLoading(false);

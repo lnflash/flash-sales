@@ -40,7 +40,7 @@ export default function SubmissionDetail({
 
   // Prepare lead data for AI scoring
   const leadData = submission ? {
-    id: submission.id,
+    id: String(submission.id),
     ownerName: submission.ownerName,
     phoneNumber: submission.phoneNumber,
     email: submission.email,

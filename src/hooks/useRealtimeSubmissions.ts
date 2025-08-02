@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useAppStore } from '@/stores/useAppStore';
+import { isFeatureEnabled } from '@/config/features';
 
 interface RealtimeEvent {
   event: 'INSERT' | 'UPDATE' | 'DELETE';
@@ -39,6 +40,20 @@ export function useRealtimeSubmissions() {
   }, [queryClient, addNotification]);
 
   useEffect(() => {
+    // Check if real-time is enabled
+    if (!isFeatureEnabled('realtime.submissions')) {
+      console.log('Real-time submissions feature is disabled');
+      return;
+    }
+
+    // Check if Supabase is properly configured
+    if (!process.env.NEXT_PUBLIC_USE_SUPABASE || process.env.NEXT_PUBLIC_USE_SUPABASE !== 'true') {
+      console.log('Supabase real-time disabled - skipping subscription');
+      return;
+    }
+
+    console.log('Setting up real-time subscription for submissions...');
+    
     // Subscribe to deals table (submissions)
     const channel = supabase
       .channel('realtime:submissions')
@@ -51,17 +66,17 @@ export function useRealtimeSubmissions() {
         },
         handleRealtimeUpdate
       )
-      .subscribe();
-
-    // Log subscription status
-    channel.on('error', (error) => {
-      console.error('Realtime subscription error:', error);
-      addNotification({
-        type: 'error',
-        title: 'Real-time Connection Error',
-        message: 'Unable to establish real-time connection. Please refresh the page.',
+      .subscribe((status: any) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time submissions');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Failed to subscribe to real-time submissions');
+        } else if (status === 'TIMED_OUT') {
+          console.error('Real-time subscription timed out');
+        } else {
+          console.log('Real-time subscription status:', status);
+        }
       });
-    });
 
     return () => {
       supabase.removeChannel(channel);
@@ -86,7 +101,7 @@ export function useRealtimeSubmission(submissionId: string | undefined) {
           table: 'deals',
           filter: `id=eq.${submissionId}`,
         },
-        (payload) => {
+        (payload: any) => {
           // Update specific submission in cache
           queryClient.invalidateQueries({ 
             queryKey: ['submission', submissionId] 
@@ -134,7 +149,7 @@ export function useRealtimeUserSubmissions(userId: string | undefined) {
           table: 'deals',
           filter: `owner_id=eq.${userId}`,
         },
-        (payload) => {
+        (payload: any) => {
           // Invalidate user-specific queries
           queryClient.invalidateQueries({ 
             queryKey: ['userSubmissions', userId] 

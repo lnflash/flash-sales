@@ -196,7 +196,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
         
         // If valid, trigger enrichment
         if (validation.isValid && validation.formatted) {
-          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted }));
+          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted || '' }));
           // Trigger phone enrichment in background
           enrichPhoneNumber(validation.formatted).then(result => {
             if (result.success) {

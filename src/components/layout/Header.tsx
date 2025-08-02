@@ -9,6 +9,7 @@ import { getUserNotifications, markAsRead, markAllAsRead, getUnreadCount } from 
 import { Notification } from '@/types/notifications';
 import { useMobileMenu } from '@/contexts/MobileMenuContext';
 import { IconButton } from '@/components/ui/icon-button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface HeaderProps {
   title: string;
@@ -117,22 +118,22 @@ export default function Header({ title }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white border-b border-light-border">
+    <header className="bg-background border-b border-border">
       <div className="px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             {/* Mobile menu toggle */}
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 rounded-lg hover:bg-light-bg-secondary transition-colors mr-3"
+              className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors mr-3"
               aria-label="Toggle menu"
             >
-              <Bars3Icon className="h-6 w-6 text-light-text-secondary" />
+              <Bars3Icon className="h-6 w-6 text-muted-foreground" />
             </button>
             
             <div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-light-text-primary">{title}</h1>
-              <p className="text-sm text-light-text-secondary mt-1 hidden sm:block">{currentDate}</p>
+              <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{title}</h1>
+              <p className="text-sm text-muted-foreground mt-1 hidden sm:block">{currentDate}</p>
             </div>
           </div>
 
@@ -145,19 +146,22 @@ export default function Header({ title }: HeaderProps) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="pl-10 pr-4 py-2 bg-light-bg-secondary border border-light-border rounded-lg text-light-text-primary placeholder-light-text-tertiary focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-transparent transition-all min-w-[280px]"
+                className="pl-10 pr-4 py-2 bg-muted border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-w-[280px]"
               />
-              <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
             </form>
 
             {/* Mobile search toggle */}
             <button
               onClick={() => setShowMobileSearch(!showMobileSearch)}
-              className="md:hidden p-2 rounded-lg hover:bg-light-bg-secondary transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
               aria-label="Search"
             >
-              <MagnifyingGlassIcon className="h-6 w-6 text-light-text-secondary" />
+              <MagnifyingGlassIcon className="h-6 w-6 text-muted-foreground" />
             </button>
+
+            {/* Theme toggle */}
+            <ThemeToggle />
 
             <div className="relative notifications-dropdown">
               <IconButton 
@@ -165,33 +169,33 @@ export default function Header({ title }: HeaderProps) {
                 className="relative"
                 aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
               >
-                <BellIcon className="h-6 w-6 text-light-text-secondary" />
+                <BellIcon className="h-6 w-6 text-muted-foreground" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-flash-green rounded-full flex items-center justify-center text-xs text-white font-medium">
+                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary rounded-full flex items-center justify-center text-xs text-primary-foreground font-medium">
                     {unreadCount}
                   </span>
                 )}
               </IconButton>
               
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-lg border border-light-border z-50">
-                  <div className="p-4 border-b border-light-border">
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-popover rounded-lg shadow-lg border border-border z-50">
+                  <div className="p-4 border-b border-border">
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold text-light-text-primary">Notifications</h3>
+                      <h3 className="text-lg font-semibold text-foreground">Notifications</h3>
                       <div className="flex items-center gap-2">
                         {unreadCount > 0 && (
                           <button
                             onClick={handleMarkAllAsRead}
-                            className="text-sm text-flash-green hover:text-flash-green-light"
+                            className="text-sm text-primary hover:opacity-80"
                           >
                             Mark all as read
                           </button>
                         )}
                         <button
                           onClick={() => setShowNotifications(false)}
-                          className="p-1 rounded hover:bg-light-bg-secondary"
+                          className="p-1 rounded hover:bg-muted"
                         >
-                          <XMarkIcon className="h-5 w-5 text-light-text-secondary" />
+                          <XMarkIcon className="h-5 w-5 text-muted-foreground" />
                         </button>
                       </div>
                     </div>
@@ -199,7 +203,7 @@ export default function Header({ title }: HeaderProps) {
                   
                   <div className="max-h-96 overflow-y-auto">
                     {notificationsList.length === 0 ? (
-                      <div className="p-8 text-center text-light-text-secondary">
+                      <div className="p-8 text-center text-muted-foreground">
                         No notifications
                       </div>
                     ) : (
@@ -207,22 +211,22 @@ export default function Header({ title }: HeaderProps) {
                         <div
                           key={notification.id}
                           onClick={() => handleNotificationClick(notification)}
-                          className={`p-4 border-b border-light-border hover:bg-light-bg-secondary cursor-pointer transition-colors ${
+                          className={`p-4 border-b border-border hover:bg-muted cursor-pointer transition-colors ${
                             !notification.read ? 'bg-blue-50' : ''
                           }`}
                         >
                           <div className="flex justify-between items-start mb-1">
-                            <h4 className="font-medium text-light-text-primary">
+                            <h4 className="font-medium text-foreground">
                               {notification.title}
                             </h4>
                             <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(notification.priority)}`}>
                               {notification.priority}
                             </span>
                           </div>
-                          <p className="text-sm text-light-text-secondary mb-2">
+                          <p className="text-sm text-muted-foreground mb-2">
                             {notification.message}
                           </p>
-                          <div className="flex justify-between items-center text-xs text-light-text-tertiary">
+                          <div className="flex justify-between items-center text-xs text-muted-foreground">
                             <span>From: {notification.fromUsername}</span>
                             <span>{formatDate(notification.createdAt)}</span>
                           </div>
@@ -238,18 +242,18 @@ export default function Header({ title }: HeaderProps) {
             <div className="relative user-menu-dropdown">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center p-2 rounded-lg hover:bg-light-bg-secondary transition-colors"
+                className="flex items-center p-2 rounded-lg hover:bg-muted transition-colors"
               >
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-semibold">
                   {user?.username?.charAt(0).toUpperCase() || 'U'}
                 </div>
               </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-light-border z-50">
-                  <div className="p-4 border-b border-light-border">
-                    <p className="text-sm font-medium text-light-text-primary">{user?.username || 'User'}</p>
-                    <p className="text-xs text-light-text-secondary">{user?.role || 'Flash Sales Rep'}</p>
+                <div className="absolute right-0 mt-2 w-56 bg-popover rounded-lg shadow-lg border border-border z-50">
+                  <div className="p-4 border-b border-border">
+                    <p className="text-sm font-medium text-foreground">{user?.username || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{user?.role || 'Flash Sales Rep'}</p>
                   </div>
                   <div className="p-2">
                     <button
@@ -257,7 +261,7 @@ export default function Header({ title }: HeaderProps) {
                         setShowUserMenu(false);
                         router.push('/dashboard/profile');
                       }}
-                      className="w-full flex items-center px-3 py-2 text-sm text-light-text-primary hover:bg-light-bg-secondary rounded-md transition-colors"
+                      className="w-full flex items-center px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
                     >
                       <UserIcon className="h-4 w-4 mr-3" />
                       Profile
@@ -289,16 +293,16 @@ export default function Header({ title }: HeaderProps) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-10 pr-10 py-2 bg-light-bg-secondary border border-light-border rounded-lg text-light-text-primary placeholder-light-text-tertiary focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-transparent transition-all"
+                className="w-full pl-10 pr-10 py-2 bg-muted border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 autoFocus
               />
-              <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
               <button
                 type="button"
                 onClick={() => setShowMobileSearch(false)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2"
               >
-                <XMarkIcon className="h-5 w-5 text-light-text-tertiary" />
+                <XMarkIcon className="h-5 w-5 text-muted-foreground" />
               </button>
             </form>
           </div>

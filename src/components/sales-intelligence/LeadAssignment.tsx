@@ -55,7 +55,6 @@ export default function LeadAssignment({
           specializations: ['General'],
           performance: {
             conversionRate: 0,
-            avgDealSize: 0,
             avgTimeToClose: 14
           },
           availability: 'available' as const
@@ -74,7 +73,6 @@ export default function LeadAssignment({
       rep.currentLoad += 1;
       if (submission.signedUp) {
         rep.performance.conversionRate = (rep.performance.conversionRate * (rep.currentLoad - 1) + 1) / rep.currentLoad;
-        rep.performance.avgDealSize = (rep.performance.avgDealSize * (rep.currentLoad - 1) + 5000) / rep.currentLoad;
       }
 
       // Update availability based on load
@@ -273,12 +271,6 @@ export default function LeadAssignment({
                           </p>
                         </div>
                         
-                        <div>
-                          <span className="text-light-text-tertiary">Avg Deal</span>
-                          <p className="font-medium text-light-text-primary">
-                            ${(rep.performance.avgDealSize / 1000).toFixed(0)}k
-                          </p>
-                        </div>
                       </div>
                     </button>
                   );

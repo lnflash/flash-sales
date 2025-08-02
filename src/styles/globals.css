@@ -5,6 +5,9 @@
 /* Import accessibility styles */
 @import './accessibility.css';
 
+/* Import dashboard grid styles */
+@import './dashboard-grid.css';
+
 :root {
   /* Brand colors - keeping Flash green as accent */
   --flash-green: #00A86B;
@@ -45,9 +48,32 @@
   --ring: 142 70% 45%;
 }
 
+.dark {
+  /* Dark theme colors */
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 142 70% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 142 70% 45%;
+}
+
 @layer base {
   body {
-    @apply bg-white text-light-text-primary antialiased;
+    @apply bg-background text-foreground antialiased;
   }
   
   /* Custom scrollbar for webkit browsers */
@@ -56,46 +82,46 @@
   }
   
   ::-webkit-scrollbar-track {
-    @apply bg-light-bg-tertiary;
+    @apply bg-muted;
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-light-border rounded-full;
+    @apply bg-border rounded-full;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-light-text-tertiary;
+    @apply bg-muted-foreground;
   }
 }
 
 @layer components {
-  /* Form styling - Light theme */
+  /* Form styling */
   .form-input,
   .form-textarea,
   .form-select {
-    @apply w-full px-4 py-2 bg-white border border-light-border rounded-lg text-light-text-primary placeholder-light-text-tertiary focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-transparent transition-all;
+    @apply w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all;
   }
   
   .form-label {
-    @apply block text-sm font-medium text-light-text-secondary mb-2;
+    @apply block text-sm font-medium text-muted-foreground mb-2;
   }
   
   .form-button {
-    @apply px-4 py-2 bg-flash-green text-white rounded-lg hover:bg-flash-green-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-flash-green focus:ring-offset-2 shadow-sm;
+    @apply px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-sm;
   }
   
   .form-button-secondary {
-    @apply px-4 py-2 bg-white border border-light-border text-light-text-primary rounded-lg hover:bg-light-bg-secondary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-flash-green focus:ring-offset-2 shadow-sm;
+    @apply px-4 py-2 bg-background border border-border text-foreground rounded-lg hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-sm;
   }
   
   /* Custom checkbox */
   .form-checkbox {
-    @apply h-4 w-4 text-flash-green rounded focus:ring-flash-green bg-white border-light-border;
+    @apply h-4 w-4 text-primary rounded focus:ring-primary bg-background border-border;
   }
   
   /* Custom radio */
   .form-radio {
-    @apply h-4 w-4 text-flash-green focus:ring-flash-green bg-white border-light-border;
+    @apply h-4 w-4 text-primary focus:ring-primary bg-background border-border;
   }
   
   /* Custom toggle switch */
@@ -108,15 +134,15 @@
   }
   
   .form-toggle-bg {
-    @apply absolute top-0 left-0 right-0 bottom-0 bg-light-bg-tertiary rounded-full transition-colors duration-200;
+    @apply absolute top-0 left-0 right-0 bottom-0 bg-muted rounded-full transition-colors duration-200;
   }
   
   .form-toggle-bg-active {
-    @apply bg-flash-green;
+    @apply bg-primary;
   }
   
   .form-toggle-circle {
-    @apply absolute left-0.5 bottom-0.5 bg-white rounded-full w-4 h-4 transition-transform duration-200 shadow-sm;
+    @apply absolute left-0.5 bottom-0.5 bg-background rounded-full w-4 h-4 transition-transform duration-200 shadow-sm;
   }
   
   .form-toggle-circle-active {
@@ -126,7 +152,7 @@
 
 /* Loading animation */
 .loading-spinner {
-  @apply animate-spin h-8 w-8 border-4 border-light-border border-t-flash-green rounded-full;
+  @apply animate-spin h-8 w-8 border-4 border-border border-t-primary rounded-full;
 }
 
 /* Card shadows for depth */
@@ -136,7 +162,7 @@
 
 /* Clean dividers */
 .divider {
-  @apply border-t border-light-border;
+  @apply border-t border-border;
 }
 
 /* Status badges */

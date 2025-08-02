@@ -30,6 +30,7 @@ export function useOptimizedSubmissions({
 
   return useInfiniteQuery({
     queryKey: ['optimized-submissions', filters, sortBy, sortOrder, pageSize],
+    initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       try {
         let query = supabase
@@ -61,7 +62,8 @@ export function useOptimizedSubmissions({
         query = query.order(sortColumn, { ascending: sortOrder === 'asc' });
 
         // Apply pagination
-        const from = pageParam * pageSize;
+        const page = pageParam as number;
+        const from = page * pageSize;
         const to = from + pageSize - 1;
         query = query.range(from, to);
 
@@ -70,7 +72,7 @@ export function useOptimizedSubmissions({
         if (error) throw error;
 
         // Transform to Submission type
-        const submissions: Submission[] = (data || []).map(deal => ({
+        const submissions: Submission[] = (data || []).map((deal: any) => ({
           id: deal.id,
           timestamp: deal.created_at,
           ownerName: deal.owner_name || '',
@@ -96,29 +98,27 @@ export function useOptimizedSubmissions({
 
         return {
           submissions,
-          nextPage: pageParam + 1,
+          nextPage: page + 1,
           hasMore: (from + submissions.length) < (count || 0),
           totalCount: count || 0
         };
       } catch (error) {
         console.error('Error fetching optimized submissions:', error);
         addNotification({
-          id: 'fetch-error',
           type: 'error',
           title: 'Failed to load submissions',
-          message: 'Please try refreshing the page',
-          timestamp: new Date().toISOString()
+          message: 'Please try refreshing the page'
         });
         throw error;
       }
     },
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: any) => {
       return lastPage.hasMore ? lastPage.nextPage : undefined;
     },
     enabled,
     staleTime: 30000, // Consider data stale after 30 seconds
-    cacheTime: 300000, // Keep in cache for 5 minutes
-    refetchOnWindowFocus: false, // Don't refetch on window focus for performance
+    gcTime: 300000, // Keep in cache for 5 minutes
+    refetchOnWindowFocus: false // Don't refetch on window focus for performance
   });
 }
 
@@ -171,9 +171,9 @@ export function useOptimizedSubmissionStats(filters: UseOptimizedSubmissionsOpti
         const packageSeen = packageSeenResult.count || 0;
 
         // Calculate average interest level
-        const interestLevels = avgInterestResult.data?.map(d => d.interest_level).filter(Boolean) || [];
+        const interestLevels = avgInterestResult.data?.map((d: any) => d.interest_level).filter(Boolean) || [];
         const avgInterestLevel = interestLevels.length > 0
-          ? interestLevels.reduce((a, b) => a + b, 0) / interestLevels.length
+          ? interestLevels.reduce((a: number, b: number) => a + b, 0) / interestLevels.length
           : 0;
 
         return {
@@ -189,7 +189,7 @@ export function useOptimizedSubmissionStats(filters: UseOptimizedSubmissionsOpti
       }
     },
     staleTime: 60000, // Consider data stale after 1 minute
-    cacheTime: 300000, // Keep in cache for 5 minutes
+    gcTime: 300000 // Keep in cache for 5 minutes
   });
 }
 
@@ -210,7 +210,7 @@ export function useOptimizedHotLeads(limit: number = 10) {
         if (error) throw error;
 
         // Transform to Submission type
-        const submissions: Submission[] = (data || []).map(deal => ({
+        const submissions: Submission[] = (data || []).map((deal: any) => ({
           id: deal.id,
           timestamp: deal.created_at,
           ownerName: deal.owner_name || '',
@@ -241,6 +241,6 @@ export function useOptimizedHotLeads(limit: number = 10) {
       }
     },
     staleTime: 30000, // Consider data stale after 30 seconds
-    cacheTime: 300000, // Keep in cache for 5 minutes
+    gcTime: 300000 // Keep in cache for 5 minutes
   });
 }

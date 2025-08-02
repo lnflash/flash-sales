@@ -220,18 +220,6 @@ export default function RepDashboard() {
 
   return (
     <DashboardLayout title={`${displayUsername}'s Dashboard`}>
-      {/* Debug Info - Remove in production */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-xs font-mono">
-          <p className="font-semibold mb-2">Debug Info:</p>
-          <p>User: {JSON.stringify(user)}</p>
-          <p>Username to filter: {usernameToFilter}</p>
-          <p>Submissions count: {submissions.length}</p>
-          <p>Total count from DB: {totalCount}</p>
-          <p>Can view all reps: {canViewAllReps ? 'true' : 'false'}</p>
-        </div>
-      )}
-
       {/* Rep Filter for Admins */}
       <RepFilter
         currentUsername={user.username}

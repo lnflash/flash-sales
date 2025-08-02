@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { isFeatureEnabled } from '@/config/features';
 
 interface PresenceState {
   user_id: string;
@@ -22,6 +23,7 @@ export function useRealtimePresence(options?: UsePresenceOptions) {
 
   // Track who's viewing the same submission
   useEffect(() => {
+    if (!isFeatureEnabled('realtime.presence')) return;
     if (!user || !options?.viewingSubmission) return;
 
     const channel = supabase.channel(`submission:${options.viewingSubmission}:presence`);
@@ -31,12 +33,12 @@ export function useRealtimePresence(options?: UsePresenceOptions) {
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
         const users = Object.values(state).flat() as PresenceState[];
-        setViewingUsers(users.filter(u => u.user_id !== user.id));
+        setViewingUsers(users.filter(u => u.user_id !== user.userId));
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status: any) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({
-            user_id: user.id,
+            user_id: user.userId,
             username: user.username,
             viewing_submission: options.viewingSubmission,
             last_seen: new Date().toISOString(),
@@ -52,6 +54,7 @@ export function useRealtimePresence(options?: UsePresenceOptions) {
 
   // Track global online presence
   useEffect(() => {
+    if (!isFeatureEnabled('realtime.presence')) return;
     if (!user) return;
 
     const channel = supabase.channel('global:presence');
@@ -60,18 +63,18 @@ export function useRealtimePresence(options?: UsePresenceOptions) {
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
         const users = Object.values(state).flat() as PresenceState[];
-        setOnlineUsers(users.filter(u => u.user_id !== user.id));
+        setOnlineUsers(users.filter(u => u.user_id !== user.userId));
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      .on('presence', { event: 'join' }, ({ key, newPresences }: any) => {
         console.log('User joined:', key, newPresences);
       })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }: any) => {
         console.log('User left:', key, leftPresences);
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status: any) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({
-            user_id: user.id,
+            user_id: user.userId,
             username: user.username,
             current_page: options?.currentPage || 'unknown',
             last_seen: new Date().toISOString(),
@@ -82,7 +85,7 @@ export function useRealtimePresence(options?: UsePresenceOptions) {
     // Update presence when page changes
     if (options?.currentPage) {
       channel.track({
-        user_id: user.id,
+        user_id: user.userId,
         username: user.username,
         current_page: options.currentPage,
         last_seen: new Date().toISOString(),
@@ -152,7 +155,7 @@ export function useRealtimeBroadcast(channel: string) {
   useEffect(() => {
     const channelInstance = supabase
       .channel(channel)
-      .on('broadcast', { event: '*' }, (payload) => {
+      .on('broadcast', { event: '*' }, (payload: any) => {
         setMessages((prev) => [...prev, payload]);
       })
       .subscribe();

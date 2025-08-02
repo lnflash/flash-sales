@@ -1,12 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const GRAPHQL_URI = process.env.NEXT_PUBLIC_GRAPHQL_URI || 'https://api.flashapp.me/graphql';
+const GRAPHQL_URI = process.env.NEXT_PUBLIC_GRAPHQL_URI || 'https://flash-intake-form-3xgvo.ondigitalocean.app/api/graphql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  console.log('GraphQL proxy request:', {
+    uri: GRAPHQL_URI,
+    body: req.body
+  });
 
   try {
     // Forward the request to the actual GraphQL endpoint

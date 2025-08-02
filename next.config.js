@@ -86,7 +86,7 @@ const nextConfig = {
   },
   // Performance optimizations
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false, // Disabled to fix critters error
     optimizePackageImports: ['@heroicons/react', 'date-fns', 'recharts'],
   },
   compiler: {

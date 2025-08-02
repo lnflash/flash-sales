@@ -17,7 +17,6 @@ interface SalesState {
     closedDeals: number
     revenue: number
     conversionRate: number
-    avgDealSize: number
   }
   
   // Loading states
@@ -39,7 +38,6 @@ export const useSalesStore = create<SalesState>()(
       closedDeals: 0,
       revenue: 0,
       conversionRate: 0,
-      avgDealSize: 0,
     },
     isLoading: false,
     error: null,
@@ -73,7 +71,6 @@ export const useSalesStore = create<SalesState>()(
           d.status === 'won' ? sum + (d.amount || 0) : sum, 0
         ) || 0
         const conversionRate = totalDeals > 0 ? (closedDeals / totalDeals) * 100 : 0
-        const avgDealSize = closedDeals > 0 ? revenue / closedDeals : 0
         
         set({
           recentDeals: recent || [],
@@ -83,7 +80,6 @@ export const useSalesStore = create<SalesState>()(
             closedDeals,
             revenue,
             conversionRate,
-            avgDealSize,
           },
           isLoading: false,
         })

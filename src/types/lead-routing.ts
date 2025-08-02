@@ -41,7 +41,6 @@ export interface SalesRep {
   specializations?: string[]; // Industry specializations
   performance: {
     conversionRate: number;
-    avgDealSize: number;
     avgTimeToClose: number; // in days
   };
   availability: 'available' | 'busy' | 'unavailable';
@@ -82,7 +81,6 @@ export interface TerritoryStats {
   totalLeads: number;
   activeLeads: number;
   conversionRate: number;
-  avgDealSize: number;
   assignedReps: string[];
   topPerformer?: string;
 }

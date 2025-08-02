@@ -149,20 +149,20 @@ export class AILeadScoringService {
         };
       }
 
-      const wonLeads = similarLeads.filter(lead => lead.status === 'won');
+      const wonLeads = similarLeads.filter((lead: any) => lead.status === 'won');
       const conversionRate = (wonLeads.length / similarLeads.length) * 100;
 
       // Calculate average time to close
       const timesToClose = wonLeads
-        .filter(lead => lead.closed_at)
-        .map(lead => {
+        .filter((lead: any) => lead.closed_at)
+        .map((lead: any) => {
           const created = new Date(lead.created_at);
           const closed = new Date(lead.closed_at);
           return (closed.getTime() - created.getTime()) / (1000 * 60 * 60 * 24); // days
         });
 
       const averageTimeToClose = timesToClose.length > 0
-        ? timesToClose.reduce((a, b) => a + b, 0) / timesToClose.length
+        ? timesToClose.reduce((a: number, b: number) => a + b, 0) / timesToClose.length
         : 30; // default to 30 days
 
       return {
@@ -201,9 +201,9 @@ export class AILeadScoringService {
     // Cap probability at 0.95
     probability = Math.min(probability, 0.95);
 
-    // Calculate expected value (mock calculation - in production, use actual pricing)
-    const avgDealSize = 5000; // Average deal size
-    const expectedValue = probability * avgDealSize;
+    // For transaction-based revenue model, we don't have fixed deal sizes
+    // Expected value will be based on actual usage patterns
+    const expectedValue = 0; // Transaction-based model
 
     // Score multiplier based on prediction confidence
     const scoreMultiplier = 0.8 + (probability * 0.4); // Range: 0.8 to 1.2
@@ -217,7 +217,7 @@ export class AILeadScoringService {
   }
 
   // Generate AI-powered recommendations
-  private async generateRecommendations(leadData: LeadData, prediction: any): string[] {
+  private async generateRecommendations(leadData: LeadData, prediction: any): Promise<string[]> {
     const recommendations: string[] = [];
 
     // High probability recommendations
@@ -311,7 +311,7 @@ export class AILeadScoringService {
 
       if (!territoryData || territoryData.length === 0) return 50;
 
-      const wonDeals = territoryData.filter(deal => deal.status === 'won').length;
+      const wonDeals = territoryData.filter((deal: any) => deal.status === 'won').length;
       const score = (wonDeals / territoryData.length) * 100;
       
       return Math.round(score);

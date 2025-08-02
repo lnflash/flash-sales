@@ -16,7 +16,6 @@ interface TerritoryStats {
   totalLeads: number;
   activeLeads: number;
   conversionRate: number;
-  avgDealSize: number;
   assignedReps: number;
   topPerformer?: string;
 }
@@ -26,7 +25,6 @@ interface SimpleSalesRep {
   name: string;
   territory: JamaicaParish | 'Unassigned';
   activeLeads: number;
-  totalRevenue: number;
   conversionRate: number;
 }
 
@@ -55,7 +53,6 @@ export default function TerritoryDashboard({
         totalLeads: 0,
         activeLeads: 0,
         conversionRate: 0,
-        avgDealSize: 0,
         assignedReps: 0,
         topPerformer: undefined
       });
@@ -73,8 +70,8 @@ export default function TerritoryDashboard({
         const uniqueReps = new Set(salesReps.filter(r => r.territory === territory).map(r => r.name));
         stats.assignedReps = uniqueReps.size;
         
-        // Track top performer by revenue
-        if (!stats.topPerformer || rep.totalRevenue > (salesReps.find(r => r.name === stats.topPerformer)?.totalRevenue || 0)) {
+        // Track top performer by active leads
+        if (!stats.topPerformer || rep.activeLeads > (salesReps.find(r => r.name === stats.topPerformer)?.activeLeads || 0)) {
           stats.topPerformer = rep.name;
         }
       }
@@ -84,11 +81,9 @@ export default function TerritoryDashboard({
     statsMap.forEach((stats, parish) => {
       if (stats.assignedReps > 0) {
         const repsInTerritory = salesReps.filter(rep => rep.territory === parish);
-        const totalRevenue = repsInTerritory.reduce((sum, rep) => sum + (rep.totalRevenue || 0), 0);
         const conversions = repsInTerritory.filter(rep => rep.conversionRate > 0).length;
         
         stats.conversionRate = conversions / stats.assignedReps;
-        stats.avgDealSize = stats.activeLeads > 0 ? totalRevenue / stats.activeLeads : 0;
       }
     });
 
@@ -96,6 +91,9 @@ export default function TerritoryDashboard({
   }, [salesReps]);
 
   const filteredStats = territoryStats.filter(stat => {
+    // Hide territories with zero leads
+    if (stat.totalLeads === 0) return false;
+    
     if (selectedRegion === 'All') return true;
     return getParishRegion(stat.parish) === selectedRegion;
   });
@@ -183,7 +181,14 @@ export default function TerritoryDashboard({
       </div>
 
       {/* Territory Grid/List */}
-      <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
+      {filteredStats.length === 0 ? (
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <MapIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-600 mb-2">No territories with active leads</p>
+          <p className="text-sm text-gray-500">Territories will appear here once leads are assigned</p>
+        </div>
+      ) : (
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
         {filteredStats.map(stat => {
           const repsInTerritory = salesReps.filter(rep => 
             rep.territory === stat.parish
@@ -235,13 +240,6 @@ export default function TerritoryDashboard({
                 </div>
                 
                 <div>
-                  <p className="text-light-text-tertiary">Avg Deal</p>
-                  <p className="font-semibold text-light-text-primary">
-                    ${(stat.avgDealSize / 1000).toFixed(0)}k
-                  </p>
-                </div>
-                
-                <div>
                   <p className="text-light-text-tertiary">Reps</p>
                   <p className="font-semibold text-light-text-primary">
                     {stat.assignedReps}
@@ -262,7 +260,8 @@ export default function TerritoryDashboard({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
 
       {/* Territory Coverage Warning */}
       {territoryStats.filter(s => s.assignedReps === 0).length > 0 && (

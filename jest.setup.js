@@ -43,3 +43,29 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Suppress console errors during tests
 console.error = jest.fn()
+
+// Mock Supabase client
+jest.mock('@/lib/supabase/client', () => ({
+  supabase: {
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      range: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+      then: jest.fn().mockResolvedValue({ data: [], error: null }),
+    })),
+    channel: jest.fn(() => ({
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockReturnThis(),
+      unsubscribe: jest.fn().mockReturnThis(),
+    })),
+    removeChannel: jest.fn(),
+  }
+}))

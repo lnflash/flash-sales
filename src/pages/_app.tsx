@@ -6,6 +6,7 @@ import QueryProvider from '@/lib/query-provider';
 import { ApolloProviderWrapper } from '@/lib/apollo-provider';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { fetchRuntimeConfig } from '@/lib/supabase/runtime-config';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import '@/styles/globals.css';
 
 // List of public routes that don't require authentication
@@ -46,17 +47,19 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Head>
-      <ApolloProviderWrapper>
-        <QueryProvider>
-          {isPublicRoute ? (
-            <Component {...pageProps} />
-          ) : (
-            <AuthGuard>
+      <ThemeProvider>
+        <ApolloProviderWrapper>
+          <QueryProvider>
+            {isPublicRoute ? (
               <Component {...pageProps} />
-            </AuthGuard>
-          )}
-        </QueryProvider>
-      </ApolloProviderWrapper>
+            ) : (
+              <AuthGuard>
+                <Component {...pageProps} />
+              </AuthGuard>
+            )}
+          </QueryProvider>
+        </ApolloProviderWrapper>
+      </ThemeProvider>
     </>
   );
 }

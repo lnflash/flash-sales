@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getUserFromStorage, logout as authLogout } from '@/lib/auth';
-import type { User } from '@/types/auth';
+import type { User } from '@/lib/auth';
 
 interface AuthState {
   user: User | null;

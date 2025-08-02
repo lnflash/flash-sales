@@ -346,7 +346,7 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
         
         // If valid, update with formatted number and trigger enrichment
         if (validation.isValid && validation.formatted) {
-          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted }));
+          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted || '' }));
           enrichPhoneNumber(validation.formatted).then(result => {
             if (result.success) {
               console.log('Phone enrichment:', result.data);

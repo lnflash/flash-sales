@@ -20,9 +20,9 @@ export const DEFAULT_ROUTING_RULES: RoutingRule[] = [
         .filter(rep => 
           rep.territories.includes(lead.territory) &&
           rep.availability === 'available' &&
-          rep.performance.avgDealSize >= 40000
+          rep.performance.conversionRate >= 0.15
         )
-        .sort((a, b) => b.performance.avgDealSize - a.performance.avgDealSize);
+        .sort((a, b) => b.performance.conversionRate - a.performance.conversionRate);
       
       return specialists[0] || null;
     }
