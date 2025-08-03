@@ -8,19 +8,23 @@ import LeadAssignment from '@/components/sales-intelligence/LeadAssignment';
 import TerritoryDashboard from '@/components/sales-intelligence/TerritoryDashboard';
 import { LeadsTable } from '@/components/leads/LeadsTable';
 import { useUserSubmissions } from '@/hooks/useUserSubmissions';
+import { useSubmissions } from '@/hooks/useSubmissions';
 import { LeadWorkflow, LeadStage } from '@/types/lead-qualification';
 import { Submission } from '@/types/submission';
 import { calculateDealProbability } from '@/utils/deal-probability';
 import { JamaicaParish } from '@/types/lead-routing';
 import { getUserFromStorage } from '@/lib/auth';
 import { hasPermission } from '@/types/roles';
+import { CountryToggleSimple } from '@/components/territories/CountryToggleSimple';
+import { PROOF_OF_CONCEPT_COUNTRIES } from '@/types/territory';
 import { 
   PlusIcon, 
   FunnelIcon,
   ClipboardDocumentCheckIcon,
   ArrowTrendingUpIcon,
   ChartBarIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  GlobeAmericasIcon
 } from '@heroicons/react/24/outline';
 
 // Lead status options that should replace the signed up checkbox
@@ -171,6 +175,10 @@ export default function LeadsPage() {
   const [leadToAssign, setLeadToAssign] = useState<number | string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [selectedTerritory, setSelectedTerritory] = useState<string>('');
+  const [selectedCountry, setSelectedCountry] = useState<string>(''); // Empty means all countries
+  
+  // Use proof of concept countries for now
+  const countries = PROOF_OF_CONCEPT_COUNTRIES;
   
   useEffect(() => {
     const currentUser = getUserFromStorage();
@@ -190,16 +198,26 @@ export default function LeadsPage() {
     usernameToFilter,
   });
   
-  // Fetch all submissions for lead management
-  const { data, isLoading } = useUserSubmissions(usernameToFilter);
-  const submissions = data?.submissions || [];
-  const totalCount = data?.count || 0;
+  // Use regular submissions hook with filters for country support
+  const { 
+    submissions, 
+    totalCount, 
+    isLoading,
+    filters,
+    setFilters 
+  } = useSubmissions(
+    { 
+      username: usernameToFilter,
+      countryCode: selectedCountry || undefined 
+    },
+    { pageIndex: 0, pageSize: 1000 } // Get all for lead management
+  );
   
-  console.log('[LeadManagement] useUserSubmissions returned:', {
-    data,
+  console.log('[LeadManagement] submissions loaded:', {
     submissionsLength: submissions.length,
     totalCount,
     isLoading,
+    selectedCountry,
     usernameToFilter
   });
   
@@ -260,6 +278,30 @@ export default function LeadsPage() {
 
   return (
     <DashboardLayout title="Lead Management">
+      {/* Country Selector */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <GlobeAmericasIcon className="w-6 h-6 text-muted-foreground" />
+          <CountryToggleSimple
+            countries={countries}
+            selectedCountry={selectedCountry}
+            onChange={(code) => {
+              setSelectedCountry(code);
+              // Update filters when country changes
+              setFilters({ ...filters, countryCode: code || undefined });
+            }}
+            showAll={true}
+          />
+        </div>
+        
+        {/* Show selected country info */}
+        {selectedCountry && (
+          <div className="text-sm text-muted-foreground">
+            Viewing {countries.find(c => c.code === selectedCountry)?.name} leads
+          </div>
+        )}
+      </div>
+      
       {/* Admin viewing all leads banner */}
       {canViewAllReps && (
         <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
