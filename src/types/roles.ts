@@ -23,6 +23,7 @@ export const ROLE_PERMISSIONS = {
     canViewSettings: false,
     canAssignRoles: false,
     canViewAllReps: false,
+    canManageTerritories: false,
   },
   "Flash Management": {
     canViewSubmissions: true,
@@ -32,6 +33,7 @@ export const ROLE_PERMISSIONS = {
     canViewSettings: false,
     canAssignRoles: false,
     canViewAllReps: true,
+    canManageTerritories: true,
   },
   "Flash Admin": {
     canViewSubmissions: true,
@@ -41,6 +43,7 @@ export const ROLE_PERMISSIONS = {
     canViewSettings: true,
     canAssignRoles: true,
     canViewAllReps: true,
+    canManageTerritories: true,
   },
 } as const;
 

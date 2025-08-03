@@ -21,6 +21,7 @@ import {
   UserIcon,
   ChartPieIcon,
   CalendarIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 
 interface NavItem {
@@ -40,6 +41,7 @@ const navigation: NavItem[] = [
   { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, requiresPermission: "canViewAnalytics" },
   { name: "Submissions", href: "/dashboard/submissions", icon: TableCellsIcon },
   { name: "Lead Management", href: "/dashboard/leads", icon: UserGroupIcon },
+  { name: "Territory Assignments", href: "/dashboard/territory-assignments", icon: MapPinIcon, requiresPermission: "canManageTerritories" },
   { name: "Rep Tracking", href: "/dashboard/rep-tracking", icon: ClipboardDocumentCheckIcon, hideForRoles: ["Flash Sales Rep"] },
   { name: "Profile", href: "/dashboard/profile", icon: UserIcon },
   { name: "Settings", href: "/dashboard/settings", icon: Cog6ToothIcon, requiresPermission: "canViewSettings" },
