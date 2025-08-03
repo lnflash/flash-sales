@@ -15,7 +15,17 @@ export interface Submission {
   specificNeeds?: string;
   timestamp: string;
   username?: string;
-  territory?: string;
+  territory?: string; // Legacy field for backward compatibility
+  territoryId?: string; // New field for territory reference
+  territoryData?: { // Joined territory data
+    id: string;
+    name: string;
+    type: string;
+    countryCode: string;
+    countryName: string;
+    flagEmoji: string;
+    fullPath: string;
+  };
   businessType?: string;
   monthlyRevenue?: string;
   numberOfEmployees?: string;
@@ -46,6 +56,8 @@ export interface SubmissionFilters {
   signedUp?: boolean;
   packageSeen?: boolean;
   username?: string;
+  territoryId?: string;
+  countryCode?: string;
 }
 
 // Type for the sort options

@@ -44,7 +44,17 @@ export function mapDealToSubmission(deal: any): Submission {
     leadStatus: leadStatus as any,
     specificNeeds: deal.specific_needs || "",
     username: deal.owner?.username || deal.owner?.email?.split("@")[0] || "Unassigned",
-    territory: territory,
+    territory: territory || deal.territory_data?.name || "", // Legacy support
+    territoryId: deal.territory_id,
+    territoryData: deal.territory_data ? {
+      id: deal.territory_data.id,
+      name: deal.territory_data.name,
+      type: deal.territory_data.type,
+      countryCode: deal.territory_data.country_code,
+      countryName: deal.territory_data.country_name,
+      flagEmoji: deal.territory_data.flag_emoji,
+      fullPath: deal.territory_data.full_path,
+    } : undefined,
     timestamp: deal.created_at || new Date().toISOString(),
   };
 }
@@ -111,6 +121,17 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
     // Apply user ID filter if we have one (from username lookup)
     if ((filters as any).userIdForFilter) {
       query = query.eq("owner_id", (filters as any).userIdForFilter);
+    }
+    
+    // Apply territory filter
+    if (filters.territoryId) {
+      query = query.eq("territory_id", filters.territoryId);
+    }
+    
+    // Apply country filter
+    if (filters.countryCode) {
+      // This requires a join with territory_hierarchy view
+      query = query.eq("territory_data.country_code", filters.countryCode);
     }
   }
 
@@ -189,13 +210,16 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
       }
     }
 
-    // Build the base query with proper joins
+    // Build the base query with proper joins including territory data
     let countQuery = supabase.from("deals").select(
       `
         *,
         organization:organizations!organization_id(name, state_province),
         primary_contact:contacts!primary_contact_id(phone_primary),
-        owner:users!owner_id(email, username)
+        owner:users!owner_id(email, username),
+        territory_data:territory_hierarchy!territory_id(
+          id, name, type, country_code, country_name, flag_emoji, full_path
+        )
       `,
       { count: "exact", head: true }
     );
@@ -204,7 +228,10 @@ export async function getSubmissions(filters?: SubmissionFilters, pagination?: P
         *,
         organization:organizations!organization_id(name, state_province),
         primary_contact:contacts!primary_contact_id(phone_primary),
-        owner:users!owner_id(email, username)
+        owner:users!owner_id(email, username),
+        territory_data:territory_hierarchy!territory_id(
+          id, name, type, country_code, country_name, flag_emoji, full_path
+        )
       `);
 
     // Apply filters to both queries, but pass the user ID if we have one
