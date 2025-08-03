@@ -35,9 +35,9 @@ class MyDocument extends Document {
           <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png" />
           
           {/* Favicon */}
-          <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-          <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-          <link rel="shortcut icon" href="/favicon.ico" />
+          <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96x96.png" />
+          <link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72x72.png" />
+          <link rel="shortcut icon" href="/icons/favicon.ico" />
           
           {/* Only inject the script if we have environment variables */}
           {(supabaseUrl || supabaseKey) && (
