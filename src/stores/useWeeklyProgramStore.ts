@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Activity, WeeklyGoals, WeeklyProgram, ActivityStatus } from '@/types/weekly-program';
 import { getUserFromStorage } from '@/lib/auth';
+import { programSyncService } from '@/services/program-sync';
+import { ProgramSyncStatus } from '@/types/program-sync';
 
 interface WeeklyProgramState {
   currentWeek: string; // ISO date of Monday
@@ -9,6 +11,7 @@ interface WeeklyProgramState {
   activities: Activity[];
   customActivityTypes: string[]; // Store used custom activity types
   currentUserId: string | null; // Track current user
+  syncStatus: ProgramSyncStatus | null;
   
   // Actions
   setCurrentWeek: (week: string) => void;
@@ -31,6 +34,8 @@ interface WeeklyProgramState {
   duplicateActivity: (activityId: string, newDate: string) => void;
   clearWeek: () => void;
   addCustomActivityType: (typeName: string) => void;
+  setSyncStatus: (status: ProgramSyncStatus) => void;
+  triggerSync: () => Promise<void>;
 }
 
 // Helper to get Monday of the current week
@@ -47,23 +52,18 @@ const defaultGoals: WeeklyGoals = {
   calls: 50,
   meetings: 10,
   proposals: 5,
-  followUps: 30,
-  newContacts: 20
+  followUps: 20,
+  newContacts: 15
 };
 
-// Helper to get current user ID with proper client-side check
-const getCurrentUserId = (): string => {
-  if (typeof window === 'undefined') {
-    // Server-side rendering
-    return 'anonymous';
-  }
-  
-  try {
-    const user = getUserFromStorage();
-    return user?.username || user?.userId || 'anonymous';
-  } catch (error) {
-    console.error('Error getting current user ID:', error);
-    return 'anonymous';
+// Helper to trigger sync after state changes
+const syncAfterChange = () => {
+  // Debounce sync to avoid too many calls
+  if (typeof window !== 'undefined') {
+    clearTimeout((window as any).__syncTimeout);
+    (window as any).__syncTimeout = setTimeout(() => {
+      programSyncService.syncNow().catch(console.error);
+    }, 2000);
   }
 };
 
@@ -75,29 +75,42 @@ export const useWeeklyProgramStore = create<WeeklyProgramState>()(
       activities: [],
       customActivityTypes: [],
       currentUserId: null,
+      syncStatus: null,
 
-      setCurrentWeek: (week) => set({ currentWeek: week }),
+      setCurrentWeek: (week) => {
+        set({ currentWeek: week });
+        const user = getUserFromStorage();
+        const userId = user?.userId || null;
+        
+        // Update currentUserId if needed
+        if (userId && userId !== get().currentUserId) {
+          set({ currentUserId: userId });
+        }
+      },
 
-      setGoals: (goals) => set({ goals }),
+      setGoals: (goals) => {
+        set({ goals });
+        syncAfterChange();
+      },
 
-      addActivity: (activityData) => {
-        const userId = getCurrentUserId();
+      addActivity: (activity) => {
+        const user = getUserFromStorage();
+        const userId = user?.userId || 'anonymous';
+        
         const newActivity: Activity = {
-          ...activityData,
-          id: `activity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          ...activity,
+          id: Date.now().toString(),
           userId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
-
-        // If it's a custom type, add it to the list of custom types
-        if (activityData.type === 'custom' && activityData.customType) {
-          get().addCustomActivityType(activityData.customType);
-        }
-
+        
         set((state) => ({
-          activities: [...state.activities, newActivity]
+          activities: [...state.activities, newActivity],
+          currentUserId: userId
         }));
+        
+        syncAfterChange();
       },
 
       updateActivity: (id, updates) => {
@@ -108,110 +121,121 @@ export const useWeeklyProgramStore = create<WeeklyProgramState>()(
               : activity
           )
         }));
+        
+        syncAfterChange();
       },
 
       deleteActivity: (id) => {
         set((state) => ({
           activities: state.activities.filter((activity) => activity.id !== id)
         }));
+        
+        syncAfterChange();
       },
 
       updateActivityStatus: (id, status) => {
-        const now = new Date().toISOString();
-        set((state) => ({
-          activities: state.activities.map((activity) =>
-            activity.id === id
-              ? { 
-                  ...activity, 
-                  status,
-                  updatedAt: now,
-                  // If completing, set the time to now if not already set
-                  ...(status === 'completed' && !activity.time ? { time: new Date().toTimeString().slice(0, 5) } : {})
-                }
-              : activity
-          )
-        }));
+        const updates: Partial<Activity> = { status };
+        
+        // Add completion timestamp if completing
+        if (status === 'completed') {
+          updates.completedAt = new Date().toISOString();
+        }
+        
+        get().updateActivity(id, updates);
       },
 
       getActivitiesByDate: (date) => {
-        const { activities } = get();
-        const userId = getCurrentUserId();
-        // Filter activities, handling both new activities with userId and legacy activities
-        return activities.filter((activity) => {
-          // If activity has no userId (legacy), show it to everyone
-          if (!activity.userId) return true;
-          // Otherwise, only show if it belongs to current user
-          return activity.date === date && activity.userId === userId;
-        });
+        return get().activities.filter((activity) => activity.date === date);
       },
 
       getWeeklyMetrics: () => {
-        const { activities } = get();
-        const userId = getCurrentUserId();
-        const weekActivities = activities.filter((activity) => {
-          const activityDate = new Date(activity.date);
-          const weekStart = new Date(get().currentWeek);
-          const weekEnd = new Date(weekStart);
-          weekEnd.setDate(weekEnd.getDate() + 6);
-          
-          // Handle legacy activities without userId
-          if (!activity.userId) {
-            return activityDate >= weekStart && activityDate <= weekEnd;
-          }
-          
-          return activity.userId === userId && activityDate >= weekStart && activityDate <= weekEnd;
-        });
+        const activities = get().activities.filter(
+          (activity) => activity.date >= get().currentWeek
+        );
 
-        const completed = weekActivities.filter(a => a.status === 'completed');
-        const inProgress = weekActivities.filter(a => a.status === 'in_progress');
+        const completedActivities = activities.filter(
+          (activity) => activity.status === 'completed'
+        );
 
         return {
-          completedCalls: completed.filter(a => a.type === 'call').length,
-          completedMeetings: completed.filter(a => a.type === 'meeting').length,
-          completedProposals: completed.filter(a => a.type === 'proposal').length,
-          completedFollowUps: completed.filter(a => a.type === 'follow_up').length,
-          totalActivities: weekActivities.length,
-          completedActivities: completed.length,
-          inProgressActivities: inProgress.length,
-          completionRate: weekActivities.length > 0 
-            ? Math.round((completed.length / weekActivities.length) * 100)
+          completedCalls: completedActivities.filter((a) => a.type === 'call').length,
+          completedMeetings: completedActivities.filter((a) => a.type === 'meeting').length,
+          completedProposals: completedActivities.filter((a) => a.type === 'proposal').length,
+          completedFollowUps: completedActivities.filter((a) => a.type === 'follow_up').length,
+          totalActivities: activities.length,
+          completedActivities: completedActivities.length,
+          inProgressActivities: activities.filter((a) => a.status === 'in_progress').length,
+          completionRate: activities.length > 0 
+            ? Math.round((completedActivities.length / activities.length) * 100)
             : 0
         };
       },
 
       duplicateActivity: (activityId, newDate) => {
         const activity = get().activities.find(a => a.id === activityId);
-        if (activity) {
-          const { id, userId, createdAt, updatedAt, ...activityData } = activity;
-          get().addActivity({
-            ...activityData,
-            date: newDate,
-            status: 'planned'
-          });
-        }
+        if (!activity) return;
+
+        const user = getUserFromStorage();
+        const userId = user?.userId || 'anonymous';
+
+        const newActivity: Activity = {
+          ...activity,
+          id: Date.now().toString(),
+          date: newDate,
+          status: 'planned',
+          userId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          completedAt: undefined,
+          outcome: undefined,
+          nextSteps: undefined
+        };
+
+        set((state) => ({
+          activities: [...state.activities, newActivity]
+        }));
+        
+        syncAfterChange();
       },
 
       clearWeek: () => {
-        const userId = getCurrentUserId();
+        const user = getUserFromStorage();
+        const userId = user?.userId || null;
+        
         set((state) => ({ 
-          activities: state.activities.filter(a => {
-            // If anonymous user, don't clear anything
-            if (userId === 'anonymous') return true;
+          activities: state.activities.filter((a) => {
+            // If there's no userId on the activity, keep it (legacy data)
+            if (!a.userId) return true;
             // Keep activities from other users
             return a.userId && a.userId !== userId;
           }), 
           goals: defaultGoals 
         }));
+        
+        syncAfterChange();
       },
 
       addCustomActivityType: (typeName) => {
         set((state) => {
           // Only add if it doesn't already exist
           if (!state.customActivityTypes.includes(typeName)) {
+            syncAfterChange();
             return { customActivityTypes: [...state.customActivityTypes, typeName] };
           }
           return state;
         });
+      },
+
+      setSyncStatus: (status) => {
+        set({ syncStatus: status });
+      },
+
+      triggerSync: async () => {
+        try {
+          await programSyncService.syncNow();
+        } catch (error) {
+          console.error('[WeeklyProgramStore] Sync failed:', error);
+        }
       }
     }),
     {
@@ -238,3 +262,10 @@ export const useWeeklyProgramStore = create<WeeklyProgramState>()(
     }
   )
 );
+
+// Set up sync status listener
+if (typeof window !== 'undefined') {
+  programSyncService.onSyncStatusChange((status) => {
+    useWeeklyProgramStore.getState().setSyncStatus(status);
+  });
+}

@@ -30,14 +30,15 @@ CREATE TABLE IF NOT EXISTS program_activities (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   username VARCHAR(255) NOT NULL, -- Denormalized for easier queries
   local_id VARCHAR(255) NOT NULL, -- To match localStorage IDs
-  type VARCHAR(50) NOT NULL CHECK (type IN ('call', 'meeting', 'proposal', 'follow_up', 'email', 'site_visit', 'presentation', 'training', 'other')),
+  type VARCHAR(50) NOT NULL CHECK (type IN ('call', 'meeting', 'proposal', 'follow_up', 'prospecting', 'site_visit', 'admin', 'training', 'custom')),
   custom_type VARCHAR(100), -- For user-defined types
   title VARCHAR(255) NOT NULL,
   description TEXT,
   date DATE NOT NULL,
   time TIME,
   duration INTEGER, -- minutes
-  status VARCHAR(20) DEFAULT 'planned' CHECK (status IN ('planned', 'in_progress', 'completed', 'cancelled')),
+  status VARCHAR(20) DEFAULT 'planned' CHECK (status IN ('planned', 'in_progress', 'completed', 'cancelled', 'rescheduled')),
+  priority VARCHAR(10) DEFAULT 'medium' CHECK (priority IN ('high', 'medium', 'low')),
   notes TEXT,
   -- CRM entity references
   organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,

@@ -5,6 +5,7 @@ import { WeeklyGoals } from '@/components/weekly-program/WeeklyGoals';
 import { ActivityModal } from '@/components/weekly-program/ActivityModal';
 import { ActivityDetails } from '@/components/weekly-program/ActivityDetails';
 import { WeeklyProgramContent } from '@/components/weekly-program/WeeklyProgramContent';
+import { SyncStatusIndicator } from '@/components/weekly-program/SyncStatusIndicator';
 import { useWeeklyProgramStore } from '@/stores/useWeeklyProgramStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Activity } from '@/types/weekly-program';
@@ -130,6 +131,7 @@ export default function WeeklyProgramPage() {
           </div>
           
           <div className="flex items-center gap-2">
+            <SyncStatusIndicator />
             <Button
               onClick={() => handleAddActivity()}
               className="flex items-center gap-2"
