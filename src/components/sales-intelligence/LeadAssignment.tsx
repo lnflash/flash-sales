@@ -76,10 +76,10 @@ export default function LeadAssignment({
       }
 
       // Update availability based on load
-      if (rep.currentLoad >= rep.maxCapacity * 0.8) {
-        rep.availability = 'busy';
-      } else if (rep.currentLoad >= rep.maxCapacity) {
+      if (rep.currentLoad >= rep.maxCapacity) {
         rep.availability = 'unavailable';
+      } else if (rep.currentLoad >= rep.maxCapacity * 0.8) {
+        rep.availability = 'busy';
       }
     });
 
