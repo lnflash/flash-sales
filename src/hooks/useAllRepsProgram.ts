@@ -56,7 +56,7 @@ export const useAllRepsProgram = (weekOffset: number = 0) => {
 
         // Check if current user is admin
         const user = getUserFromStorage();
-        const isAdmin = user?.role === 'Admin' || user?.role === 'Flash Admin';
+        const isAdmin = user?.role === 'Flash Management' || user?.role === 'Flash Admin';
 
         let allActivities: ProgramActivity[] = [];
         let allGoals: ProgramWeeklyGoals[] = [];

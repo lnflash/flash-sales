@@ -50,11 +50,11 @@ export const SyncStatusIndicator: React.FC = () => {
       return <WifiIcon className="h-5 w-5 text-muted-foreground" />;
     }
 
-    if (syncStatus?.syncInProgress || isManualSyncing) {
+    if (syncStatus?.syncStatus === 'syncing' || isManualSyncing) {
       return <ArrowPathIcon className="h-5 w-5 text-primary animate-spin" />;
     }
 
-    if (syncStatus?.syncError) {
+    if (syncStatus?.errorMessage) {
       return <ExclamationCircleIcon className="h-5 w-5 text-destructive" />;
     }
 
@@ -66,11 +66,11 @@ export const SyncStatusIndicator: React.FC = () => {
       return 'Offline';
     }
 
-    if (syncStatus?.syncInProgress || isManualSyncing) {
+    if (syncStatus?.syncStatus === 'syncing' || isManualSyncing) {
       return 'Syncing...';
     }
 
-    if (syncStatus?.syncError) {
+    if (syncStatus?.errorMessage) {
       return 'Sync failed';
     }
 
@@ -102,7 +102,7 @@ export const SyncStatusIndicator: React.FC = () => {
           onClick={handleManualSync}
           disabled={!isOnline || isManualSyncing}
           className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title={syncStatus?.syncError || getSyncText()}
+          title={syncStatus?.errorMessage || getSyncText()}
         >
           {getSyncIcon()}
           <span className="text-xs text-muted-foreground">{getSyncText()}</span>
@@ -110,11 +110,11 @@ export const SyncStatusIndicator: React.FC = () => {
       </div>
 
       {/* Error tooltip */}
-      {syncStatus?.syncError && (
+      {syncStatus?.errorMessage && (
         <div className="relative group">
           <ExclamationCircleIcon className="h-4 w-4 text-destructive cursor-help" />
           <div className="absolute bottom-full right-0 mb-2 p-2 bg-popover border border-border rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-            <p className="text-xs text-destructive">{syncStatus.syncError}</p>
+            <p className="text-xs text-destructive">{syncStatus.errorMessage}</p>
           </div>
         </div>
       )}

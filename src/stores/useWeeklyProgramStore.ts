@@ -136,11 +136,6 @@ export const useWeeklyProgramStore = create<WeeklyProgramState>()(
       updateActivityStatus: (id, status) => {
         const updates: Partial<Activity> = { status };
         
-        // Add completion timestamp if completing
-        if (status === 'completed') {
-          updates.completedAt = new Date().toISOString();
-        }
-        
         get().updateActivity(id, updates);
       },
 
@@ -186,7 +181,6 @@ export const useWeeklyProgramStore = create<WeeklyProgramState>()(
           userId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          completedAt: undefined,
           outcome: undefined,
           nextSteps: undefined
         };

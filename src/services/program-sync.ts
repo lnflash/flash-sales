@@ -65,9 +65,13 @@ export class ProgramSyncService {
     if (!user?.userId) {
       return {
         userId: '',
-        lastSyncAt: new Date().toISOString(),
-        syncInProgress: false,
-        syncError: 'User not authenticated'
+        username: '',
+        syncStatus: 'error',
+        errorMessage: 'User not authenticated',
+        errorCount: 1,
+        activitiesSynced: 0,
+        goalsSynced: false,
+        customTypesSynced: false
       };
     }
 
@@ -75,16 +79,24 @@ export class ProgramSyncService {
       const status = await programApi.getSyncStatus(user.userId);
       return status || {
         userId: user.userId,
-        lastSyncAt: new Date().toISOString(),
-        syncInProgress: this.isSyncing,
-        syncError: null
+        username: user.username || '',
+        syncStatus: this.isSyncing ? 'syncing' : 'success',
+        errorMessage: undefined,
+        errorCount: 0,
+        activitiesSynced: 0,
+        goalsSynced: false,
+        customTypesSynced: false
       };
     } catch (error) {
       return {
         userId: user.userId,
-        lastSyncAt: new Date().toISOString(),
-        syncInProgress: this.isSyncing,
-        syncError: error instanceof Error ? error.message : 'Unknown error'
+        username: user.username || '',
+        syncStatus: 'error',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorCount: 1,
+        activitiesSynced: 0,
+        goalsSynced: false,
+        customTypesSynced: false
       };
     }
   }
@@ -105,9 +117,13 @@ export class ProgramSyncService {
     this.isSyncing = true;
     const syncStatus: ProgramSyncStatus = {
       userId: user.userId,
-      lastSyncAt: new Date().toISOString(),
-      syncInProgress: true,
-      syncError: null
+      username: user.username,
+      syncStatus: 'syncing',
+      errorMessage: undefined,
+      errorCount: 0,
+      activitiesSynced: 0,
+      goalsSynced: false,
+      customTypesSynced: false
     };
 
     this.notifyListeners(syncStatus);
@@ -128,15 +144,17 @@ export class ProgramSyncService {
       await this.syncCustomActivityTypes(user.userId, localData.customActivityTypes);
 
       // Update sync status
-      syncStatus.syncError = null;
-      syncStatus.syncInProgress = false;
+      syncStatus.errorMessage = undefined;
+      syncStatus.syncStatus = 'success';
+      syncStatus.lastSyncAt = new Date().toISOString();
       await programApi.updateSyncStatus(syncStatus);
 
       console.log('[ProgramSync] Sync completed successfully');
     } catch (error) {
       console.error('[ProgramSync] Sync failed:', error);
-      syncStatus.syncError = error instanceof Error ? error.message : 'Sync failed';
-      syncStatus.syncInProgress = false;
+      syncStatus.errorMessage = error instanceof Error ? error.message : 'Sync failed';
+      syncStatus.syncStatus = 'error';
+      syncStatus.errorCount++;
       await programApi.updateSyncStatus(syncStatus);
     } finally {
       this.isSyncing = false;
@@ -200,10 +218,14 @@ export class ProgramSyncService {
 
   private async syncCustomActivityTypes(userId: string, customTypes: string[]) {
     try {
+      const user = getUserFromStorage();
+      const username = user?.username || '';
+      
       // Add each custom type to Supabase
       for (const typeName of customTypes) {
         await programApi.addCustomActivityType({
           userId,
+          username,
           typeName,
           usageCount: 1,
           lastUsedAt: new Date().toISOString()
