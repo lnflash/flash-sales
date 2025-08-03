@@ -4,21 +4,35 @@
 -- First, create a temporary mapping table for username to user_id
 CREATE TEMP TABLE username_to_user_mapping (
     username TEXT PRIMARY KEY,
-    user_id UUID NOT NULL,
+    user_id UUID,
     default_territory TEXT
 );
 
 -- Insert the user mappings based on our analysis
+-- Using INSERT with ON CONFLICT to handle duplicates
 INSERT INTO username_to_user_mapping (username, user_id, default_territory) VALUES
     ('flash', '6939f0a7-8bbf-4a01-91fb-7d2b21bc71e0', 'Kingston'),
     ('rogimon', '18e7177f-019f-40a0-98d6-34c5c0fa4cde', 'St. Ann'),
     ('charms', 'd97f2a98-3c6f-4ab8-b7c7-5e330d3edf45', 'Portland'),
     ('Chala', 'cffd914a-46a7-4748-bde5-0b7493cebdd8', 'St. Mary'),
-    ('Tatiana_1', '97043190-97f5-43be-b3af-80e5ae386cb5', 'Kingston'),
-    ('kandi', (SELECT id FROM users WHERE email = 'kandi@getflash.io' LIMIT 1), 'St. Catherine'),
-    ('leah', (SELECT id FROM users WHERE email = 'leah@getflash.io' LIMIT 1), 'Clarendon'),
-    ('tamoy', (SELECT id FROM users WHERE email = 'tamoy@getflash.io' LIMIT 1), 'Manchester'),
-    ('jodi', (SELECT id FROM users WHERE email = 'jodi@getflash.io' LIMIT 1), 'St. Elizabeth');
+    ('Tatiana_1', '97043190-97f5-43be-b3af-80e5ae386cb5', 'Kingston');
+
+-- Try to insert users that might exist
+INSERT INTO username_to_user_mapping (username, user_id, default_territory)
+SELECT 'kandi', id, 'St. Catherine' FROM users WHERE email = 'kandi@getflash.io'
+ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO username_to_user_mapping (username, user_id, default_territory)
+SELECT 'leah', id, 'Clarendon' FROM users WHERE email = 'leah@getflash.io'
+ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO username_to_user_mapping (username, user_id, default_territory)
+SELECT 'tamoy', id, 'Manchester' FROM users WHERE email = 'tamoy@getflash.io'
+ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO username_to_user_mapping (username, user_id, default_territory)
+SELECT 'jodi', id, 'St. Elizabeth' FROM users WHERE email = 'jodi@getflash.io'
+ON CONFLICT (username) DO NOTHING;
 
 -- Remove any NULL entries (users that don't exist)
 DELETE FROM username_to_user_mapping WHERE user_id IS NULL;
