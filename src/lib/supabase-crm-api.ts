@@ -179,7 +179,7 @@ export const crmApi = {
     const contactIds = new Set<string>();
     const dealIds = new Set<string>();
 
-    activities?.forEach(activity => {
+    activities?.forEach((activity: any) => {
       if (activity.organization_id) orgIds.add(activity.organization_id);
       if (activity.contact_id) contactIds.add(activity.contact_id);
       if (activity.deal_id) dealIds.add(activity.deal_id);

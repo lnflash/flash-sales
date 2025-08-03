@@ -82,13 +82,13 @@ export default function WeeklyProgramPage() {
       }
 
     const csvContent = [
-      ['Date', 'Time', 'Type', 'Title', 'Lead', 'Priority', 'Status', 'Outcome'].join(','),
+      ['Date', 'Time', 'Type', 'Title', 'Entity', 'Priority', 'Status', 'Outcome'].join(','),
       ...weekActivities.map(activity => [
         activity.date,
         activity.time || '',
         activity.type,
         `"${activity.title}"`,
-        `"${activity.leadName || ''}"`,
+        `"${activity.entityName || ''}"`,
         activity.priority,
         activity.status,
         `"${activity.outcome || ''}"`

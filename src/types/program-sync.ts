@@ -19,14 +19,15 @@ export interface ProgramActivity {
   userId: string;
   username: string;
   localId: string; // Maps to localStorage ID
-  type: 'call' | 'meeting' | 'proposal' | 'follow_up' | 'email' | 'site_visit' | 'presentation' | 'training' | 'other';
+  type: 'call' | 'meeting' | 'proposal' | 'follow_up' | 'prospecting' | 'site_visit' | 'admin' | 'training' | 'custom';
   customType?: string;
   title: string;
   description?: string;
   date: string; // ISO date
   time?: string; // HH:MM format
   duration?: number; // minutes
-  status: 'planned' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled' | 'rescheduled';
+  priority: 'high' | 'medium' | 'low';
   notes?: string;
   // CRM entity references
   organizationId?: string;

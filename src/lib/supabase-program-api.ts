@@ -25,6 +25,7 @@ export const activityToProgram = (
   time: activity.time,
   duration: activity.duration,
   status: activity.status as ProgramActivity['status'],
+  priority: activity.priority,
   notes: activity.notes,
   organizationId: activity.organizationId,
   dealId: activity.dealId,
@@ -50,6 +51,7 @@ export const programToActivity = (program: ProgramActivity): Activity => ({
   time: program.time,
   duration: program.duration,
   status: program.status,
+  priority: program.priority,
   notes: program.notes,
   organizationId: program.organizationId,
   dealId: program.dealId,
@@ -187,7 +189,7 @@ export const programApi = {
       .order('usage_count', { ascending: false });
 
     if (error) throw error;
-    return (data || []).map(item => item.type_name);
+    return (data || []).map((item: any) => item.type_name);
   },
 
   async addCustomActivityType(type: ProgramCustomActivityType): Promise<void> {

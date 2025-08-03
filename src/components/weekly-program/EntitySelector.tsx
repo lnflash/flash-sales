@@ -55,7 +55,12 @@ export const EntitySelector: React.FC<EntitySelectorProps> = ({
     setSearchTerm('');
 
     // Clear all IDs first, then set the selected one
-    const newValue = {
+    const newValue: {
+      organizationId?: string;
+      dealId?: string;
+      contactId?: string;
+      entityName?: string;
+    } = {
       organizationId: undefined,
       dealId: undefined,
       contactId: undefined,
