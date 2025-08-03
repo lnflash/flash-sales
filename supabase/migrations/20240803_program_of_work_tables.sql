@@ -1,15 +1,14 @@
--- Program of Work Tables for Hybrid Storage
--- This migration creates tables to sync Program of Work data from localStorage to Supabase
--- Enables admin visibility while maintaining offline-first functionality
+-- Program of Work Tables for Hybrid Storage (Safe Version)
+-- This migration creates tables only if they don't exist
+-- Handles cases where tables/policies might already exist
 
 -- =====================================================
 -- WEEKLY GOALS TABLE
 -- =====================================================
--- Stores weekly targets per user
 CREATE TABLE IF NOT EXISTS program_weekly_goals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  username VARCHAR(255) NOT NULL, -- Denormalized for easier queries
+  username VARCHAR(255) NOT NULL,
   week_start DATE NOT NULL,
   calls INTEGER DEFAULT 50,
   meetings INTEGER DEFAULT 10,
@@ -24,27 +23,25 @@ CREATE TABLE IF NOT EXISTS program_weekly_goals (
 -- =====================================================
 -- PROGRAM ACTIVITIES TABLE
 -- =====================================================
--- Stores all program activities with sync support
 CREATE TABLE IF NOT EXISTS program_activities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  username VARCHAR(255) NOT NULL, -- Denormalized for easier queries
-  local_id VARCHAR(255) NOT NULL, -- To match localStorage IDs
+  username VARCHAR(255) NOT NULL,
+  local_id VARCHAR(255) NOT NULL,
   type VARCHAR(50) NOT NULL CHECK (type IN ('call', 'meeting', 'proposal', 'follow_up', 'prospecting', 'site_visit', 'admin', 'training', 'custom')),
-  custom_type VARCHAR(100), -- For user-defined types
+  custom_type VARCHAR(100),
   title VARCHAR(255) NOT NULL,
   description TEXT,
   date DATE NOT NULL,
   time TIME,
-  duration INTEGER, -- minutes
+  duration INTEGER,
   status VARCHAR(20) DEFAULT 'planned' CHECK (status IN ('planned', 'in_progress', 'completed', 'cancelled', 'rescheduled')),
   priority VARCHAR(10) DEFAULT 'medium' CHECK (priority IN ('high', 'medium', 'low')),
   notes TEXT,
-  -- CRM entity references
   organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
   deal_id UUID REFERENCES deals(id) ON DELETE SET NULL,
   contact_id UUID REFERENCES contacts(id) ON DELETE SET NULL,
-  entity_name VARCHAR(255), -- Denormalized display name (org/contact/deal name)
+  entity_name VARCHAR(255),
   outcome TEXT,
   follow_up_required BOOLEAN DEFAULT false,
   follow_up_date DATE,
@@ -59,7 +56,6 @@ CREATE TABLE IF NOT EXISTS program_activities (
 -- =====================================================
 -- CUSTOM ACTIVITY TYPES TABLE
 -- =====================================================
--- Stores user-defined activity types
 CREATE TABLE IF NOT EXISTS program_custom_activity_types (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -74,7 +70,6 @@ CREATE TABLE IF NOT EXISTS program_custom_activity_types (
 -- =====================================================
 -- SYNC STATUS TABLE
 -- =====================================================
--- Tracks sync status and health
 CREATE TABLE IF NOT EXISTS program_sync_status (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -87,7 +82,7 @@ CREATE TABLE IF NOT EXISTS program_sync_status (
   activities_synced INTEGER DEFAULT 0,
   goals_synced BOOLEAN DEFAULT false,
   custom_types_synced BOOLEAN DEFAULT false,
-  device_id VARCHAR(255), -- To track which device last synced
+  device_id VARCHAR(255),
   app_version VARCHAR(50),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -97,7 +92,6 @@ CREATE TABLE IF NOT EXISTS program_sync_status (
 -- =====================================================
 -- OFFLINE SYNC QUEUE TABLE
 -- =====================================================
--- Stores changes made while offline
 CREATE TABLE IF NOT EXISTS program_offline_queue (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -112,7 +106,7 @@ CREATE TABLE IF NOT EXISTS program_offline_queue (
 );
 
 -- =====================================================
--- INDEXES FOR PERFORMANCE
+-- INDEXES FOR PERFORMANCE (CONDITIONAL)
 -- =====================================================
 CREATE INDEX IF NOT EXISTS idx_program_activities_user_date ON program_activities(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_program_activities_user_status ON program_activities(user_id, status);
@@ -126,18 +120,40 @@ CREATE INDEX IF NOT EXISTS idx_program_sync_status_user ON program_sync_status(u
 CREATE INDEX IF NOT EXISTS idx_program_offline_queue_user_unprocessed ON program_offline_queue(user_id) WHERE processed_at IS NULL;
 
 -- =====================================================
--- ROW LEVEL SECURITY
+-- ROW LEVEL SECURITY (CONDITIONAL)
 -- =====================================================
-ALTER TABLE program_weekly_goals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE program_activities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE program_custom_activity_types ENABLE ROW LEVEL SECURITY;
-ALTER TABLE program_sync_status ENABLE ROW LEVEL SECURITY;
-ALTER TABLE program_offline_queue ENABLE ROW LEVEL SECURITY;
+DO $$ 
+BEGIN
+  -- Enable RLS on tables if not already enabled
+  ALTER TABLE program_weekly_goals ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE program_activities ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE program_custom_activity_types ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE program_sync_status ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE program_offline_queue ENABLE ROW LEVEL SECURITY;
+EXCEPTION 
+  WHEN OTHERS THEN
+    -- Tables might already have RLS enabled
+    NULL;
+END $$;
 
 -- =====================================================
--- RLS POLICIES - USERS
+-- RLS POLICIES - DROP AND RECREATE
 -- =====================================================
--- Users can read/write their own data
+-- Drop existing policies if they exist
+DO $$ 
+BEGIN
+  DROP POLICY IF EXISTS "Users can manage own goals" ON program_weekly_goals;
+  DROP POLICY IF EXISTS "Users can manage own activities" ON program_activities;
+  DROP POLICY IF EXISTS "Users can manage own activity types" ON program_custom_activity_types;
+  DROP POLICY IF EXISTS "Users can manage own sync status" ON program_sync_status;
+  DROP POLICY IF EXISTS "Users can manage own offline queue" ON program_offline_queue;
+  DROP POLICY IF EXISTS "Admins can read all goals" ON program_weekly_goals;
+  DROP POLICY IF EXISTS "Admins can read all activities" ON program_activities;
+  DROP POLICY IF EXISTS "Admins can read all custom types" ON program_custom_activity_types;
+  DROP POLICY IF EXISTS "Admins can read all sync status" ON program_sync_status;
+END $$;
+
+-- Create user policies
 CREATE POLICY "Users can manage own goals" ON program_weekly_goals
   FOR ALL USING (auth.uid() = user_id);
 
@@ -153,10 +169,7 @@ CREATE POLICY "Users can manage own sync status" ON program_sync_status
 CREATE POLICY "Users can manage own offline queue" ON program_offline_queue
   FOR ALL USING (auth.uid() = user_id);
 
--- =====================================================
--- RLS POLICIES - ADMINS
--- =====================================================
--- Admins (Flash Management, Flash Admin) can read all data
+-- Create admin policies
 CREATE POLICY "Admins can read all goals" ON program_weekly_goals
   FOR SELECT USING (
     EXISTS (
@@ -194,9 +207,8 @@ CREATE POLICY "Admins can read all sync status" ON program_sync_status
   );
 
 -- =====================================================
--- HELPER FUNCTIONS
+-- HELPER FUNCTIONS (CREATE OR REPLACE)
 -- =====================================================
--- Function to get weekly activity summary
 CREATE OR REPLACE FUNCTION get_weekly_activity_summary(
   p_user_id UUID DEFAULT NULL,
   p_week_start DATE DEFAULT NULL
@@ -241,9 +253,8 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- TRIGGERS
+-- TRIGGERS (CREATE OR REPLACE)
 -- =====================================================
--- Update timestamp trigger
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -252,14 +263,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Drop and recreate triggers to avoid duplicates
+DROP TRIGGER IF EXISTS update_program_weekly_goals_updated_at ON program_weekly_goals;
 CREATE TRIGGER update_program_weekly_goals_updated_at 
   BEFORE UPDATE ON program_weekly_goals
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_program_activities_updated_at ON program_activities;
 CREATE TRIGGER update_program_activities_updated_at 
   BEFORE UPDATE ON program_activities
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_program_sync_status_updated_at ON program_sync_status;
 CREATE TRIGGER update_program_sync_status_updated_at 
   BEFORE UPDATE ON program_sync_status
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -284,6 +299,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_activity_status_timestamps ON program_activities;
 CREATE TRIGGER update_activity_status_timestamps
   BEFORE UPDATE ON program_activities
   FOR EACH ROW EXECUTE FUNCTION update_activity_completed_at();
@@ -300,3 +316,14 @@ COMMENT ON TABLE program_offline_queue IS 'Queue for changes made while offline,
 COMMENT ON COLUMN program_activities.local_id IS 'Matches the ID used in localStorage for conflict resolution';
 COMMENT ON COLUMN program_activities.metadata IS 'Flexible JSON storage for future features without schema changes';
 COMMENT ON COLUMN program_sync_status.device_id IS 'Helps identify which device made the last sync for debugging';
+
+-- =====================================================
+-- MIGRATION COMPLETE
+-- =====================================================
+DO $$
+BEGIN
+  RAISE NOTICE 'Program of Work tables migration completed successfully';
+  RAISE NOTICE 'Tables created/verified: program_activities, program_weekly_goals, program_custom_activity_types, program_sync_status, program_offline_queue';
+  RAISE NOTICE 'RLS policies applied for users and admins';
+  RAISE NOTICE 'Indexes and triggers created';
+END $$;
