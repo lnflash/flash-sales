@@ -113,8 +113,9 @@ export interface TerritoryHierarchy {
   fullPath: string;
 }
 
-// Proof of concept countries
-export const PROOF_OF_CONCEPT_COUNTRIES: Country[] = [
+// All Caribbean countries supported by the system
+export const CARIBBEAN_COUNTRIES: Country[] = [
+  // Original countries
   {
     id: '', // Will be set by database
     code: 'JM',
@@ -135,7 +136,7 @@ export const PROOF_OF_CONCEPT_COUNTRIES: Country[] = [
     localName: 'Cayman Islands',
     flagEmoji: '🇰🇾',
     languages: ['en'],
-    currencyCode: 'USD',
+    currencyCode: 'KYD',
     timezone: 'America/Cayman',
     phoneCode: '+1345',
     createdAt: '',
@@ -153,8 +154,131 @@ export const PROOF_OF_CONCEPT_COUNTRIES: Country[] = [
     phoneCode: '+599',
     createdAt: '',
     updatedAt: ''
+  },
+  // Tier 1: Major Markets
+  {
+    id: '',
+    code: 'TT',
+    name: 'Trinidad and Tobago',
+    localName: 'Trinidad and Tobago',
+    flagEmoji: '🇹🇹',
+    languages: ['en'],
+    currencyCode: 'TTD',
+    timezone: 'America/Port_of_Spain',
+    phoneCode: '+1868',
+    createdAt: '',
+    updatedAt: ''
+  },
+  {
+    id: '',
+    code: 'BB',
+    name: 'Barbados',
+    localName: 'Barbados',
+    flagEmoji: '🇧🇧',
+    languages: ['en'],
+    currencyCode: 'BBD',
+    timezone: 'America/Barbados',
+    phoneCode: '+1246',
+    createdAt: '',
+    updatedAt: ''
+  },
+  {
+    id: '',
+    code: 'BS',
+    name: 'Bahamas',
+    localName: 'The Bahamas',
+    flagEmoji: '🇧🇸',
+    languages: ['en'],
+    currencyCode: 'BSD',
+    timezone: 'America/Nassau',
+    phoneCode: '+1242',
+    createdAt: '',
+    updatedAt: ''
+  },
+  // Tier 2: Growing Markets
+  {
+    id: '',
+    code: 'LC',
+    name: 'Saint Lucia',
+    localName: 'Saint Lucia',
+    flagEmoji: '🇱🇨',
+    languages: ['en'],
+    currencyCode: 'XCD',
+    timezone: 'America/St_Lucia',
+    phoneCode: '+1758',
+    createdAt: '',
+    updatedAt: ''
+  },
+  {
+    id: '',
+    code: 'AG',
+    name: 'Antigua and Barbuda',
+    localName: 'Antigua and Barbuda',
+    flagEmoji: '🇦🇬',
+    languages: ['en'],
+    currencyCode: 'XCD',
+    timezone: 'America/Antigua',
+    phoneCode: '+1268',
+    createdAt: '',
+    updatedAt: ''
+  },
+  {
+    id: '',
+    code: 'GD',
+    name: 'Grenada',
+    localName: 'Grenada',
+    flagEmoji: '🇬🇩',
+    languages: ['en'],
+    currencyCode: 'XCD',
+    timezone: 'America/Grenada',
+    phoneCode: '+1473',
+    createdAt: '',
+    updatedAt: ''
+  },
+  // Tier 3: Emerging Markets
+  {
+    id: '',
+    code: 'VC',
+    name: 'Saint Vincent and the Grenadines',
+    localName: 'Saint Vincent and the Grenadines',
+    flagEmoji: '🇻🇨',
+    languages: ['en'],
+    currencyCode: 'XCD',
+    timezone: 'America/St_Vincent',
+    phoneCode: '+1784',
+    createdAt: '',
+    updatedAt: ''
+  },
+  {
+    id: '',
+    code: 'DM',
+    name: 'Dominica',
+    localName: 'Dominica',
+    flagEmoji: '🇩🇲',
+    languages: ['en'],
+    currencyCode: 'XCD',
+    timezone: 'America/Dominica',
+    phoneCode: '+1767',
+    createdAt: '',
+    updatedAt: ''
+  },
+  {
+    id: '',
+    code: 'KN',
+    name: 'Saint Kitts and Nevis',
+    localName: 'Saint Kitts and Nevis',
+    flagEmoji: '🇰🇳',
+    languages: ['en'],
+    currencyCode: 'XCD',
+    timezone: 'America/St_Kitts',
+    phoneCode: '+1869',
+    createdAt: '',
+    updatedAt: ''
   }
 ];
+
+// For backward compatibility during migration
+export const PROOF_OF_CONCEPT_COUNTRIES = CARIBBEAN_COUNTRIES.slice(0, 3);
 
 // Territory data for reference
 export const TERRITORY_DATA = {
@@ -191,10 +315,12 @@ export const getCurrencySymbol = (currencyCode: string): string => {
   const symbols: Record<string, string> = {
     USD: '$',
     JMD: 'J$',
+    KYD: 'CI$',
     ANG: 'ƒ',
     XCD: 'EC$',
     TTD: 'TT$',
     BBD: 'Bds$',
+    BSD: 'B$',
     EUR: '€'
   };
   return symbols[currencyCode] || currencyCode;

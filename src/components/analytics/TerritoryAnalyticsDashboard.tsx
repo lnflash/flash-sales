@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TerritoryAnalyticsService } from '@/services/territory-analytics';
 import { CountryMetrics, TerritoryMetrics } from '@/types/territory-analytics';
-import { PROOF_OF_CONCEPT_COUNTRIES } from '@/types/territory';
+import { CARIBBEAN_COUNTRIES } from '@/types/territory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CountrySelector } from '@/components/territories/CountrySelector';
 import TerritoryPerformanceCard from './TerritoryPerformanceCard';
 import CountryComparisonChart from './CountryComparisonChart';
 import TerritoryHeatMap from './TerritoryHeatMap';
+import CountryGrid from '@/components/territories/CountryGrid';
 import {
   GlobeAmericasIcon,
   MapPinIcon,
@@ -49,7 +50,7 @@ export default function TerritoryAnalyticsDashboard({
       
       // Fetch all countries
       const allMetrics = await Promise.all(
-        PROOF_OF_CONCEPT_COUNTRIES.map(country => 
+        CARIBBEAN_COUNTRIES.map(country => 
           TerritoryAnalyticsService.getCountryMetrics(country.code, dateRange)
         )
       );
@@ -138,7 +139,7 @@ export default function TerritoryAnalyticsDashboard({
           <CountrySelector
             value={selectedCountry}
             onChange={setSelectedCountry}
-            countries={PROOF_OF_CONCEPT_COUNTRIES}
+            countries={CARIBBEAN_COUNTRIES}
             showAll={true}
             className="w-64"
           />
@@ -304,53 +305,14 @@ export default function TerritoryAnalyticsDashboard({
             </CardContent>
           </Card>
 
-          {/* Country Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {allCountriesView.map((country) => (
-              <Card key={country.countryCode} className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setSelectedCountry(country.countryCode)}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <span className="text-2xl">{country.flagEmoji}</span>
-                      {country.countryName}
-                    </span>
-                    <span className="text-sm font-normal text-muted-foreground">
-                      {country.currencyCode}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Leads</p>
-                      <p className="text-xl font-semibold">{country.totalLeads.toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Conversion</p>
-                      <p className="text-xl font-semibold">{country.avgConversionRate.toFixed(1)}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Territories</p>
-                      <p className="text-xl font-semibold">{country.totalTerritories}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Sales Reps</p>
-                      <p className="text-xl font-semibold">{country.totalReps}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-xs text-muted-foreground mb-2">Today's Activity</p>
-                    <div className="flex justify-between text-sm">
-                      <span>New: {country.recentActivity.newLeadsToday}</span>
-                      <span className="text-green-600">Won: {country.recentActivity.conversionsToday}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Country Grid */}
+          <CountryGrid
+            countries={CARIBBEAN_COUNTRIES}
+            metrics={allCountriesView}
+            onCountryClick={setSelectedCountry}
+            selectedCountry={selectedCountry}
+            groupByTier={true}
+          />
         </>
       )}
     </div>
