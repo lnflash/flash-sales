@@ -14,6 +14,9 @@ import SubmissionSearch from "./SubmissionSearch";
 import { useMobileMenu } from "@/contexts/MobileMenuContext";
 import { validatePhoneNumber, validateEmail, validateAddress } from "@/utils/validation";
 import { enrichCompany, enrichPerson, enrichPhoneNumber } from "@/services/data-enrichment";
+import { TerritorySelector } from "@/components/territories/TerritorySelector";
+import { CountrySelector } from "@/components/territories/CountrySelector";
+import { PROOF_OF_CONCEPT_COUNTRIES } from "@/types/territory";
 
 interface FormData {
   ownerName: string;
@@ -25,7 +28,9 @@ interface FormData {
   leadStatus?: LeadStatus;
   specificNeeds: string;
   username: string;
-  territory: string;
+  territory: string; // Legacy field for backward compatibility
+  countryCode?: string;
+  territoryId?: string;
 }
 
 interface IntakeFormProps {
@@ -61,6 +66,8 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
     specificNeeds: "",
     username: "",
     territory: "",
+    countryCode: "JM", // Default to Jamaica
+    territoryId: "",
   });
 
   useEffect(() => {
@@ -99,6 +106,8 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
         specificNeeds: submission.specificNeeds || "",
         username: submission.username || "",
         territory: submission.territory || "",
+        countryCode: submission.territoryData?.countryCode || "JM",
+        territoryId: submission.territoryId || "",
       });
       setIsEditMode(true);
     } catch (error) {
@@ -122,6 +131,8 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
       specificNeeds: submission.specificNeeds || "",
       username: submission.username || "",
       territory: submission.territory || "",
+      countryCode: submission.territoryData?.countryCode || "JM",
+      territoryId: submission.territoryId || "",
     });
     setShowSearch(false);
     // Navigate to edit mode
@@ -143,6 +154,8 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
       specificNeeds: "",
       username: user?.username || "",
       territory: defaultTerritory,
+      countryCode: "JM",
+      territoryId: "",
     });
     setIsEditMode(false);
     // Clear URL parameters
@@ -276,6 +289,8 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
           specificNeeds: "",
           username: user?.username || "Flash Rep",
           territory: defaultTerritory,
+          countryCode: "JM",
+          territoryId: "",
         });
 
         // Keep on the same page for continuous entry
@@ -463,34 +478,48 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
               </div>
             </div>
 
-            {/* Territory */}
-            <div>
-              <label htmlFor="territory" className="block text-sm font-medium text-light-text-secondary mb-2">
-                Territory
-              </label>
-              <select
-                id="territory"
-                name="territory"
-                value={formData.territory}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
-              >
-                <option value="">Select Territory</option>
-                <option value="Kingston">Kingston</option>
-                <option value="St. Andrew">St. Andrew</option>
-                <option value="St. Thomas">St. Thomas</option>
-                <option value="Portland">Portland</option>
-                <option value="St. Mary">St. Mary</option>
-                <option value="St. Ann">St. Ann</option>
-                <option value="Trelawny">Trelawny</option>
-                <option value="St. James">St. James</option>
-                <option value="Hanover">Hanover</option>
-                <option value="Westmoreland">Westmoreland</option>
-                <option value="St. Elizabeth">St. Elizabeth</option>
-                <option value="Manchester">Manchester</option>
-                <option value="Clarendon">Clarendon</option>
-                <option value="St. Catherine">St. Catherine</option>
-              </select>
+            {/* Country and Territory */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-light-text-secondary mb-2">
+                  Country
+                </label>
+                <CountrySelector
+                  value={formData.countryCode || "JM"}
+                  onChange={(countryCode) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      countryCode,
+                      territoryId: "", // Reset territory when country changes
+                      territory: "" // Reset legacy field
+                    }));
+                  }}
+                  countries={PROOF_OF_CONCEPT_COUNTRIES}
+                  className="w-full"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="territory" className="block text-sm font-medium text-light-text-secondary mb-2">
+                  Territory
+                </label>
+                <TerritorySelector
+                  value={formData.territoryId}
+                  onChange={(territoryId) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      territoryId: territoryId as string,
+                      // For backward compatibility, set the legacy territory field
+                      // This will be the territory name for Jamaica parishes
+                      territory: "" // We'll update this once we fetch the territory name
+                    }));
+                  }}
+                  countryCode={formData.countryCode}
+                  placeholder="Select Territory"
+                  className="w-full"
+                  maxLevel={1} // Only show level 1 territories (districts/parishes)
+                />
+              </div>
             </div>
 
             {/* Package Seen */}
