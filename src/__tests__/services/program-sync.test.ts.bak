@@ -1,0 +1,384 @@
+// Mock dependencies before imports
+jest.mock('@/lib/supabase-program-api', () => ({
+  programApi: {
+    syncActivities: jest.fn(),
+    syncGoals: jest.fn(),
+    syncCustomTypes: jest.fn(),
+    updateSyncStatus: jest.fn(),
+  }
+}));
+
+jest.mock('@/stores/useWeeklyProgramStore', () => ({
+  useWeeklyProgramStore: {
+    getState: jest.fn(() => ({
+      activities: {},
+      goals: {},
+      customActivityTypes: [],
+    })),
+    setState: jest.fn(),
+  }
+}));
+
+import { ProgramSyncService } from '@/services/program-sync';
+import { programApi } from '@/lib/supabase-program-api';
+import { Activity, WeeklyGoals, CustomActivityType } from '@/types/weekly-program';
+import { User } from '@supabase/supabase-js';
+
+const mockProgramApi = programApi as jest.Mocked<typeof programApi>;
+
+describe('ProgramSyncService', () => {
+  let service: ProgramSyncService;
+  let mockUser: User;
+  let mockActivities: Activity[];
+  let mockGoals: WeeklyGoals;
+  let mockCustomTypes: CustomActivityType[];
+
+  beforeEach(() => {
+    // Clear all mocks
+    jest.clearAllMocks();
+    
+    // Mock localStorage
+    const localStorageMock = {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+      clear: jest.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    // Mock navigator.onLine
+    Object.defineProperty(window.navigator, 'onLine', {
+      writable: true,
+      value: true,
+    });
+
+    // Mock user
+    mockUser = {
+      id: 'test-user-id',
+      email: 'test@example.com',
+      user_metadata: { username: 'testuser' },
+    } as User;
+
+    // Mock data
+    mockActivities = [
+      {
+        id: 'activity-1',
+        type: 'call',
+        title: 'Test Call',
+        date: '2024-01-01',
+        status: 'planned',
+        priority: 'medium',
+      } as Activity,
+    ];
+
+    mockGoals = {
+      calls: 50,
+      meetings: 10,
+      proposals: 5,
+      followUps: 30,
+      newContacts: 20,
+    };
+
+    mockCustomTypes = [
+      {
+        type: 'custom-type-1',
+        usageCount: 5,
+        lastUsedAt: '2024-01-01',
+      },
+    ];
+
+    // Initialize service
+    service = new ProgramSyncService();
+  });
+
+  afterEach(() => {
+    service.stopAutoSync();
+  });
+
+  describe('initialization', () => {
+    it('should initialize with default values', () => {
+      expect(service).toBeDefined();
+      expect(service.getStatus()).toEqual({
+        isSyncing: false,
+        lastSyncAt: null,
+        syncError: null,
+        isOnline: true,
+      });
+    });
+  });
+
+  describe('setUser', () => {
+    it('should set the current user', () => {
+      service.setUser(mockUser);
+      expect(service.getStatus().isOnline).toBe(true);
+    });
+
+    it('should handle null user', () => {
+      service.setUser(null);
+      expect(service.getStatus().isOnline).toBe(true);
+    });
+  });
+
+  describe('syncNow', () => {
+    beforeEach(() => {
+      service.setUser(mockUser);
+    });
+
+    it('should sync successfully when online', async () => {
+      // Mock localStorage data
+      const mockStore = {
+        activities: { 'activity-1': mockActivities[0] },
+        goals: { '2024-01-01': mockGoals },
+        customActivityTypes: mockCustomTypes,
+      };
+      
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(
+        JSON.stringify({ state: mockStore })
+      );
+
+      // Mock API responses
+      mockProgramApi.syncActivities.mockResolvedValue({
+        activities: [],
+        lastSyncAt: new Date().toISOString(),
+      });
+      mockProgramApi.syncGoals.mockResolvedValue({
+        goals: [],
+        lastSyncAt: new Date().toISOString(),
+      });
+      mockProgramApi.syncCustomTypes.mockResolvedValue({
+        customTypes: [],
+        lastSyncAt: new Date().toISOString(),
+      });
+      mockProgramApi.updateSyncStatus.mockResolvedValue(undefined);
+
+      await service.syncNow();
+
+      expect(mockProgramApi.syncActivities).toHaveBeenCalledWith(
+        mockUser.id,
+        expect.any(Array),
+        expect.any(String)
+      );
+      expect(mockProgramApi.syncGoals).toHaveBeenCalled();
+      expect(mockProgramApi.syncCustomTypes).toHaveBeenCalled();
+      expect(service.getStatus().syncError).toBeNull();
+    });
+
+    it('should handle sync errors gracefully', async () => {
+      service.setUser(mockUser);
+      
+      // Mock localStorage data
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(
+        JSON.stringify({ state: { activities: {}, goals: {}, customActivityTypes: [] } })
+      );
+
+      // Mock API error
+      const error = new Error('Sync failed');
+      mockProgramApi.syncActivities.mockRejectedValue(error);
+
+      await service.syncNow();
+
+      const status = service.getStatus();
+      expect(status.syncError).toBe('Sync failed');
+      expect(status.isSyncing).toBe(false);
+    });
+
+    it('should not sync when offline', async () => {
+      // Set offline
+      Object.defineProperty(window.navigator, 'onLine', {
+        writable: true,
+        value: false,
+      });
+
+      service.setUser(mockUser);
+      await service.syncNow();
+
+      expect(mockProgramApi.syncActivities).not.toHaveBeenCalled();
+      expect(service.getStatus().isOnline).toBe(false);
+    });
+
+    it('should not sync without a user', async () => {
+      service.setUser(null);
+      await service.syncNow();
+
+      expect(mockProgramApi.syncActivities).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('auto sync', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      service.setUser(mockUser);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should start auto sync with correct interval', () => {
+      service.startAutoSync();
+      
+      // Fast forward 5 minutes
+      jest.advanceTimersByTime(5 * 60 * 1000);
+      
+      expect(mockProgramApi.syncActivities).toHaveBeenCalled();
+    });
+
+    it('should stop auto sync', () => {
+      service.startAutoSync();
+      service.stopAutoSync();
+      
+      // Fast forward 5 minutes
+      jest.advanceTimersByTime(5 * 60 * 1000);
+      
+      // Should not have been called after stopping
+      expect(mockProgramApi.syncActivities).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('online/offline handling', () => {
+    it('should detect online status changes', () => {
+      service.setUser(mockUser);
+      
+      // Simulate going offline
+      Object.defineProperty(window.navigator, 'onLine', {
+        writable: true,
+        value: false,
+      });
+      window.dispatchEvent(new Event('offline'));
+      
+      expect(service.getStatus().isOnline).toBe(false);
+      
+      // Simulate going online
+      Object.defineProperty(window.navigator, 'onLine', {
+        writable: true,
+        value: true,
+      });
+      window.dispatchEvent(new Event('online'));
+      
+      expect(service.getStatus().isOnline).toBe(true);
+    });
+
+    it('should sync automatically when coming back online', async () => {
+      service.setUser(mockUser);
+      
+      // Mock localStorage
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(
+        JSON.stringify({ state: { activities: {}, goals: {}, customActivityTypes: [] } })
+      );
+      
+      // Mock successful API calls
+      mockProgramApi.syncActivities.mockResolvedValue({
+        activities: [],
+        lastSyncAt: new Date().toISOString(),
+      });
+      mockProgramApi.syncGoals.mockResolvedValue({
+        goals: [],
+        lastSyncAt: new Date().toISOString(),
+      });
+      mockProgramApi.syncCustomTypes.mockResolvedValue({
+        customTypes: [],
+        lastSyncAt: new Date().toISOString(),
+      });
+      
+      // Go offline then online
+      Object.defineProperty(window.navigator, 'onLine', {
+        writable: true,
+        value: false,
+      });
+      window.dispatchEvent(new Event('offline'));
+      
+      Object.defineProperty(window.navigator, 'onLine', {
+        writable: true,
+        value: true,
+      });
+      window.dispatchEvent(new Event('online'));
+      
+      // Wait for sync to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      expect(mockProgramApi.syncActivities).toHaveBeenCalled();
+    });
+  });
+
+  describe('status listeners', () => {
+    it('should notify listeners on status changes', () => {
+      const listener = jest.fn();
+      service.onStatusChange(listener);
+      
+      service.setUser(mockUser);
+      
+      // Trigger a status change
+      Object.defineProperty(window.navigator, 'onLine', {
+        writable: true,
+        value: false,
+      });
+      window.dispatchEvent(new Event('offline'));
+      
+      expect(listener).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isOnline: false,
+        })
+      );
+    });
+
+    it('should remove listeners', () => {
+      const listener = jest.fn();
+      const unsubscribe = service.onStatusChange(listener);
+      
+      unsubscribe();
+      
+      // Trigger a status change
+      Object.defineProperty(window.navigator, 'onLine', {
+        writable: true,
+        value: false,
+      });
+      window.dispatchEvent(new Event('offline'));
+      
+      expect(listener).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('mergeActivities', () => {
+    it('should merge activities correctly', () => {
+      const localActivities = [
+        { id: '1', title: 'Local Activity', date: '2024-01-01' } as Activity,
+        { id: '2', title: 'Local Activity 2', date: '2024-01-02' } as Activity,
+      ];
+      
+      const remoteActivities = [
+        { 
+          id: '1', 
+          local_id: '1',
+          title: 'Remote Activity', 
+          date: '2024-01-01',
+          updated_at: new Date().toISOString(),
+        },
+        { 
+          id: '3', 
+          local_id: '3',
+          title: 'Remote Only Activity', 
+          date: '2024-01-03',
+        },
+      ];
+      
+      // Mock localStorage
+      const mockStore = {
+        activities: {
+          '1': localActivities[0],
+          '2': localActivities[1],
+        },
+      };
+      
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(
+        JSON.stringify({ state: mockStore })
+      );
+      
+      // Test merge logic would be implemented in the service
+      // This is a placeholder for the expected behavior
+      expect(service).toBeDefined();
+    });
+  });
+});

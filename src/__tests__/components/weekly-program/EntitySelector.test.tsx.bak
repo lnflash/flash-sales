@@ -1,0 +1,328 @@
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { EntitySelector } from '@/components/weekly-program/EntitySelector';
+
+// Mock the CRM API
+jest.mock('@/lib/supabase-crm-api', () => ({
+  crmApi: {
+    searchEntities: jest.fn(),
+  }
+}));
+
+import { crmApi } from '@/lib/supabase-crm-api';
+const mockCrmApi = crmApi as jest.Mocked<typeof crmApi>;
+
+describe('EntitySelector', () => {
+  const mockOnChange = jest.fn();
+  const defaultProps = {
+    value: {
+      organizationId: undefined,
+      dealId: undefined,
+      contactId: undefined,
+      entityName: undefined,
+    },
+    onChange: mockOnChange,
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should render with placeholder text', () => {
+    render(<EntitySelector {...defaultProps} />);
+    
+    expect(screen.getByPlaceholderText('Search organizations, contacts, or deals...')).toBeInTheDocument();
+  });
+
+  it('should render with existing value', () => {
+    const propsWithValue = {
+      ...defaultProps,
+      value: {
+        organizationId: 'org-123',
+        dealId: undefined,
+        contactId: undefined,
+        entityName: 'Test Organization',
+      },
+    };
+    
+    render(<EntitySelector {...propsWithValue} />);
+    
+    expect(screen.getByDisplayValue('Test Organization')).toBeInTheDocument();
+  });
+
+  it('should search for entities when typing', async () => {
+    mockCrmApi.searchEntities.mockResolvedValue({
+      organizations: [
+        { id: 'org-1', name: 'Acme Corp', email: 'contact@acme.com' },
+      ],
+      contacts: [
+        { id: 'contact-1', first_name: 'John', last_name: 'Doe', email: 'john@example.com' },
+      ],
+      deals: [
+        { id: 'deal-1', name: 'Big Deal', stage: 'qualification', amount: 10000 },
+      ],
+    });
+
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    
+    await user.type(input, 'test');
+    
+    await waitFor(() => {
+      expect(mockCrmApi.searchEntities).toHaveBeenCalledWith('test');
+    });
+  });
+
+  it('should display search results in dropdown', async () => {
+    mockCrmApi.searchEntities.mockResolvedValue({
+      organizations: [
+        { id: 'org-1', name: 'Acme Corp', email: 'contact@acme.com' },
+      ],
+      contacts: [
+        { id: 'contact-1', first_name: 'John', last_name: 'Doe', email: 'john@doe.com' },
+      ],
+      deals: [
+        { id: 'deal-1', name: 'Big Deal', stage: 'qualification', amount: 10000 },
+      ],
+    });
+
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    await user.type(input, 'test');
+    
+    await waitFor(() => {
+      expect(screen.getByText('Organizations')).toBeInTheDocument();
+      expect(screen.getByText('Acme Corp')).toBeInTheDocument();
+      expect(screen.getByText('contact@acme.com')).toBeInTheDocument();
+      
+      expect(screen.getByText('Contacts')).toBeInTheDocument();
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('john@doe.com')).toBeInTheDocument();
+      
+      expect(screen.getByText('Deals')).toBeInTheDocument();
+      expect(screen.getByText('Big Deal')).toBeInTheDocument();
+      expect(screen.getByText('Stage: qualification • $10,000')).toBeInTheDocument();
+    });
+  });
+
+  it('should select an organization', async () => {
+    mockCrmApi.searchEntities.mockResolvedValue({
+      organizations: [
+        { id: 'org-1', name: 'Acme Corp', email: 'contact@acme.com' },
+      ],
+      contacts: [],
+      deals: [],
+    });
+
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    await user.type(input, 'acme');
+    
+    await waitFor(() => {
+      expect(screen.getByText('Acme Corp')).toBeInTheDocument();
+    });
+    
+    await user.click(screen.getByText('Acme Corp'));
+    
+    expect(mockOnChange).toHaveBeenCalledWith({
+      organizationId: 'org-1',
+      dealId: undefined,
+      contactId: undefined,
+      entityName: 'Acme Corp',
+    });
+  });
+
+  it('should select a contact', async () => {
+    mockCrmApi.searchEntities.mockResolvedValue({
+      organizations: [],
+      contacts: [
+        { id: 'contact-1', first_name: 'John', last_name: 'Doe', email: 'john@doe.com' },
+      ],
+      deals: [],
+    });
+
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    await user.type(input, 'john');
+    
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+    
+    await user.click(screen.getByText('John Doe'));
+    
+    expect(mockOnChange).toHaveBeenCalledWith({
+      organizationId: undefined,
+      dealId: undefined,
+      contactId: 'contact-1',
+      entityName: 'John Doe',
+    });
+  });
+
+  it('should select a deal', async () => {
+    mockCrmApi.searchEntities.mockResolvedValue({
+      organizations: [],
+      contacts: [],
+      deals: [
+        { id: 'deal-1', name: 'Big Deal', stage: 'closed_won', amount: 50000 },
+      ],
+    });
+
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    await user.type(input, 'big');
+    
+    await waitFor(() => {
+      expect(screen.getByText('Big Deal')).toBeInTheDocument();
+    });
+    
+    await user.click(screen.getByText('Big Deal'));
+    
+    expect(mockOnChange).toHaveBeenCalledWith({
+      organizationId: undefined,
+      dealId: 'deal-1',
+      contactId: undefined,
+      entityName: 'Big Deal',
+    });
+  });
+
+  it('should clear selection when clicking clear button', async () => {
+    const propsWithValue = {
+      ...defaultProps,
+      value: {
+        organizationId: 'org-123',
+        dealId: undefined,
+        contactId: undefined,
+        entityName: 'Test Organization',
+      },
+    };
+    
+    render(<EntitySelector {...propsWithValue} />);
+    
+    const clearButton = screen.getByRole('button', { name: /clear/i });
+    fireEvent.click(clearButton);
+    
+    expect(mockOnChange).toHaveBeenCalledWith({
+      organizationId: undefined,
+      dealId: undefined,
+      contactId: undefined,
+      entityName: undefined,
+    });
+  });
+
+  it('should close dropdown when clicking outside', async () => {
+    mockCrmApi.searchEntities.mockResolvedValue({
+      organizations: [
+        { id: 'org-1', name: 'Acme Corp', email: 'contact@acme.com' },
+      ],
+      contacts: [],
+      deals: [],
+    });
+
+    const user = userEvent.setup();
+    render(
+      <div>
+        <EntitySelector {...defaultProps} />
+        <button>Outside</button>
+      </div>
+    );
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    await user.type(input, 'acme');
+    
+    await waitFor(() => {
+      expect(screen.getByText('Acme Corp')).toBeInTheDocument();
+    });
+    
+    // Click outside
+    await user.click(screen.getByText('Outside'));
+    
+    await waitFor(() => {
+      expect(screen.queryByText('Organizations')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should handle search errors gracefully', async () => {
+    mockCrmApi.searchEntities.mockRejectedValue(new Error('Search failed'));
+    
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    await user.type(input, 'test');
+    
+    await waitFor(() => {
+      expect(screen.getByText('Error searching entities')).toBeInTheDocument();
+    });
+  });
+
+  it('should show loading state while searching', async () => {
+    // Mock a slow API response
+    mockCrmApi.searchEntities.mockImplementation(() => 
+      new Promise(resolve => setTimeout(() => resolve({
+        organizations: [],
+        contacts: [],
+        deals: [],
+      }), 100))
+    );
+    
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    await user.type(input, 'test');
+    
+    expect(screen.getByText('Searching...')).toBeInTheDocument();
+  });
+
+  it('should show empty state when no results found', async () => {
+    mockCrmApi.searchEntities.mockResolvedValue({
+      organizations: [],
+      contacts: [],
+      deals: [],
+    });
+
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    await user.type(input, 'nonexistent');
+    
+    await waitFor(() => {
+      expect(screen.getByText('No results found')).toBeInTheDocument();
+    });
+  });
+
+  it('should debounce search requests', async () => {
+    mockCrmApi.searchEntities.mockResolvedValue({
+      organizations: [],
+      contacts: [],
+      deals: [],
+    });
+
+    const user = userEvent.setup();
+    render(<EntitySelector {...defaultProps} />);
+    
+    const input = screen.getByPlaceholderText('Search organizations, contacts, or deals...');
+    
+    // Type quickly
+    await user.type(input, 'test');
+    
+    // Should only call API once after debounce
+    await waitFor(() => {
+      expect(mockCrmApi.searchEntities).toHaveBeenCalledTimes(1);
+      expect(mockCrmApi.searchEntities).toHaveBeenCalledWith('test');
+    });
+  });
+});

@@ -1,0 +1,59 @@
+import { crmApi } from '@/lib/supabase-crm-api';
+
+// Mock the crmApi
+jest.mock('@/lib/supabase-crm-api');
+
+describe('CRM API Simple Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should get organizations', async () => {
+    const orgs = await crmApi.getOrganizations();
+    expect(orgs).toBeDefined();
+    expect(Array.isArray(orgs)).toBe(true);
+  });
+
+  it('should search organizations', async () => {
+    const orgs = await crmApi.getOrganizations('test');
+    expect(orgs).toBeDefined();
+  });
+
+  it('should get contacts', async () => {
+    const contacts = await crmApi.getContacts();
+    expect(contacts).toBeDefined();
+    expect(Array.isArray(contacts)).toBe(true);
+  });
+
+  it('should get deals', async () => {
+    const deals = await crmApi.getDeals();
+    expect(deals).toBeDefined();
+    expect(Array.isArray(deals)).toBe(true);
+  });
+
+  it('should search entities', async () => {
+    const results = await crmApi.searchEntities('test');
+    expect(results).toBeDefined();
+    expect(results.organizations).toBeDefined();
+    expect(results.contacts).toBeDefined();
+    expect(results.deals).toBeDefined();
+  });
+
+  it('should get organization by id', async () => {
+    const org = await crmApi.getOrganizationById('123');
+    expect(org).toBeDefined();
+    expect(org?.id).toBe('123');
+  });
+
+  it('should get contact by id', async () => {
+    const contact = await crmApi.getContactById('123');
+    expect(contact).toBeDefined();
+    expect(contact?.id).toBe('123');
+  });
+
+  it('should get deal by id', async () => {
+    const deal = await crmApi.getDealById('123');
+    expect(deal).toBeDefined();
+    expect(deal?.id).toBe('123');
+  });
+});

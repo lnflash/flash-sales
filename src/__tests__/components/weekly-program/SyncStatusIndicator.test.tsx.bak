@@ -1,0 +1,242 @@
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { SyncStatusIndicator } from '@/components/weekly-program/SyncStatusIndicator';
+import { useWeeklyProgramStore } from '@/stores/useWeeklyProgramStore';
+
+// Mock the store
+jest.mock('@/stores/useWeeklyProgramStore');
+
+const mockUseWeeklyProgramStore = useWeeklyProgramStore as jest.MockedFunction<typeof useWeeklyProgramStore>;
+
+describe('SyncStatusIndicator', () => {
+  const mockTriggerSync = jest.fn();
+  
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('should show offline status when offline', () => {
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: false,
+        isSyncing: false,
+        lastSyncAt: null,
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    expect(screen.getByText('Offline')).toBeInTheDocument();
+    expect(screen.getByTestId('sync-status-icon')).toHaveClass('text-muted-foreground');
+  });
+
+  it('should show syncing status when syncing', () => {
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: true,
+        lastSyncAt: null,
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    expect(screen.getByText('Syncing...')).toBeInTheDocument();
+    expect(screen.getByTestId('sync-status-icon')).toHaveClass('animate-spin');
+  });
+
+  it('should show synced status with last sync time', () => {
+    const lastSyncAt = new Date();
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: lastSyncAt.toISOString(),
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    expect(screen.getByText(/Synced/)).toBeInTheDocument();
+    expect(screen.getByTestId('sync-status-icon')).toHaveClass('text-green-600');
+  });
+
+  it('should show error status when sync fails', () => {
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: null,
+        syncError: 'Network error',
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    expect(screen.getByText('Sync Error')).toBeInTheDocument();
+    expect(screen.getByTestId('sync-status-icon')).toHaveClass('text-red-600');
+  });
+
+  it('should trigger manual sync when clicking sync button', async () => {
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: new Date().toISOString(),
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    const syncButton = screen.getByRole('button', { name: /sync now/i });
+    fireEvent.click(syncButton);
+    
+    expect(mockTriggerSync).toHaveBeenCalled();
+  });
+
+  it('should disable sync button when offline', () => {
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: false,
+        isSyncing: false,
+        lastSyncAt: null,
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    const syncButton = screen.getByRole('button', { name: /sync now/i });
+    expect(syncButton).toBeDisabled();
+  });
+
+  it('should disable sync button when already syncing', () => {
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: true,
+        lastSyncAt: null,
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    const syncButton = screen.getByRole('button', { name: /sync now/i });
+    expect(syncButton).toBeDisabled();
+  });
+
+  it('should update relative time display', async () => {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: fiveMinutesAgo.toISOString(),
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    expect(screen.getByText(/Synced 5 minutes ago/)).toBeInTheDocument();
+    
+    // Fast forward 1 minute
+    jest.advanceTimersByTime(60 * 1000);
+    
+    await waitFor(() => {
+      expect(screen.getByText(/Synced 6 minutes ago/)).toBeInTheDocument();
+    });
+  });
+
+  it('should show tooltip with error details', async () => {
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: null,
+        syncError: 'Failed to connect to server',
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    const errorIcon = screen.getByTestId('sync-status-icon');
+    fireEvent.mouseEnter(errorIcon);
+    
+    await waitFor(() => {
+      expect(screen.getByText('Failed to connect to server')).toBeInTheDocument();
+    });
+  });
+
+  it('should show never synced state', () => {
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: null,
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    expect(screen.getByText('Never synced')).toBeInTheDocument();
+  });
+
+  it('should handle date formatting edge cases', () => {
+    // Test with invalid date
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: 'invalid-date',
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    expect(screen.getByText('Never synced')).toBeInTheDocument();
+  });
+
+  it('should show last sync time text', () => {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    
+    mockUseWeeklyProgramStore.mockReturnValue({
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: fiveMinutesAgo.toISOString(),
+        syncError: null,
+      },
+      triggerSync: mockTriggerSync,
+    } as any);
+
+    render(<SyncStatusIndicator />);
+    
+    // Should show the last sync time
+    expect(screen.getByText(/Last synced/)).toBeInTheDocument();
+  });
+});

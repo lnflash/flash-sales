@@ -1,0 +1,452 @@
+import { act, renderHook } from '@testing-library/react';
+import { useWeeklyProgramStore } from '@/stores/useWeeklyProgramStore';
+import { programSyncService } from '@/services/program-sync';
+import { Activity, CustomActivityType } from '@/types/weekly-program';
+
+// Mock the sync service
+jest.mock('@/services/program-sync', () => ({
+  programSyncService: {
+    setUser: jest.fn(),
+    startAutoSync: jest.fn(),
+    stopAutoSync: jest.fn(),
+    syncNow: jest.fn(),
+    onStatusChange: jest.fn(),
+    getStatus: jest.fn(() => ({
+      isOnline: true,
+      isSyncing: false,
+      lastSyncAt: null,
+      syncError: null,
+    })),
+  },
+}));
+
+describe('useWeeklyProgramStore', () => {
+  beforeEach(() => {
+    // Reset store state
+    useWeeklyProgramStore.setState({
+      activities: {},
+      goals: {},
+      customActivityTypes: [],
+      currentWeek: new Date().toISOString().split('T')[0],
+      syncStatus: {
+        isOnline: true,
+        isSyncing: false,
+        lastSyncAt: null,
+        syncError: null,
+      },
+    });
+    
+    // Clear all mocks
+    jest.clearAllMocks();
+  });
+
+  describe('activity management', () => {
+    it('should add a new activity', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      const newActivity: Activity = {
+        id: 'test-1',
+        type: 'call',
+        title: 'Test Call',
+        date: '2024-01-01',
+        time: '10:00',
+        status: 'planned',
+        priority: 'high',
+      };
+
+      act(() => {
+        result.current.addActivity(newActivity);
+      });
+
+      expect(result.current.activities['test-1']).toEqual(newActivity);
+    });
+
+    it('should update an existing activity', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      // Add initial activity
+      const activity: Activity = {
+        id: 'test-1',
+        type: 'call',
+        title: 'Test Call',
+        date: '2024-01-01',
+        status: 'planned',
+        priority: 'medium',
+      };
+
+      act(() => {
+        result.current.addActivity(activity);
+      });
+
+      // Update the activity
+      act(() => {
+        result.current.updateActivity('test-1', { 
+          status: 'completed',
+          outcome: 'Successful call',
+        });
+      });
+
+      expect(result.current.activities['test-1'].status).toBe('completed');
+      expect(result.current.activities['test-1'].outcome).toBe('Successful call');
+    });
+
+    it('should delete an activity', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      // Add activity
+      act(() => {
+        result.current.addActivity({
+          id: 'test-1',
+          type: 'call',
+          title: 'Test Call',
+          date: '2024-01-01',
+          status: 'planned',
+          priority: 'medium',
+        });
+      });
+
+      // Delete the activity
+      act(() => {
+        result.current.deleteActivity('test-1');
+      });
+
+      expect(result.current.activities['test-1']).toBeUndefined();
+    });
+
+    it('should get activities by date', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      // Add multiple activities
+      act(() => {
+        result.current.addActivity({
+          id: 'test-1',
+          type: 'call',
+          title: 'Call 1',
+          date: '2024-01-01',
+          status: 'planned',
+          priority: 'high',
+        });
+        
+        result.current.addActivity({
+          id: 'test-2',
+          type: 'meeting',
+          title: 'Meeting 1',
+          date: '2024-01-01',
+          status: 'planned',
+          priority: 'medium',
+        });
+        
+        result.current.addActivity({
+          id: 'test-3',
+          type: 'call',
+          title: 'Call 2',
+          date: '2024-01-02',
+          status: 'planned',
+          priority: 'low',
+        });
+      });
+
+      const activitiesForDate = result.current.getActivitiesByDate('2024-01-01');
+      
+      expect(activitiesForDate).toHaveLength(2);
+      expect(activitiesForDate[0].id).toBe('test-1'); // High priority first
+      expect(activitiesForDate[1].id).toBe('test-2');
+    });
+  });
+
+  describe('goals management', () => {
+    it('should update weekly goals', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      act(() => {
+        result.current.updateGoals({
+          calls: 60,
+          meetings: 15,
+          proposals: 8,
+          followUps: 35,
+          newContacts: 25,
+        });
+      });
+
+      const currentWeek = result.current.currentWeek;
+      expect(result.current.goals[currentWeek]).toEqual({
+        calls: 60,
+        meetings: 15,
+        proposals: 8,
+        followUps: 35,
+        newContacts: 25,
+      });
+    });
+
+    it('should get goals for current week with defaults', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      const goals = result.current.getGoalsForWeek();
+      
+      expect(goals).toEqual({
+        calls: 50,
+        meetings: 10,
+        proposals: 5,
+        followUps: 30,
+        newContacts: 20,
+      });
+    });
+  });
+
+  describe('custom activity types', () => {
+    it('should add a custom activity type', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      act(() => {
+        result.current.addCustomActivityType('Webinar');
+      });
+
+      expect(result.current.customActivityTypes).toContainEqual(
+        expect.objectContaining({
+          type: 'Webinar',
+          usageCount: 1,
+        })
+      );
+    });
+
+    it('should increment usage count for existing custom type', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      // Add custom type twice
+      act(() => {
+        result.current.addCustomActivityType('Workshop');
+        result.current.addCustomActivityType('Workshop');
+      });
+
+      const customType = result.current.customActivityTypes.find(
+        ct => ct.type === 'Workshop'
+      );
+      
+      expect(customType?.usageCount).toBe(2);
+    });
+
+    it('should remove a custom activity type', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      // Add and then remove
+      act(() => {
+        result.current.addCustomActivityType('Training');
+        result.current.removeCustomActivityType('Training');
+      });
+
+      expect(result.current.customActivityTypes).not.toContainEqual(
+        expect.objectContaining({ type: 'Training' })
+      );
+    });
+  });
+
+  describe('metrics calculation', () => {
+    it('should calculate weekly metrics correctly', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      // Set current week to a specific date
+      act(() => {
+        result.current.setCurrentWeek('2024-01-01');
+      });
+
+      // Add activities for the week
+      act(() => {
+        // Monday
+        result.current.addActivity({
+          id: '1',
+          type: 'call',
+          title: 'Call 1',
+          date: '2024-01-01',
+          status: 'completed',
+          priority: 'high',
+        });
+        
+        // Tuesday
+        result.current.addActivity({
+          id: '2',
+          type: 'meeting',
+          title: 'Meeting 1',
+          date: '2024-01-02',
+          status: 'completed',
+          priority: 'medium',
+        });
+        
+        // Wednesday
+        result.current.addActivity({
+          id: '3',
+          type: 'proposal',
+          title: 'Proposal 1',
+          date: '2024-01-03',
+          status: 'in_progress',
+          priority: 'high',
+        });
+        
+        // Thursday
+        result.current.addActivity({
+          id: '4',
+          type: 'call',
+          title: 'Call 2',
+          date: '2024-01-04',
+          status: 'cancelled',
+          priority: 'low',
+        });
+      });
+
+      const metrics = result.current.getWeeklyMetrics();
+      
+      expect(metrics.totalActivities).toBe(4);
+      expect(metrics.completedActivities).toBe(2);
+      expect(metrics.inProgressActivities).toBe(1);
+      expect(metrics.completionRate).toBe(50);
+    });
+  });
+
+  describe('sync functionality', () => {
+    it('should set user for sync service', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      const mockUser = { id: 'user-123', email: 'test@example.com' };
+      
+      act(() => {
+        result.current.setUser(mockUser as any);
+      });
+
+      expect(programSyncService.setUser).toHaveBeenCalledWith(mockUser);
+      expect(programSyncService.startAutoSync).toHaveBeenCalled();
+    });
+
+    it('should trigger manual sync', async () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      await act(async () => {
+        await result.current.triggerSync();
+      });
+
+      expect(programSyncService.syncNow).toHaveBeenCalled();
+    });
+
+    it('should update sync status', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      const newStatus = {
+        isOnline: false,
+        isSyncing: true,
+        lastSyncAt: '2024-01-01T10:00:00Z',
+        syncError: null,
+      };
+
+      // Simulate status change
+      const statusChangeCallback = (programSyncService.onStatusChange as jest.Mock)
+        .mock.calls[0]?.[0];
+      
+      if (statusChangeCallback) {
+        act(() => {
+          statusChangeCallback(newStatus);
+        });
+      }
+
+      expect(result.current.syncStatus).toEqual(newStatus);
+    });
+
+    it('should handle sync errors', async () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      // Mock sync failure
+      (programSyncService.syncNow as jest.Mock).mockRejectedValue(
+        new Error('Network error')
+      );
+
+      await act(async () => {
+        try {
+          await result.current.triggerSync();
+        } catch (error) {
+          // Expected to throw
+        }
+      });
+
+      expect(programSyncService.syncNow).toHaveBeenCalled();
+    });
+  });
+
+  describe('persistence', () => {
+    it('should persist state to localStorage', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      act(() => {
+        result.current.addActivity({
+          id: 'test-1',
+          type: 'call',
+          title: 'Test Call',
+          date: '2024-01-01',
+          status: 'planned',
+          priority: 'high',
+        });
+      });
+
+      // Verify store name is set
+      const storeName = (useWeeklyProgramStore as any).persist.name;
+      expect(storeName).toBe('weekly-program-store');
+    });
+  });
+
+  describe('week navigation', () => {
+    it('should change current week', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      act(() => {
+        result.current.setCurrentWeek('2024-02-05');
+      });
+
+      expect(result.current.currentWeek).toBe('2024-02-05');
+    });
+  });
+
+  describe('clear week functionality', () => {
+    it('should clear all activities for the current week', () => {
+      const { result } = renderHook(() => useWeeklyProgramStore());
+      
+      // Set week and add activities
+      act(() => {
+        result.current.setCurrentWeek('2024-01-01');
+        
+        // Activities in current week
+        result.current.addActivity({
+          id: '1',
+          type: 'call',
+          title: 'Call 1',
+          date: '2024-01-01',
+          status: 'planned',
+          priority: 'high',
+        });
+        
+        result.current.addActivity({
+          id: '2',
+          type: 'meeting',
+          title: 'Meeting 1',
+          date: '2024-01-03',
+          status: 'planned',
+          priority: 'medium',
+        });
+        
+        // Activity in different week
+        result.current.addActivity({
+          id: '3',
+          type: 'call',
+          title: 'Call 2',
+          date: '2024-01-10',
+          status: 'planned',
+          priority: 'low',
+        });
+      });
+
+      // Clear current week
+      act(() => {
+        result.current.clearWeek();
+      });
+
+      expect(result.current.activities['1']).toBeUndefined();
+      expect(result.current.activities['2']).toBeUndefined();
+      expect(result.current.activities['3']).toBeDefined(); // Should remain
+    });
+  });
+});
