@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { 
   TrophyIcon,
   ChartBarIcon,
   LightBulbIcon,
-  ArrowTrendingUpIcon
+  ArrowTrendingUpIcon,
+  GlobeAmericasIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import ExecutiveDashboard from '@/components/dashboard/ExecutiveDashboard';
@@ -10,14 +12,23 @@ import SalesFunnelChart from '@/components/dashboard/SalesFunnelChart';
 import PerformanceHeatMap from '@/components/dashboard/PerformanceHeatMap';
 import PredictiveAnalytics from '@/components/dashboard/PredictiveAnalytics';
 import InterestDistributionChart from '@/components/dashboard/InterestDistributionChart';
+import TerritoryAnalyticsDashboard from '@/components/analytics/TerritoryAnalyticsDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSubmissionStats } from '@/hooks/useSubmissionStats';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { calculateInterestDistribution } from '@/utils/stats-calculator';
 import { calculateAdvancedAnalytics } from '@/utils/advanced-analytics';
+import { subDays } from 'date-fns';
 
 export default function AnalyticsPage() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [dateRange, setDateRange] = useState({
+    start: subDays(new Date(), 30),
+    end: new Date()
+  });
+  
   const { stats, isLoading: isLoadingStats } = useSubmissionStats();
   
   // Load more submissions for analytics (up to 1000)
@@ -34,17 +45,32 @@ export default function AnalyticsPage() {
 
   return (
     <DashboardLayout title="Advanced Analytics">
-      {/* Executive Summary Row */}
-      <section className="mb-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-light-text-primary mb-2">Executive Summary</h2>
-          <p className="text-light-text-secondary">Strategic insights and performance metrics for data-driven decision making</p>
-        </div>
-        <ExecutiveDashboard 
-          analytics={advancedAnalytics}
-          isLoading={isLoadingSubmissions}
-        />
-      </section>
+      {/* Analytics Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <ChartBarIcon className="w-4 h-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="territories" className="flex items-center gap-2">
+            <GlobeAmericasIcon className="w-4 h-4" />
+            Territory Analytics
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-8">
+          {/* Executive Summary Row */}
+          <section className="mb-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-light-text-primary mb-2">Executive Summary</h2>
+              <p className="text-light-text-secondary">Strategic insights and performance metrics for data-driven decision making</p>
+            </div>
+            <ExecutiveDashboard 
+              analytics={advancedAnalytics}
+              isLoading={isLoadingSubmissions}
+            />
+          </section>
       
       {/* Strategic Analytics Row */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -109,6 +135,15 @@ export default function AnalyticsPage() {
           />
         </div>
       </section>
+        </TabsContent>
+
+        {/* Territory Analytics Tab */}
+        <TabsContent value="territories" className="space-y-6">
+          <TerritoryAnalyticsDashboard 
+            dateRange={dateRange}
+          />
+        </TabsContent>
+      </Tabs>
     </DashboardLayout>
   );
 }

@@ -47,7 +47,7 @@ export default function TerritoryAssignmentManager() {
       
       if (error) throw error;
       
-      return (data || []).map(user => ({
+      return (data || []).map((user: any) => ({
         id: user.id,
         username: user.username,
         email: user.email,
@@ -94,8 +94,8 @@ export default function TerritoryAssignmentManager() {
       if (error) throw error;
       
       // Filter by country
-      return (data || []).filter(assignment => 
-        territories.some(t => t.id === assignment.territory_id)
+      return (data || []).filter((assignment: any) => 
+        territories.some((t: any) => t.id === assignment.territory_id)
       );
     },
     enabled: !!selectedCountry && territories.length > 0
@@ -173,7 +173,7 @@ export default function TerritoryAssignmentManager() {
   };
 
   // Group assignments by rep
-  const assignmentsByRep = assignments.reduce((acc, assignment) => {
+  const assignmentsByRep = assignments.reduce((acc: any, assignment: any) => {
     const repId = assignment.user_id;
     if (!acc[repId]) {
       acc[repId] = {
@@ -254,9 +254,9 @@ export default function TerritoryAssignmentManager() {
                 <p className="text-muted-foreground">No territories available for this country</p>
               ) : (
                 <div className="space-y-2">
-                  {territories.map(territory => {
-                    const isAssigned = assignments.some(a => a.territory_id === territory.id);
-                    const assignedTo = assignments.find(a => a.territory_id === territory.id)?.user;
+                  {territories.map((territory: any) => {
+                    const isAssigned = assignments.some((a: any) => a.territory_id === territory.id);
+                    const assignedTo = assignments.find((a: any) => a.territory_id === territory.id)?.user;
                     
                     return (
                       <label
@@ -344,7 +344,9 @@ export default function TerritoryAssignmentManager() {
             <p className="text-muted-foreground">No active assignments for this country</p>
           ) : (
             <div className="space-y-4">
-              {Object.entries(assignmentsByRep).map(([repId, { rep, territories }]) => (
+              {Object.entries(assignmentsByRep).map(([repId, data]) => {
+                const { rep, territories } = data as { rep: any; territories: any[] };
+                return (
                 <div key={repId} className="border border-border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -356,7 +358,7 @@ export default function TerritoryAssignmentManager() {
                   </div>
                   
                   <div className="flex flex-wrap gap-2">
-                    {territories.map((assignment) => (
+                    {territories.map((assignment: any) => (
                       <div
                         key={assignment.id}
                         className="flex items-center gap-1 bg-muted px-3 py-1 rounded-full text-sm"
@@ -374,7 +376,8 @@ export default function TerritoryAssignmentManager() {
                     ))}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           )}
         </CardContent>

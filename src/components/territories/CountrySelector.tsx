@@ -3,6 +3,7 @@ import { Country } from '@/types/territory';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 interface CountrySelectorProps {
+  value?: string;
   countries: Country[];
   selectedCountry?: string;
   onChange: (countryCode: string) => void;
@@ -11,16 +12,19 @@ interface CountrySelectorProps {
 }
 
 export const CountrySelector: React.FC<CountrySelectorProps> = ({
+  value,
   countries,
   selectedCountry,
   onChange,
   showAll = true,
   className = ''
 }) => {
+  const currentValue = value || selectedCountry || '';
+  
   return (
     <div className={`relative ${className}`}>
       <select
-        value={selectedCountry || ''}
+        value={currentValue}
         onChange={(e) => onChange(e.target.value)}
         className="w-full appearance-none bg-background border border-border rounded-lg px-4 py-2 pr-10 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
       >
