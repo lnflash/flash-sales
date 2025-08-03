@@ -20,7 +20,8 @@
     "supabase:migration:up": "supabase db push",
     "supabase:migration:reset": "supabase db reset",
     "supabase:test": "tsx src/scripts/test-supabase-connection.ts",
-    "supabase:test:simple": "tsx src/scripts/test-simple-connection.ts"
+    "supabase:test:simple": "tsx src/scripts/test-simple-connection.ts",
+    "test:territories": "tsx src/scripts/test-territory-migration.ts"
   },
   "keywords": [
     "dashboard",
