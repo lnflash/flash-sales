@@ -450,10 +450,12 @@ export default function LeadsPage() {
             New Lead
           </button>
         </div>
-        <LeadsTable 
-          submissions={submissions} 
-          onRefresh={() => window.location.reload()} 
-        />
+        <div data-tour="leads-table">
+          <LeadsTable 
+            submissions={submissions} 
+            onRefresh={() => window.location.reload()} 
+          />
+        </div>
       </div>
 
 

@@ -108,7 +108,7 @@ export default function Sidebar() {
         )}
       </div>
 
-      <nav className="flex-1 p-3 overflow-y-auto">
+      <nav className="flex-1 p-3 overflow-y-auto" data-tour="navigation">
         <ul className="space-y-1">
           {navigation
             .filter((item) => {

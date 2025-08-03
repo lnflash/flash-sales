@@ -131,7 +131,9 @@ export default function WeeklyProgramPage() {
           </div>
           
           <div className="flex items-center gap-2">
-            <SyncStatusIndicator />
+            <div data-tour="sync-indicator">
+              <SyncStatusIndicator />
+            </div>
             <Button
               onClick={() => handleAddActivity()}
               className="flex items-center gap-2"
@@ -274,12 +276,12 @@ export default function WeeklyProgramPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Weekly Goals - Sidebar */}
-        <div className="xl:col-span-1">
+        <div className="xl:col-span-1" data-tour="weekly-goals">
           <WeeklyGoals />
         </div>
 
         {/* Weekly Calendar - Main Content */}
-        <div className="xl:col-span-3">
+        <div className="xl:col-span-3" data-tour="weekly-calendar">
           <WeeklyCalendar
             onActivityClick={handleActivityClick}
             onAddActivity={handleAddActivity}

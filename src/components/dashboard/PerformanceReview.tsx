@@ -46,7 +46,7 @@ export function PerformanceReview() {
   };
 
   return (
-    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200" data-tour="performance-widget">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-light-text-primary">Performance Review</CardTitle>

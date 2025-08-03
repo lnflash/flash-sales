@@ -102,12 +102,14 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
 
   return (
     <>
-      <QuickFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        availableUsers={availableUsers}
-        availableTerritories={availableTerritories}
-      />
+      <div data-tour="leads-filters">
+        <QuickFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          availableUsers={availableUsers}
+          availableTerritories={availableTerritories}
+        />
+      </div>
       
       <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
@@ -226,15 +228,17 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
         )}
       </div>
 
-      <BulkActions
-        selectedIds={selectedIds}
-        submissions={submissions}
-        onSuccess={() => {
-          setSelectedIds([]);
-          onRefresh?.();
+      <div data-tour="bulk-actions">
+        <BulkActions
+          selectedIds={selectedIds}
+          submissions={submissions}
+          onSuccess={() => {
+            setSelectedIds([]);
+            onRefresh?.();
         }}
         onClearSelection={() => setSelectedIds([])}
       />
+      </div>
     </>
   );
 };

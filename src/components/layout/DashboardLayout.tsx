@@ -8,6 +8,8 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsModal } from '@/components/ui/keyboard-shortcuts-modal';
 import { CommandPalette } from '@/components/ui/command-palette';
+import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import HelpMenu from '@/components/onboarding/HelpMenu';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -39,6 +41,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
         {/* Global UI components */}
         <CommandPalette />
         <KeyboardShortcutsModal shortcuts={shortcuts} />
+        <OnboardingFlow />
       </MobileMenuProvider>
     </ErrorBoundary>
   );

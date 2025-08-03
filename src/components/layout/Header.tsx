@@ -10,6 +10,7 @@ import { Notification } from '@/types/notifications';
 import { useMobileMenu } from '@/contexts/MobileMenuContext';
 import { IconButton } from '@/components/ui/icon-button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import HelpMenu from '@/components/onboarding/HelpMenu';
 
 interface HeaderProps {
   title: string;
@@ -162,6 +163,9 @@ export default function Header({ title }: HeaderProps) {
 
             {/* Theme toggle */}
             <ThemeToggle />
+
+            {/* Help Menu */}
+            <HelpMenu />
 
             <div className="relative notifications-dropdown">
               <IconButton 
