@@ -23,12 +23,18 @@ export interface Activity {
   customType?: string; // Custom activity type name when type is 'custom'
   title: string;
   description?: string;
-  leadId?: number | string; // Link to lead/opportunity
-  leadName?: string;
+  // Link to CRM entities
+  organizationId?: string; // Link to organization
+  dealId?: string; // Link to deal
+  contactId?: string; // Link to contact
+  entityName?: string; // Display name for the linked entity
   status: ActivityStatus;
   priority: ActivityPriority;
   outcome?: string;
   nextSteps?: string;
+  notes?: string;
+  followUpRequired?: boolean;
+  followUpDate?: string;
   createdAt: string;
   updatedAt: string;
 }

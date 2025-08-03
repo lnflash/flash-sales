@@ -3,7 +3,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Activity, ActivityType, ActivityPriority, ACTIVITY_TYPE_CONFIG, PRIORITY_CONFIG } from '@/types/weekly-program';
 import { useWeeklyProgramStore } from '@/stores/useWeeklyProgramStore';
 import { Button } from '@/components/ui/button';
-import { useUserSubmissions } from '@/hooks/useUserSubmissions';
+import { EntitySelector } from './EntitySelector';
 
 interface ActivityModalProps {
   isOpen: boolean;
@@ -19,8 +19,6 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
   defaultDate
 }) => {
   const { addActivity, updateActivity, customActivityTypes } = useWeeklyProgramStore();
-  const { data: submissionsData } = useUserSubmissions(undefined);
-  const submissions = submissionsData?.submissions || [];
 
   const [formData, setFormData] = useState<{
     type: ActivityType;
@@ -31,8 +29,10 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
     time: string;
     duration: string;
     priority: ActivityPriority;
-    leadId: string;
-    leadName: string;
+    organizationId?: string;
+    dealId?: string;
+    contactId?: string;
+    entityName?: string;
   }>({
     type: 'call',
     customType: '',
@@ -41,9 +41,7 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
     date: defaultDate || new Date().toISOString().split('T')[0],
     time: '',
     duration: '30',
-    priority: 'medium',
-    leadId: '',
-    leadName: ''
+    priority: 'medium'
   });
 
   useEffect(() => {
@@ -57,8 +55,10 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
         time: activity.time || '',
         duration: activity.duration?.toString() || '30',
         priority: activity.priority,
-        leadId: activity.leadId?.toString() || '',
-        leadName: activity.leadName || ''
+        organizationId: activity.organizationId,
+        dealId: activity.dealId,
+        contactId: activity.contactId,
+        entityName: activity.entityName
       });
     } else if (defaultDate) {
       setFormData(prev => ({ ...prev, date: defaultDate }));
@@ -88,8 +88,10 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
       time: formData.time || undefined,
       duration: formData.duration ? parseInt(formData.duration) : undefined,
       priority: formData.priority,
-      leadId: formData.leadId || undefined,
-      leadName: formData.leadName || undefined,
+      organizationId: formData.organizationId,
+      dealId: formData.dealId,
+      contactId: formData.contactId,
+      entityName: formData.entityName,
       status: activity?.status || 'planned' as const
     };
 
@@ -102,18 +104,20 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
     onClose();
   };
 
-  const handleLeadSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const leadId = e.target.value;
-    const lead = submissions.find(s => s.id.toString() === leadId);
-    
+  const handleEntitySelect = (entity: {
+    organizationId?: string;
+    dealId?: string;
+    contactId?: string;
+    entityName?: string;
+  }) => {
     setFormData(prev => ({
       ...prev,
-      leadId,
-      leadName: lead ? lead.ownerName : '',
-      title: lead && !prev.title 
+      ...entity,
+      // Auto-generate title if empty
+      title: entity.entityName && !prev.title 
         ? `${prev.type === 'custom' && prev.customType 
             ? prev.customType 
-            : ACTIVITY_TYPE_CONFIG[prev.type].label} - ${lead.ownerName}` 
+            : ACTIVITY_TYPE_CONFIG[prev.type].label} - ${entity.entityName}` 
         : prev.title
     }));
   };
@@ -200,23 +204,21 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
             />
           </div>
 
-          {/* Lead Selection */}
+          {/* Entity Selection (Organization/Contact/Deal) */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Related Lead
+              Related Entity
             </label>
-            <select
-              value={formData.leadId}
-              onChange={handleLeadSelect}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">No lead selected</option>
-              {submissions.map(lead => (
-                <option key={lead.id} value={lead.id.toString()}>
-                  {lead.ownerName} - {lead.businessType || lead.phoneNumber}
-                </option>
-              ))}
-            </select>
+            <EntitySelector
+              value={{
+                organizationId: formData.organizationId,
+                dealId: formData.dealId,
+                contactId: formData.contactId,
+                entityName: formData.entityName
+              }}
+              onChange={handleEntitySelect}
+              placeholder="Search organizations, contacts, or deals..."
+            />
           </div>
 
           {/* Date and Time */}

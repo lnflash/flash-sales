@@ -2,11 +2,11 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ActivityModal } from '@/components/weekly-program/ActivityModal';
 import { useWeeklyProgramStore } from '@/stores/useWeeklyProgramStore';
-import { useUserSubmissions } from '@/hooks/useUserSubmissions';
+import { useCRMEntities } from '@/hooks/useCRMEntities';
 
 // Mock dependencies
 jest.mock('@/stores/useWeeklyProgramStore');
-jest.mock('@/hooks/useUserSubmissions');
+jest.mock('@/hooks/useCRMEntities');
 
 describe('ActivityModal', () => {
   const mockAddActivity = jest.fn();
@@ -23,23 +23,20 @@ describe('ActivityModal', () => {
     time: '10:00',
     duration: 30,
     priority: 'high' as const,
-    leadId: '123',
-    leadName: 'John Doe',
+    organizationId: '123',
+    entityName: 'John Doe',
     status: 'planned' as const,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
 
-  const mockSubmissions = [
+  const mockEntities = [
     {
       id: '123',
-      ownerName: 'John Doe',
-      phoneNumber: '1234567890',
-      interestLevel: 8,
-      leadStatus: 'follow_up',
-      username: 'testuser',
-      territory: 'Kingston',
-      timestamp: new Date().toISOString()
+      type: 'organization' as const,
+      name: 'John Doe',
+      subtitle: 'Technology',
+      icon: 'building' as const
     }
   ];
 
@@ -50,10 +47,9 @@ describe('ActivityModal', () => {
       customActivityTypes: ['Sales Call', 'Site Visit']
     });
 
-    (useUserSubmissions as jest.Mock).mockReturnValue({
-      data: { submissions: mockSubmissions },
-      isLoading: false,
-      error: null
+    (useCRMEntities as jest.Mock).mockReturnValue({
+      entities: mockEntities,
+      isLoading: false
     });
   });
 
@@ -126,8 +122,8 @@ describe('ActivityModal', () => {
     expect(screen.getByPlaceholderText('Enter custom activity type...')).toBeInTheDocument();
   });
 
-  it('should populate lead dropdown with submissions', () => {
-    const { container } = render(
+  it('should show entity selector with recent entities', () => {
+    render(
       <ActivityModal 
         isOpen={true}
         onClose={mockOnClose}
@@ -135,18 +131,11 @@ describe('ActivityModal', () => {
     );
 
     // Find the label first
-    const leadLabel = screen.getByText('Related Lead');
-    expect(leadLabel).toBeInTheDocument();
+    const entityLabel = screen.getByText('Related Entity');
+    expect(entityLabel).toBeInTheDocument();
     
-    // Find the select element that follows the label
-    const leadSelect = leadLabel.parentElement?.querySelector('select');
-    expect(leadSelect).toBeInTheDocument();
-    
-    // Check options in the lead select specifically
-    const leadOptions = leadSelect?.querySelectorAll('option');
-    expect(leadOptions).toHaveLength(2); // "No lead selected" + 1 lead
-    expect(leadOptions?.[0]).toHaveTextContent('No lead selected');
-    expect(leadOptions?.[1]).toHaveTextContent('John Doe - 1234567890');
+    // The EntitySelector should show the search input placeholder
+    expect(screen.getByPlaceholderText('Search organizations, contacts, or deals...')).toBeInTheDocument();
   });
 
   it('should handle form submission for new activity', async () => {

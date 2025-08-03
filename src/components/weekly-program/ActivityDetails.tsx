@@ -150,11 +150,11 @@ export const ActivityDetails: React.FC<ActivityDetailsProps> = ({
             </div>
           </div>
 
-          {/* Lead Info */}
-          {activity.leadName && (
+          {/* Entity Info */}
+          {activity.entityName && (
             <div>
-              <p className="text-sm text-muted-foreground">Related Lead</p>
-              <p className="font-medium text-foreground">{activity.leadName}</p>
+              <p className="text-sm text-muted-foreground">Related Entity</p>
+              <p className="font-medium text-foreground">{activity.entityName}</p>
             </div>
           )}
 

@@ -107,8 +107,8 @@ export const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({
               {activity.type === 'custom' && activity.customType && (
                 <p className="text-xs font-medium opacity-90">{activity.customType}</p>
               )}
-              {activity.leadName && (
-                <p className="text-xs opacity-75 truncate">{activity.leadName}</p>
+              {activity.entityName && (
+                <p className="text-xs opacity-75 truncate">{activity.entityName}</p>
               )}
               <div className="flex items-center gap-2 mt-1">
                 <span className={`text-xs ${priorityConfig.color}`}>

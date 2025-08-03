@@ -37,8 +37,8 @@ describe('ActivityDetails', () => {
     time: '10:00',
     duration: 30,
     priority: 'high',
-    leadId: '123',
-    leadName: 'John Doe',
+    organizationId: '123',
+    entityName: 'John Doe',
     status: 'planned',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
