@@ -79,8 +79,21 @@ CREATE INDEX IF NOT EXISTS idx_contacts_created_at ON public.contacts(created_at
 DO $$ 
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'activities') THEN
-    CREATE INDEX IF NOT EXISTS idx_activities_user_id ON public.activities(user_id);
-    CREATE INDEX IF NOT EXISTS idx_activities_created_at ON public.activities(created_at DESC);
+    -- Only create user_id index if column exists
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'activities' AND column_name = 'user_id'
+    ) THEN
+      CREATE INDEX IF NOT EXISTS idx_activities_user_id ON public.activities(user_id);
+    END IF;
+    
+    -- Only create created_at index if column exists
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'activities' AND column_name = 'created_at'
+    ) THEN
+      CREATE INDEX IF NOT EXISTS idx_activities_created_at ON public.activities(created_at DESC);
+    END IF;
     
     -- Only create other indexes if columns exist
     IF EXISTS (
