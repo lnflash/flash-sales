@@ -29,6 +29,9 @@ import { Submission } from "@/types/submission";
 import SubmissionSearch from "./SubmissionSearch";
 import { validatePhoneNumber, validateEmail, validateAddress } from "@/utils/validation";
 import { enrichCompany, enrichPerson, enrichPhoneNumber, enrichAddress } from "@/services/data-enrichment";
+import { TerritorySelector } from "@/components/territories/TerritorySelector";
+import { CountrySelector } from "@/components/territories/CountrySelector";
+import { PROOF_OF_CONCEPT_COUNTRIES } from "@/types/territory";
 
 // Extended form data with dynamic fields
 interface DynamicFormData {
@@ -45,7 +48,9 @@ interface DynamicFormData {
   city: string;
   state: string;
   zipCode: string;
-  territory: string;
+  territory: string; // Legacy field
+  countryCode?: string;
+  territoryId?: string;
 
   // Business Details
   monthlyRevenue: string;
@@ -156,6 +161,8 @@ const initialFormData: DynamicFormData = {
   state: "",
   zipCode: "",
   territory: "",
+  countryCode: "JM",
+  territoryId: "",
   monthlyRevenue: "",
   numberOfEmployees: "",
   currentProcessor: "",
@@ -240,6 +247,8 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
         ownerName: submission.ownerName || "",
         phoneNumber: submission.phoneNumber || "",
         territory: submission.territory || "",
+        countryCode: submission.territoryData?.countryCode || "JM",
+        territoryId: submission.territoryId || "",
         packageSeen: submission.packageSeen || false,
         decisionMakers: submission.decisionMakers || "",
         interestLevel: submission.interestLevel || 3,
@@ -264,6 +273,8 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
       ownerName: submission.ownerName || "",
       phoneNumber: submission.phoneNumber || "",
       territory: submission.territory || "",
+      countryCode: submission.territoryData?.countryCode || "JM",
+      territoryId: submission.territoryId || "",
       packageSeen: submission.packageSeen || false,
       decisionMakers: submission.decisionMakers || "",
       interestLevel: submission.interestLevel || 3,
@@ -534,6 +545,7 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
         interestLevel: formData.interestLevel,
         signedUp: formData.signedUp,
         territory: formData.territory,
+        territoryId: formData.territoryId,
         specificNeeds: `${formData.specificNeeds}\n\nPain Points: ${formData.painPoints.join(", ")}\n\nBusiness Details: ${JSON.stringify(
           {
             email: formData.email,
@@ -628,30 +640,38 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
                   <label className="block text-sm font-medium text-light-text-primary mb-1">City</label>
                   <Input name="city" value={formData.city} onChange={handleInputChange} placeholder="Kingston" />
                 </div>
-                <div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-light-text-primary mb-1">Country</label>
+                  <CountrySelector
+                    value={formData.countryCode || "JM"}
+                    onChange={(countryCode) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        countryCode,
+                        territoryId: "", // Reset territory when country changes
+                        territory: "" // Reset legacy field
+                      }));
+                    }}
+                    countries={PROOF_OF_CONCEPT_COUNTRIES}
+                    className="w-full"
+                  />
+                </div>
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-light-text-primary mb-1">Territory</label>
-                  <select
-                    name="territory"
-                    value={formData.territory}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
-                  >
-                    <option value="">Select Territory</option>
-                    <option value="Kingston">Kingston</option>
-                    <option value="St. Andrew">St. Andrew</option>
-                    <option value="St. Thomas">St. Thomas</option>
-                    <option value="Portland">Portland</option>
-                    <option value="St. Mary">St. Mary</option>
-                    <option value="St. Ann">St. Ann</option>
-                    <option value="Trelawny">Trelawny</option>
-                    <option value="St. James">St. James</option>
-                    <option value="Hanover">Hanover</option>
-                    <option value="Westmoreland">Westmoreland</option>
-                    <option value="St. Elizabeth">St. Elizabeth</option>
-                    <option value="Manchester">Manchester</option>
-                    <option value="Clarendon">Clarendon</option>
-                    <option value="St. Catherine">St. Catherine</option>
-                  </select>
+                  <TerritorySelector
+                    value={formData.territoryId}
+                    onChange={(territoryId) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        territoryId: territoryId as string,
+                        territory: "" // We'll update this once we fetch the territory name
+                      }));
+                    }}
+                    countryCode={formData.countryCode}
+                    placeholder="Select Territory"
+                    className="w-full"
+                    maxLevel={1} // Only show level 1 territories
+                  />
                 </div>
               </div>
             </div>
