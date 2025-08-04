@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Joyride, { CallBackProps, STATUS, Step, Styles } from 'react-joyride';
+import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
 import { 
   DASHBOARD_TOUR_STEPS, 
@@ -8,8 +8,10 @@ import {
   MANAGER_SPECIFIC_STEPS,
   TourStep 
 } from '@/types/onboarding';
+import styles from './InteractiveTour.module.css';
 
-const customStyles: Styles = {
+// Partial styles for react-joyride customization
+const customStyles = {
   options: {
     primaryColor: '#00ff00',
     textColor: '#333',
@@ -23,11 +25,11 @@ const customStyles: Styles = {
     padding: '16px',
   },
   tooltipContainer: {
-    textAlign: 'left',
+    textAlign: 'left' as const,
   },
   tooltipTitle: {
     fontSize: '18px',
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     marginBottom: '8px',
   },
   tooltipContent: {
@@ -38,9 +40,8 @@ const customStyles: Styles = {
     backgroundColor: '#00ff00',
     borderRadius: '6px',
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '500' as const,
     padding: '8px 16px',
-    cursor: 'pointer',
   },
   buttonBack: {
     color: '#666',
@@ -64,11 +65,8 @@ export default function InteractiveTour() {
     isActive,
     currentStep,
     selectedRole,
-    tourStepIndex,
-    setTourStepIndex,
-    nextStep,
     completeTourStep,
-    exitTour,
+    nextStep,
   } = useOnboardingStore();
 
   const [run, setRun] = useState(false);
@@ -77,6 +75,11 @@ export default function InteractiveTour() {
   // Determine which tour steps to show based on current onboarding step
   useEffect(() => {
     let tourSteps: TourStep[] = [];
+
+    if (!isActive) {
+      setRun(false);
+      return;
+    }
 
     switch (currentStep) {
       case 'dashboard-tour':
@@ -87,51 +90,52 @@ export default function InteractiveTour() {
         break;
       case 'program-tour':
         tourSteps = PROGRAM_TOUR_STEPS;
-        if (selectedRole === 'sales-manager' || selectedRole === 'admin') {
-          tourSteps = [...tourSteps, ...MANAGER_SPECIFIC_STEPS];
-        }
         break;
       default:
-        tourSteps = [];
+        setRun(false);
+        return;
+    }
+
+    // Add manager-specific steps if applicable
+    if ((selectedRole === 'sales-manager' || selectedRole === 'admin') && currentStep === 'dashboard-tour') {
+      tourSteps = [...tourSteps, ...MANAGER_SPECIFIC_STEPS];
     }
 
     // Convert tour steps to Joyride steps
     const joyrideSteps: Step[] = tourSteps.map((step, index) => ({
       target: step.target,
       title: step.title,
-      content: (
-        <div>
-          <p>{step.content}</p>
-          {step.showProgress !== false && (
-            <div className="mt-4 text-xs text-gray-500">
-              Step {index + 1} of {tourSteps.length}
-            </div>
-          )}
-        </div>
-      ),
+      content: step.content,
       placement: step.placement || 'bottom',
-      disableBeacon: step.disableBeacon,
-      disableOverlay: step.disableOverlay,
-      spotlightClicks: step.spotlightClicks,
-      showSkipButton: step.showSkipButton !== false,
+      disableBeacon: index === 0,
+      showProgress: true,
+      showSkipButton: true,
+      styles: {
+        tooltipContainer: {
+          textAlign: 'left',
+        },
+      },
     }));
 
     setSteps(joyrideSteps);
-    setRun(isActive && ['dashboard-tour', 'leads-tour', 'program-tour'].includes(currentStep));
+    setRun(true);
   }, [currentStep, isActive, selectedRole]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, action, index, type } = data;
 
+    // Handle tour completion
     if (type === 'tour:end' || status === STATUS.FINISHED) {
       completeTourStep();
       nextStep();
       setRun(false);
-    } else if (status === STATUS.SKIPPED) {
-      exitTour();
+    }
+
+    // Handle skip action
+    if (action === 'skip' || status === STATUS.SKIPPED) {
+      completeTourStep();
+      nextStep();
       setRun(false);
-    } else if (type === 'step:after') {
-      setTourStepIndex(index + (action === 'next' ? 1 : -1));
     }
   };
 
@@ -141,22 +145,19 @@ export default function InteractiveTour() {
 
   return (
     <Joyride
-      steps={steps}
-      run={run}
+      callback={handleJoyrideCallback}
       continuous
+      hideCloseButton
+      run={run}
+      scrollToFirstStep
       showProgress
       showSkipButton
-      stepIndex={tourStepIndex}
-      callback={handleJoyrideCallback}
+      steps={steps}
       styles={customStyles}
       locale={tourLocale}
-      floaterProps={{
-        styles: {
-          floater: {
-            filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))',
-          },
-        },
-      }}
+      spotlightClicks={false}
+      disableOverlayClose={false}
+      tooltipComponent={undefined}
     />
   );
 }
