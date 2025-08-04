@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Progress } from "@/components/ui/Progress";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { CheckCircleIcon, ExclamationCircleIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
 import { getSupabase } from "@/lib/supabase/client";
 import { JAMAICA_PARISHES, CAYMAN_REGIONS, CURACAO_REGIONS, JamaicaParish, CaymanRegion, CuracaoRegion } from "@/types/lead-routing";
-import Input from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 
 const PAIN_POINTS = [
   "High transaction fees",
