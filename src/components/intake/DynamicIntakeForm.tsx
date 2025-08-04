@@ -262,14 +262,26 @@ export default function DynamicIntakeForm() {
     return true;
   };
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent) => {
+    // Prevent any form submission
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     if (validateStep(currentStep)) {
       setCurrentStep(Math.min(currentStep + 1, FORM_STEPS.length));
       setError("");
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = (e?: React.MouseEvent) => {
+    // Prevent any form submission
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     setCurrentStep(Math.max(currentStep - 1, 1));
     setError("");
   };
@@ -278,9 +290,12 @@ export default function DynamicIntakeForm() {
     e.preventDefault();
     e.stopPropagation();
 
+    console.log("handleSubmit called, currentStep:", currentStep, "total steps:", FORM_STEPS.length);
+
     // Ensure we're on the last step
     if (currentStep !== FORM_STEPS.length) {
-      console.warn("Form submission attempted but not on last step");
+      console.error("Form submission attempted but not on last step. Current step:", currentStep);
+      setError("Please complete all steps before submitting.");
       return;
     }
 
@@ -745,7 +760,16 @@ export default function DynamicIntakeForm() {
               </div>
 
               <form
-                onSubmit={handleSubmit}
+                onSubmit={(e) => {
+                  console.log("Form onSubmit triggered, currentStep:", currentStep);
+                  if (currentStep !== FORM_STEPS.length) {
+                    console.error("Preventing form submission - not on last step!");
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }
+                  handleSubmit(e);
+                }}
                 className="space-y-6 mt-6"
                 autoComplete="off"
                 onKeyDown={(e) => {
@@ -769,16 +793,32 @@ export default function DynamicIntakeForm() {
                 {renderStepContent()}
 
                 <div className="flex justify-between pt-6">
-                  <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={(e) => handlePrevious(e)} 
+                    disabled={currentStep === 1}
+                  >
                     Previous
                   </Button>
 
                   {currentStep < FORM_STEPS.length ? (
-                    <Button type="button" onClick={handleNext} className="bg-flash-green hover:bg-flash-green-light">
+                    <Button 
+                      type="button" 
+                      onClick={(e) => {
+                        console.log("Next button clicked, current step:", currentStep);
+                        handleNext(e);
+                      }} 
+                      className="bg-flash-green hover:bg-flash-green-light"
+                    >
                       Next
                     </Button>
                   ) : (
-                    <Button type="submit" disabled={isSubmitting} className="bg-flash-green hover:bg-flash-green-light">
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting} 
+                      className="bg-flash-green hover:bg-flash-green-light"
+                    >
                       {isSubmitting ? "Submitting..." : "Submit"}
                     </Button>
                   )}
