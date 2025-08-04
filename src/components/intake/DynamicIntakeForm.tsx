@@ -438,15 +438,27 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
   };
 
   const getTotalSteps = () => {
-    return 5; // Always 5 steps, but step 4 might be skipped
+    // If no business type is selected, we have 4 steps instead of 5
+    if (!formData.businessType || !INDUSTRY_CONFIGS[formData.businessType]) {
+      return 4;
+    }
+    return 5;
   };
 
   const shouldSkipStep4 = () => {
     return !formData.businessType || !INDUSTRY_CONFIGS[formData.businessType];
   };
+  
+  // Get the actual step number for display (accounting for skipped step 4)
+  const getDisplayStep = () => {
+    if (currentStep > 4 && shouldSkipStep4()) {
+      return currentStep - 1;
+    }
+    return currentStep;
+  };
 
   const getStepProgress = () => {
-    return (currentStep / getTotalSteps()) * 100;
+    return (getDisplayStep() / getTotalSteps()) * 100;
   };
 
   const getLeadScoreColor = (score: number) => {
@@ -938,7 +950,7 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
           <div className="mt-4">
             <div className="flex justify-between text-sm text-light-text-secondary mb-2">
               <span>
-                Step {currentStep} of {getTotalSteps()}
+                Step {getDisplayStep()} of {getTotalSteps()}
               </span>
               <span>{Math.round(getStepProgress())}% Complete</span>
             </div>

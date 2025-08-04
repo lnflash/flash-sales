@@ -1,13 +1,7 @@
-import React, { Fragment } from 'react';
-import { Menu, Transition } from '@headlessui/react';
-import { 
-  QuestionMarkCircleIcon,
-  SparklesIcon,
-  BookOpenIcon,
-  ChatBubbleLeftRightIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/outline';
-import { useOnboardingStore } from '@/stores/useOnboardingStore';
+import React, { Fragment } from "react";
+import { Menu, Transition } from "@headlessui/react";
+import { QuestionMarkCircleIcon, SparklesIcon, BookOpenIcon, ChatBubbleLeftRightIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useOnboardingStore } from "@/stores/useOnboardingStore";
 
 export default function HelpMenu() {
   const { resetOnboarding, startOnboarding } = useOnboardingStore();
@@ -42,9 +36,7 @@ export default function HelpMenu() {
               {({ active }) => (
                 <button
                   onClick={handleRestartTour}
-                  className={`${
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                  } group flex w-full items-center px-4 py-2 text-sm`}
+                  className={`${active ? "bg-gray-100 text-gray-900" : "text-gray-700"} group flex w-full items-center px-4 py-2 text-sm`}
                   disabled
                   title="Tour temporarily disabled"
                 >
@@ -53,46 +45,42 @@ export default function HelpMenu() {
                 </button>
               )}
             </Menu.Item>
-            
+
             <Menu.Item>
               {({ active }) => (
                 <a
-                  href="/docs"
+                  href="https://documentation.getflash.io"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                  } group flex w-full items-center px-4 py-2 text-sm`}
+                  className={`${active ? "bg-gray-100 text-gray-900" : "text-gray-700"} group flex w-full items-center px-4 py-2 text-sm`}
                 >
                   <BookOpenIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
                   Documentation
                 </a>
               )}
             </Menu.Item>
-            
+
             <Menu.Item>
               {({ active }) => (
                 <a
-                  href="/support"
-                  className={`${
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                  } group flex w-full items-center px-4 py-2 text-sm`}
+                  href="https://wa.me/18762909250?text=Hello%20Flash%20Support%20Team,%20I%20need%20help%20with%20the%20Flash%20Sales%20Platform."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${active ? "bg-gray-100 text-gray-900" : "text-gray-700"} group flex w-full items-center px-4 py-2 text-sm`}
                 >
                   <ChatBubbleLeftRightIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
                   Contact Support
                 </a>
               )}
             </Menu.Item>
-            
+
             <div className="border-t border-gray-100 my-1" />
-            
+
             <Menu.Item>
               {({ active }) => (
                 <button
                   onClick={() => window.location.reload()}
-                  className={`${
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                  } group flex w-full items-center px-4 py-2 text-sm`}
+                  className={`${active ? "bg-gray-100 text-gray-900" : "text-gray-700"} group flex w-full items-center px-4 py-2 text-sm`}
                 >
                   <ArrowPathIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
                   Refresh Page
