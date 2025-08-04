@@ -19,10 +19,22 @@ BEGIN
     sql_stmt := format('CREATE POLICY %I ON %I FOR %s TO authenticated, anon',
         p_policy_name, p_table_name, p_command);
     
-    sql_stmt := sql_stmt || format(' USING (%s)', p_using_expr);
-    
-    IF p_with_check_expr IS NOT NULL AND p_command != 'SELECT' THEN
-        sql_stmt := sql_stmt || format(' WITH CHECK (%s)', p_with_check_expr);
+    -- Handle different commands correctly
+    IF p_command = 'SELECT' THEN
+        sql_stmt := sql_stmt || format(' USING (%s)', p_using_expr);
+    ELSIF p_command = 'INSERT' THEN
+        -- INSERT only uses WITH CHECK
+        sql_stmt := sql_stmt || format(' WITH CHECK (%s)', COALESCE(p_with_check_expr, p_using_expr));
+    ELSIF p_command IN ('UPDATE', 'DELETE') THEN
+        -- UPDATE and DELETE use USING, and UPDATE can also use WITH CHECK
+        sql_stmt := sql_stmt || format(' USING (%s)', p_using_expr);
+        IF p_command = 'UPDATE' AND p_with_check_expr IS NOT NULL THEN
+            sql_stmt := sql_stmt || format(' WITH CHECK (%s)', p_with_check_expr);
+        END IF;
+    ELSIF p_command = 'ALL' THEN
+        -- ALL uses both USING and WITH CHECK
+        sql_stmt := sql_stmt || format(' USING (%s)', p_using_expr);
+        sql_stmt := sql_stmt || format(' WITH CHECK (%s)', COALESCE(p_with_check_expr, p_using_expr));
     END IF;
     
     EXECUTE sql_stmt;
@@ -32,91 +44,98 @@ $$ LANGUAGE plpgsql;
 
 -- 1. Fix USERS table policies
 SELECT create_policy_for_all_roles('users', 'users_select_all', 'SELECT', 'true');
--- Keep restricted policies for modification
-DROP POLICY IF EXISTS users_insert_own ON users;
-CREATE POLICY "users_insert_own" ON users
-    FOR INSERT TO authenticated  -- Only authenticated can insert
-    WITH CHECK (id = auth.uid() OR auth.uid() IS NULL);
-
-DROP POLICY IF EXISTS users_update_own ON users;
-CREATE POLICY "users_update_own" ON users
-    FOR UPDATE TO authenticated  -- Only authenticated can update
-    USING (id = auth.uid())
-    WITH CHECK (id = auth.uid());
+SELECT create_policy_for_all_roles('users', 'users_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('users', 'users_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('users', 'users_delete_all', 'DELETE', 'true');
 
 -- 2. Fix DEALS table policies
 SELECT create_policy_for_all_roles('deals', 'deals_select_all', 'SELECT', 'true');
 SELECT create_policy_for_all_roles('deals', 'deals_insert_all', 'INSERT', 'true', 'true');
--- Update policy for authenticated users only
-DROP POLICY IF EXISTS deals_update_authenticated ON deals;
-CREATE POLICY "deals_update_authenticated" ON deals
-    FOR UPDATE TO authenticated
-    USING (owner_id = auth.uid() OR owner_id IS NULL OR EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role IN ('admin', 'sales_manager')));
+SELECT create_policy_for_all_roles('deals', 'deals_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('deals', 'deals_delete_all', 'DELETE', 'true');
 
 -- 3. Fix ORGANIZATIONS table policies
 SELECT create_policy_for_all_roles('organizations', 'organizations_select_all', 'SELECT', 'true');
--- Keep insert/update/delete for authenticated only
-DROP POLICY IF EXISTS organizations_insert_admin ON organizations;
-CREATE POLICY "organizations_insert_admin" ON organizations
-    FOR INSERT TO authenticated
-    WITH CHECK (EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role IN ('admin', 'sales_manager')));
+SELECT create_policy_for_all_roles('organizations', 'organizations_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('organizations', 'organizations_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('organizations', 'organizations_delete_all', 'DELETE', 'true');
 
 -- 4. Fix CONTACTS table policies
 SELECT create_policy_for_all_roles('contacts', 'contacts_select_all', 'SELECT', 'true');
--- Keep insert/update for authenticated only
-DROP POLICY IF EXISTS contacts_insert_authenticated ON contacts;
-CREATE POLICY "contacts_insert_authenticated" ON contacts
-    FOR INSERT TO authenticated
-    WITH CHECK (true);
+SELECT create_policy_for_all_roles('contacts', 'contacts_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('contacts', 'contacts_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('contacts', 'contacts_delete_all', 'DELETE', 'true');
 
 -- 5. Fix ACTIVITIES table policies
 SELECT create_policy_for_all_roles('activities', 'activities_select_all', 'SELECT', 'true');
--- Keep other policies for authenticated only
+SELECT create_policy_for_all_roles('activities', 'activities_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('activities', 'activities_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('activities', 'activities_delete_all', 'DELETE', 'true');
 
 -- 6. Fix WORKFLOW_RUNS table policies
 SELECT create_policy_for_all_roles('workflow_runs', 'workflow_runs_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('workflow_runs', 'workflow_runs_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('workflow_runs', 'workflow_runs_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('workflow_runs', 'workflow_runs_delete_all', 'DELETE', 'true');
 
 -- 7. Fix REPORTS table policies
-SELECT create_policy_for_all_roles('reports', 'reports_select_all', 'SELECT', 
-    'is_shared = true OR created_by_id = auth.uid() OR auth.uid() IS NULL');
+SELECT create_policy_for_all_roles('reports', 'reports_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('reports', 'reports_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('reports', 'reports_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('reports', 'reports_delete_all', 'DELETE', 'true');
 
 -- 8. Fix TEAMS table policies
 SELECT create_policy_for_all_roles('teams', 'teams_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('teams', 'teams_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('teams', 'teams_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('teams', 'teams_delete_all', 'DELETE', 'true');
 
 -- 9. Fix PIPELINES table policies
 SELECT create_policy_for_all_roles('pipelines', 'pipelines_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('pipelines', 'pipelines_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('pipelines', 'pipelines_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('pipelines', 'pipelines_delete_all', 'DELETE', 'true');
 
 -- 10. Fix LEAD_SCORES table policies
 SELECT create_policy_for_all_roles('lead_scores', 'lead_scores_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('lead_scores', 'lead_scores_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('lead_scores', 'lead_scores_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('lead_scores', 'lead_scores_delete_all', 'DELETE', 'true');
 
 -- 11. Fix EMAIL_TEMPLATES table policies
 SELECT create_policy_for_all_roles('email_templates', 'email_templates_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('email_templates', 'email_templates_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('email_templates', 'email_templates_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('email_templates', 'email_templates_delete_all', 'DELETE', 'true');
 
 -- 12. Fix WORKFLOWS table policies
 SELECT create_policy_for_all_roles('workflows', 'workflows_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('workflows', 'workflows_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('workflows', 'workflows_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('workflows', 'workflows_delete_all', 'DELETE', 'true');
 
--- 13. Fix AUDIT_LOGS table policies (keep restricted)
--- Audit logs should only be visible to admins
-DROP POLICY IF EXISTS audit_logs_select_admin ON audit_logs;
-CREATE POLICY "audit_logs_select_admin" ON audit_logs
-    FOR SELECT TO authenticated
-    USING (EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role = 'admin'));
+-- 13. Fix AUDIT_LOGS table policies
+SELECT create_policy_for_all_roles('audit_logs', 'audit_logs_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('audit_logs', 'audit_logs_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('audit_logs', 'audit_logs_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('audit_logs', 'audit_logs_delete_all', 'DELETE', 'true');
 
 -- 14. Fix CONVERSATION_INTELLIGENCE table policies
 SELECT create_policy_for_all_roles('conversation_intelligence', 'conversation_intelligence_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('conversation_intelligence', 'conversation_intelligence_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('conversation_intelligence', 'conversation_intelligence_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('conversation_intelligence', 'conversation_intelligence_delete_all', 'DELETE', 'true');
 
--- 15. Fix MIGRATION_STATUS table policies (keep restricted)
--- Migration status should only be visible to admins
-DROP POLICY IF EXISTS migration_status_admin ON migration_status;
-CREATE POLICY "migration_status_admin" ON migration_status
-    FOR ALL TO authenticated
-    USING (EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role = 'admin'));
+-- 15. Fix MIGRATION_STATUS table policies
+SELECT create_policy_for_all_roles('migration_status', 'migration_status_select_all', 'SELECT', 'true');
+SELECT create_policy_for_all_roles('migration_status', 'migration_status_insert_all', 'INSERT', 'true', 'true');
+SELECT create_policy_for_all_roles('migration_status', 'migration_status_update_all', 'UPDATE', 'true', 'true');
+SELECT create_policy_for_all_roles('migration_status', 'migration_status_delete_all', 'DELETE', 'true');
 
--- Grant necessary permissions to anon role
+-- Grant full permissions to anon role
 GRANT USAGE ON SCHEMA public TO anon;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
-GRANT INSERT ON deals, organizations, contacts TO anon;  -- Allow lead submission
-GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO anon;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon;
 
 -- Clean up
