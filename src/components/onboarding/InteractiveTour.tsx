@@ -40,9 +40,7 @@ const customStyles: Styles = {
     color: '#000',
     fontWeight: '500',
     padding: '8px 16px',
-    '&:hover': {
-      backgroundColor: '#00cc00',
-    },
+    cursor: 'pointer',
   },
   buttonBack: {
     color: '#666',

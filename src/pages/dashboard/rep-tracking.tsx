@@ -68,7 +68,7 @@ const RepTrackingPage: NextPage = () => {
   return (
     <DashboardLayout title="Rep Performance Tracking">
       {/* Tab Navigation */}
-      <div className="mb-6 border-b border-border">
+      <div className="mb-6 border-b border-border" data-tour="rep-tracking-tabs">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('attendance')}
@@ -103,7 +103,7 @@ const RepTrackingPage: NextPage = () => {
       {activeTab === 'attendance' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form Section */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1" data-tour="rep-tracking-form">
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-foreground mb-4">
                 Track Weekly Performance
@@ -116,7 +116,7 @@ const RepTrackingPage: NextPage = () => {
           </div>
 
           {/* Table Section */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2" data-tour="rep-tracking-history">
             <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-foreground">
@@ -203,10 +203,12 @@ const RepTrackingPage: NextPage = () => {
           </div>
 
           {/* Summary Stats */}
-          <ProgramSummaryStats 
-            aggregateMetrics={aggregateMetrics} 
-            weekOffset={weekOffset}
-          />
+          <div data-tour="program-analytics-stats">
+            <ProgramSummaryStats 
+              aggregateMetrics={aggregateMetrics} 
+              weekOffset={weekOffset}
+            />
+          </div>
 
           {/* Main Content Grid */}
           {isProgramLoading ? (
@@ -217,7 +219,7 @@ const RepTrackingPage: NextPage = () => {
           ) : (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {/* Activity Heatmap */}
-              <div className="xl:col-span-2">
+              <div className="xl:col-span-2" data-tour="activity-heatmap">
                 <ActivityHeatmap 
                   repsData={repsData} 
                   weekStart={format(currentWeek, 'yyyy-MM-dd')}
