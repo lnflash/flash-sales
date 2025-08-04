@@ -464,36 +464,20 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
   };
 
   const validateStep = (step: number): boolean => {
-    switch (step) {
-      case 1:
-        return !!(formData.businessName && formData.ownerName && formData.phoneNumber && formData.email);
-      case 2:
-        return !!(formData.businessType && formData.yearEstablished);
-      case 3:
-        return !!(formData.monthlyRevenue && formData.numberOfEmployees);
-      case 4:
-        return true; // Industry specific fields are optional
-      case 5:
-        return formData.interestLevel > 0;
-      default:
-        return true;
-    }
+    // All fields are now optional, so validation always passes
+    return true;
   };
 
   const handleNext = () => {
-    if (validateStep(currentStep)) {
-      let nextStep = currentStep + 1;
+    let nextStep = currentStep + 1;
 
-      // Skip step 4 if no business type selected
-      if (nextStep === 4 && shouldSkipStep4()) {
-        nextStep = 5;
-      }
-
-      setCurrentStep(Math.min(nextStep, getTotalSteps()));
-      setError("");
-    } else {
-      setError("Please fill in all required fields");
+    // Skip step 4 if no business type selected
+    if (nextStep === 4 && shouldSkipStep4()) {
+      nextStep = 5;
     }
+
+    setCurrentStep(Math.min(nextStep, getTotalSteps()));
+    setError("");
   };
 
   const handlePrevious = () => {
@@ -601,20 +585,20 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
             <h3 className="text-lg font-semibold mb-4">Business Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Business Name *</label>
-                <Input name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="ABC Restaurant" required />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Business Name</label>
+                <Input name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="ABC Restaurant" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Owner Name *</label>
-                <Input name="ownerName" value={formData.ownerName} onChange={handleInputChange} placeholder="John Smith" required />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Owner Name</label>
+                <Input name="ownerName" value={formData.ownerName} onChange={handleInputChange} placeholder="John Smith" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Phone Number *</label>
-                <Input name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleInputChange} placeholder="(555) 123-4567" required />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Phone Number</label>
+                <Input name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleInputChange} placeholder="(555) 123-4567" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Email *</label>
-                <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" required />
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Email</label>
+                <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" />
               </div>
             </div>
             <div className="mt-4">
@@ -663,7 +647,7 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
           <div className="space-y-4">
             <h3 className="text-lg font-semibold mb-4">Business Type & Details</h3>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-2">Select Business Type *</label>
+              <label className="block text-sm font-medium text-light-text-primary mb-2">Select Business Type</label>
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(INDUSTRY_CONFIGS).map(([key, config]) => {
                   const Icon = config.icon;
@@ -689,7 +673,7 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Year Established *</label>
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Year Established</label>
                 <Input
                   name="yearEstablished"
                   type="number"
@@ -698,7 +682,6 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
                   placeholder="2015"
                   min="1900"
                   max={new Date().getFullYear()}
-                  required
                 />
               </div>
               <div>
@@ -715,13 +698,12 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
             <h3 className="text-lg font-semibold mb-4">Business Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Monthly Revenue *</label>
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Monthly Revenue</label>
                 <select
                   name="monthlyRevenue"
                   value={formData.monthlyRevenue}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
-                  required
                 >
                   <option value="">Select range</option>
                   <option value="0-10k">$0 - $10,000</option>
@@ -732,13 +714,12 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Number of Employees *</label>
+                <label className="block text-sm font-medium text-light-text-primary mb-1">Number of Employees</label>
                 <select
                   name="numberOfEmployees"
                   value={formData.numberOfEmployees}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
-                  required
                 >
                   <option value="">Select range</option>
                   <option value="1-5">1-5</option>
