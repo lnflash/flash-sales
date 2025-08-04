@@ -1,431 +1,251 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { getUserFromStorage } from "@/lib/auth";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  BuildingStorefrontIcon,
-  UserGroupIcon,
-  ChartBarIcon,
-  DocumentTextIcon,
-  PhoneIcon,
-  MapPinIcon,
-  CalendarIcon,
-  CreditCardIcon,
-  TruckIcon,
-  ShoppingBagIcon,
-  UserIcon,
-} from "@heroicons/react/24/outline";
-import { createSubmission, updateSubmission, getSubmissionById } from "@/lib/api";
-import { calculateLeadScore } from "@/utils/lead-scoring";
-import { Submission } from "@/types/submission";
-import SubmissionSearch from "./SubmissionSearch";
-import { validatePhoneNumber, validateEmail, validateAddress } from "@/utils/validation";
-import { enrichCompany, enrichPerson, enrichPhoneNumber, enrichAddress } from "@/services/data-enrichment";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Progress } from "@/components/ui/Progress";
+import { CheckCircleIcon, ExclamationCircleIcon, RocketLaunchIcon } from "@heroicons/react/24/outline";
+import { getSupabase } from "@/lib/supabase/client";
+import { JAMAICA_PARISHES, CAYMAN_REGIONS, CURACAO_REGIONS, JamaicaParish, CaymanRegion, CuracaoRegion } from "@/types/lead-routing";
+import Input from "@/components/ui/Input";
 
-// Extended form data with dynamic fields
-interface DynamicFormData {
-  // Basic Information
-  businessName: string;
-  ownerName: string;
-  phoneNumber: string;
-  email: string;
-  businessType: string;
-  yearEstablished: string;
+const PAIN_POINTS = [
+  "High transaction fees",
+  "Slow processing times",
+  "Poor customer support",
+  "Limited integrations",
+  "Complex setup process",
+  "Lack of reporting",
+  "Security concerns",
+  "International payment issues",
+];
 
-  // Location
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  territory: string;
-
-  // Business Details
-  monthlyRevenue: string;
-  numberOfEmployees: string;
-  currentProcessor: string;
-  monthlyTransactions: string;
-  averageTicketSize: string;
-
-  // Needs Assessment
-  packageSeen: boolean;
-  decisionMakers: string;
-  interestLevel: number;
-  specificNeeds: string;
-  painPoints: string[];
-
-  // Industry Specific
-  industrySpecificData: Record<string, any>;
-
-  // Meta
-  signedUp: boolean;
-  leadScore: number;
-  username: string;
-  formCompletionTime: number;
-  fieldInteractions: Record<string, number>;
-}
-
-// Industry configurations
 const INDUSTRY_CONFIGS: Record<
   string,
   {
     label: string;
-    icon: any;
     additionalFields: Array<{
       name: string;
       label: string;
-      type: "text" | "number" | "select" | "checkbox";
-      options?: string[];
+      type: string;
       required?: boolean;
+      options?: string[];
     }>;
   }
 > = {
   restaurant: {
     label: "Restaurant",
-    icon: BuildingStorefrontIcon,
     additionalFields: [
-      { name: "deliveryServices", label: "Delivery Services Used", type: "text" },
-      { name: "tableCount", label: "Number of Tables", type: "number" },
-      { name: "hasOnlineOrdering", label: "Online Ordering", type: "checkbox" },
       { name: "cuisineType", label: "Cuisine Type", type: "text" },
+      { name: "seatingCapacity", label: "Seating Capacity", type: "number" },
+      { name: "hasOnlineOrdering", label: "Online Ordering Available", type: "checkbox" },
+      { name: "hasDelivery", label: "Delivery Service", type: "checkbox" },
     ],
   },
   retail: {
-    label: "Retail",
-    icon: ShoppingBagIcon,
+    label: "Retail Store",
     additionalFields: [
-      { name: "storeCount", label: "Number of Locations", type: "number" },
-      { name: "inventorySize", label: "SKU Count", type: "number" },
-      { name: "hasEcommerce", label: "E-commerce Enabled", type: "checkbox" },
-      { name: "posSystem", label: "Current POS System", type: "text" },
+      { name: "storeType", label: "Store Type", type: "text" },
+      { name: "numberOfLocations", label: "Number of Locations", type: "number" },
+      { name: "hasEcommerce", label: "E-commerce Platform", type: "checkbox" },
+      { name: "inventorySize", label: "Inventory Size", type: "text" },
     ],
   },
-  services: {
-    label: "Professional Services",
-    icon: UserGroupIcon,
+  hospitality: {
+    label: "Hotel/Hospitality",
     additionalFields: [
-      { name: "serviceType", label: "Service Category", type: "text" },
-      { name: "appointmentVolume", label: "Monthly Appointments", type: "number" },
-      { name: "hasRecurringBilling", label: "Recurring Billing", type: "checkbox" },
-      { name: "averageServiceDuration", label: "Avg Service Duration (min)", type: "number" },
+      { name: "propertyType", label: "Property Type", type: "text" },
+      { name: "numberOfRooms", label: "Number of Rooms", type: "number" },
+      { name: "averageOccupancy", label: "Average Occupancy %", type: "number" },
+      { name: "hasBookingSystem", label: "Online Booking System", type: "checkbox" },
     ],
   },
-  ecommerce: {
-    label: "E-commerce",
-    icon: TruckIcon,
+  healthcare: {
+    label: "Healthcare",
     additionalFields: [
-      { name: "platform", label: "E-commerce Platform", type: "text" },
-      { name: "monthlyOrders", label: "Monthly Orders", type: "number" },
-      { name: "internationalSales", label: "International Sales", type: "checkbox" },
-      { name: "shippingProviders", label: "Shipping Providers", type: "text" },
+      { name: "practiceType", label: "Practice Type", type: "text" },
+      { name: "numberOfProviders", label: "Number of Providers", type: "number" },
+      { name: "acceptsInsurance", label: "Accepts Insurance", type: "checkbox" },
+      { name: "monthlyPatients", label: "Monthly Patients", type: "number" },
+    ],
+  },
+  automotive: {
+    label: "Automotive",
+    additionalFields: [
+      { name: "serviceType", label: "Service Type", type: "text" },
+      { name: "numberOfBays", label: "Number of Service Bays", type: "number" },
+      { name: "averageTicket", label: "Average Service Ticket", type: "number" },
+      { name: "fleetServices", label: "Fleet Services", type: "checkbox" },
+    ],
+  },
+  other: {
+    label: "Other Business",
+    additionalFields: [
+      { name: "industryDescription", label: "Industry Description", type: "text", required: true },
+      { name: "primaryServices", label: "Primary Services/Products", type: "text", required: true },
     ],
   },
 };
 
-const PAIN_POINTS = [
-  "High processing fees",
-  "Poor customer support",
-  "Limited reporting",
-  "Slow settlement times",
-  "Integration issues",
-  "Security concerns",
-  "Limited payment options",
-  "Complex pricing",
+const FORM_STEPS = [
+  { id: 1, title: "Business Information", description: "Tell us about your business" },
+  { id: 2, title: "Contact Details", description: "How can we reach you?" },
+  { id: 3, title: "Business Metrics", description: "Help us understand your needs" },
+  { id: 4, title: "Additional Details", description: "Final information" },
+  { id: 5, title: "Review", description: "Review and submit" },
 ];
 
-interface DynamicCanvasFormProps {
-  submissionId?: string;
+interface FormData {
+  // Business Information
+  businessName: string;
+  businessType: string;
+  country: string;
+  territory: string;
+
+  // Contact Information
+  ownerName: string;
+  phoneNumber: string;
+  email: string;
+
+  // Business Metrics
+  monthlyRevenue: string;
+  numberOfEmployees: string;
+  yearEstablished: string;
+  monthlyTransactions: string;
+  averageTicketSize: string;
+  painPoints: string[];
+
+  // Additional Info
+  currentProcessor: string;
+  interestLevel: number;
+  specificNeeds: string;
+  packageSeen: boolean;
+  decisionMakers: string;
+  signedUp: boolean;
+
+  // Industry Specific
+  industrySpecificData: Record<string, any>;
 }
 
-const initialFormData: DynamicFormData = {
-  businessName: "",
-  ownerName: "",
-  phoneNumber: "",
-  email: "",
-  businessType: "",
-  yearEstablished: "",
-  address: "",
-  city: "",
-  state: "",
-  zipCode: "",
-  territory: "",
-  monthlyRevenue: "",
-  numberOfEmployees: "",
-  currentProcessor: "",
-  monthlyTransactions: "",
-  averageTicketSize: "",
-  packageSeen: false,
-  decisionMakers: "",
-  interestLevel: 3,
-  specificNeeds: "",
-  painPoints: [],
-  industrySpecificData: {},
-  signedUp: false,
-  leadScore: 0,
-  username: "",
-  formCompletionTime: 0,
-  fieldInteractions: {},
-};
-
-export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormProps) {
-  const router = useRouter();
+export default function DynamicIntakeForm() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState<FormData>({
+    // Business Information
+    businessName: "",
+    businessType: "",
+    country: "",
+    territory: "",
+
+    // Contact Information
+    ownerName: "",
+    phoneNumber: "",
+    email: "",
+
+    // Business Metrics
+    monthlyRevenue: "",
+    numberOfEmployees: "",
+    yearEstablished: new Date().getFullYear().toString(),
+    monthlyTransactions: "",
+    averageTicketSize: "",
+    painPoints: [],
+
+    // Additional Info
+    currentProcessor: "",
+    interestLevel: 3,
+    specificNeeds: "",
+    packageSeen: false,
+    decisionMakers: "",
+    signedUp: false,
+
+    // Industry Specific
+    industrySpecificData: {},
+  });
+
+  const [leadScore, setLeadScore] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [formStartTime] = useState(Date.now());
-  const [isLoading, setIsLoading] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [showSearch, setShowSearch] = useState(true);
-
-  const [formData, setFormData] = useState<DynamicFormData>({...initialFormData});
-  
-  // Validation states
-  const [phoneValidation, setPhoneValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
-  const [emailValidation, setEmailValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
-  const [addressValidation, setAddressValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
-  
-  // Enrichment states
-  const [isEnriching, setIsEnriching] = useState(false);
-  const [enrichmentData, setEnrichmentData] = useState<any>(null);
-
-  // Track field interactions for analytics
-  const trackFieldInteraction = (fieldName: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      fieldInteractions: {
-        ...prev.fieldInteractions,
-        [fieldName]: (prev.fieldInteractions[fieldName] || 0) + 1,
-      },
-    }));
-  };
 
   useEffect(() => {
-    const user = getUserFromStorage();
-    if (user) {
-      // Get default territory from localStorage
-      const defaultTerritory = localStorage.getItem(`defaultTerritory_${user.username}`) || "";
-      setFormData((prev) => ({
-        ...prev,
-        username: user.username,
-        territory: defaultTerritory,
-      }));
+    // Calculate lead score whenever form data changes
+    const calculateScore = () => {
+      let score = 50; // Base score
 
-      // Also try to load from Supabase profile
-      loadUserProfile(user.username);
-    }
+      // Revenue factor (up to +20)
+      const revenueScores: Record<string, number> = {
+        "250k+": 20,
+        "100k-250k": 15,
+        "50k-100k": 10,
+        "10k-50k": 5,
+        "0-10k": 0,
+      };
+      score += revenueScores[formData.monthlyRevenue] || 0;
 
-    // Load submission data if in edit mode
-    if (submissionId) {
-      loadSubmission(submissionId);
-    }
-  }, [submissionId]);
+      // Employee count factor (up to +10)
+      const employeeScores: Record<string, number> = {
+        "100+": 10,
+        "51-100": 8,
+        "21-50": 6,
+        "6-20": 4,
+        "1-5": 2,
+      };
+      score += employeeScores[formData.numberOfEmployees] || 0;
 
-  const loadSubmission = async (id: string) => {
-    setIsLoading(true);
-    try {
-      const submission = await getSubmissionById(id);
-      
-      // Map submission data to dynamic form data
-      setFormData((prev) => ({
-        ...prev,
-        businessName: submission.ownerName || "",
-        ownerName: submission.ownerName || "",
-        phoneNumber: submission.phoneNumber || "",
-        territory: submission.territory || "",
-        packageSeen: submission.packageSeen || false,
-        decisionMakers: submission.decisionMakers || "",
-        interestLevel: submission.interestLevel || 3,
-        signedUp: submission.signedUp || false,
-        specificNeeds: submission.specificNeeds || "",
-        username: submission.username || "",
-      }));
-      setIsEditMode(true);
-    } catch (error) {
-      console.error("Error loading submission:", error);
-      setError("Failed to load submission data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      // Pain points (up to +10)
+      score += Math.min(formData.painPoints.length * 2, 10);
 
-  const handleSubmissionSelect = (submission: Submission) => {
-    // Pre-fill form with selected submission data
-    setFormData((prev) => ({
-      ...prev,
-      businessName: submission.ownerName || "",
-      ownerName: submission.ownerName || "",
-      phoneNumber: submission.phoneNumber || "",
-      territory: submission.territory || "",
-      packageSeen: submission.packageSeen || false,
-      decisionMakers: submission.decisionMakers || "",
-      interestLevel: submission.interestLevel || 3,
-      signedUp: submission.signedUp || false,
-      specificNeeds: submission.specificNeeds || "",
-      username: submission.username || "",
-    }));
-    setShowSearch(false);
-    // Navigate to edit mode
-    router.push(`/intake-dynamic?id=${submission.id}&mode=edit`);
-  };
+      // Interest level (up to +10)
+      score += formData.interestLevel * 2;
 
-  const handleClearSearch = () => {
-    // Reset form to create mode
-    const user = getUserFromStorage();
-    const defaultTerritory = localStorage.getItem(`defaultTerritory_${user?.username}`) || "";
-    setFormData(initialFormData);
-    setFormData((prev) => ({
-      ...prev,
-      username: user?.username || "",
-      territory: defaultTerritory,
-    }));
-    setIsEditMode(false);
-    setCurrentStep(1);
-    // Clear URL parameters
-    router.push('/intake-dynamic');
-  };
+      // Contact completeness (+5)
+      if (formData.phoneNumber && formData.email) score += 5;
 
-  const loadUserProfile = async (username: string) => {
-    try {
-      const { supabase } = await import("@/lib/supabase/client");
+      // Specific needs mentioned (+5)
+      if (formData.specificNeeds.length > 20) score += 5;
 
-      // Try to get user profile from Supabase
-      const { data } = await supabase.from("users").select("dashboard_preferences").or(`username.eq.${username},email.eq.${username}@getflash.io`).single();
+      setLeadScore(Math.min(score, 100));
+    };
 
-      if (data?.dashboard_preferences?.default_territory) {
-        setFormData((prev) => ({
-          ...prev,
-          territory: data.dashboard_preferences.default_territory,
-        }));
-      }
-    } catch (error) {
-      // Silently fail - localStorage fallback is already in place
-      console.log("Could not load profile from Supabase:", error);
+    calculateScore();
+  }, [formData]);
+
+  const getTerritoryOptions = () => {
+    switch (formData.country) {
+      case "Jamaica":
+        return JAMAICA_PARISHES;
+      case "Cayman Islands":
+        return CAYMAN_REGIONS;
+      case "Curaçao":
+        return CURACAO_REGIONS;
+      default:
+        return [];
     }
   };
 
-  // Calculate lead score in real-time
-  useEffect(() => {
-    const score = calculateLeadScore(formData);
-    setFormData((prev) => ({ ...prev, leadScore: score }));
-  }, [
-    formData.monthlyRevenue,
-    formData.monthlyTransactions,
-    formData.interestLevel,
-    formData.painPoints,
-    formData.yearEstablished,
-    formData.numberOfEmployees,
-  ]);
-
-  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    trackFieldInteraction(name);
 
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
+    } else if (name === "interestLevel") {
+      setFormData((prev) => ({ ...prev, [name]: parseInt(value) }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
-      
-      // Validate phone number
-      if (name === "phoneNumber" && value) {
-        const validation = validatePhoneNumber(value);
-        setPhoneValidation({
-          isValid: validation.isValid,
-          message: validation.isValid 
-            ? validation.formatted 
-            : validation.errors?.[0]
-        });
-        
-        // If valid, update with formatted number and trigger enrichment
-        if (validation.isValid && validation.formatted) {
-          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted || '' }));
-          enrichPhoneNumber(validation.formatted).then(result => {
-            if (result.success) {
-              console.log('Phone enrichment:', result.data);
-            }
-          });
-        }
-      }
-      
-      // Validate email
-      if (name === "email" && value) {
-        const validation = validateEmail(value);
-        setEmailValidation({
-          isValid: validation.isValid,
-          message: validation.errors?.[0]
-        });
-        
-        // If valid, trigger person enrichment
-        if (validation.isValid) {
-          enrichPerson(value).then(result => {
-            if (result.success) {
-              console.log('Person enrichment:', result.data);
-            }
-          });
-        }
-      }
-      
-      // Validate address when all fields are filled
-      if ((name === "address" || name === "city" || name === "state" || name === "zipCode") && 
-          formData.address && formData.city && formData.state && formData.zipCode) {
-        const addressData = {
-          street: name === "address" ? value : formData.address,
-          city: name === "city" ? value : formData.city,
-          state: name === "state" ? value : formData.state,
-          zip: name === "zipCode" ? value : formData.zipCode
-        };
-        
-        const validation = validateAddress(addressData);
-        setAddressValidation({
-          isValid: validation.isValid,
-          message: validation.isValid 
-            ? "Valid address" 
-            : validation.errors?.[0]
-        });
-        
-        // If valid, trigger address enrichment
-        if (validation.isValid) {
-          enrichAddress(addressData).then(result => {
-            if (result.success) {
-              console.log('Address enrichment:', result.data);
-            }
-          });
-        }
-      }
-      
-      // Auto-enrich company data when business name is entered
-      if (name === "businessName" && value.length > 3) {
-        // Debounce enrichment
-        const timeoutId = setTimeout(async () => {
-          setIsEnriching(true);
-          const result = await enrichCompany({ name: value });
-          if (result.success) {
-            setEnrichmentData(result.data);
-          }
-          setIsEnriching(false);
-        }, 1000);
-        
-        // Cleanup timeout on component unmount or new input
-        return () => clearTimeout(timeoutId);
-      }
+    }
+
+    // Reset territory when country changes
+    if (name === "country" && value !== formData.country) {
+      setFormData((prev) => ({ ...prev, territory: "" }));
     }
   };
 
-  const handleIndustrySpecificChange = (name: string, value: any) => {
-    trackFieldInteraction(`industry_${name}`);
+  const handleIndustrySpecificChange = (fieldName: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
       industrySpecificData: {
         ...prev.industrySpecificData,
-        [name]: value,
+        [fieldName]: value,
       },
     }));
   };
@@ -437,79 +257,29 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
     }));
   };
 
-  const getTotalSteps = () => {
-    // If no business type is selected, we have 4 steps instead of 5
-    if (!formData.businessType || !INDUSTRY_CONFIGS[formData.businessType]) {
-      return 4;
-    }
-    return 5;
-  };
-
-  const shouldSkipStep4 = () => {
-    return !formData.businessType || !INDUSTRY_CONFIGS[formData.businessType];
-  };
-  
-  // Get the actual step number for display (accounting for skipped step 4)
-  const getDisplayStep = () => {
-    if (currentStep > 4 && shouldSkipStep4()) {
-      return currentStep - 1;
-    }
-    return currentStep;
-  };
-
-  const getStepProgress = () => {
-    return (getDisplayStep() / getTotalSteps()) * 100;
-  };
-
-  const getLeadScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
-    if (score >= 40) return "text-orange-600";
-    return "text-red-600";
-  };
-
-  const getLeadScoreLabel = (score: number) => {
-    if (score >= 80) return "Hot Lead";
-    if (score >= 60) return "Warm Lead";
-    if (score >= 40) return "Cool Lead";
-    return "Cold Lead";
-  };
-
   const validateStep = (step: number): boolean => {
     // All fields are now optional, so validation always passes
     return true;
   };
 
   const handleNext = () => {
-    let nextStep = currentStep + 1;
-
-    // Skip step 4 if no business type selected
-    if (nextStep === 4 && shouldSkipStep4()) {
-      nextStep = 5;
+    if (validateStep(currentStep)) {
+      setCurrentStep(Math.min(currentStep + 1, FORM_STEPS.length));
+      setError("");
     }
-
-    setCurrentStep(Math.min(nextStep, getTotalSteps()));
-    setError("");
   };
 
   const handlePrevious = () => {
-    let prevStep = currentStep - 1;
-
-    // Skip step 4 when going back if no business type selected
-    if (prevStep === 4 && shouldSkipStep4()) {
-      prevStep = 3;
-    }
-
-    setCurrentStep(Math.max(prevStep, 1));
+    setCurrentStep(Math.max(currentStep - 1, 1));
     setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
 
-    // Add validation to ensure we're on the last step
-    if (currentStep !== getTotalSteps()) {
+    // Ensure we're on the last step
+    if (currentStep !== FORM_STEPS.length) {
       console.warn("Form submission attempted but not on last step");
       return;
     }
@@ -529,64 +299,136 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
         decisionMakers: formData.decisionMakers,
         interestLevel: formData.interestLevel,
         signedUp: formData.signedUp,
+        specificNeeds: formData.specificNeeds,
+        username: "public_form", // For public submissions
         territory: formData.territory,
-        specificNeeds: `${formData.specificNeeds}\n\nPain Points: ${formData.painPoints.join(", ")}\n\nBusiness Details: ${JSON.stringify(
-          {
-            email: formData.email,
-            businessType: formData.businessType,
-            yearEstablished: formData.yearEstablished,
-            location: `${formData.city}, ${formData.state}`,
-            monthlyRevenue: formData.monthlyRevenue,
-            employees: formData.numberOfEmployees,
-            monthlyTransactions: formData.monthlyTransactions,
-            avgTicket: formData.averageTicketSize,
-            currentProcessor: formData.currentProcessor,
-            industryData: formData.industrySpecificData,
-            leadScore: formData.leadScore,
-            completionTime: completionTime,
-            fieldInteractions: formData.fieldInteractions,
-          },
-          null,
-          2
-        )}`,
-        username: formData.username,
+        leadScore: leadScore,
+        leadStatus: "new" as const,
+        source: "website_form",
+        metadata: {
+          businessName: formData.businessName,
+          businessType: formData.businessType,
+          ownerName: formData.ownerName,
+          email: formData.email,
+          monthlyRevenue: formData.monthlyRevenue,
+          numberOfEmployees: formData.numberOfEmployees,
+          yearEstablished: formData.yearEstablished,
+          monthlyTransactions: formData.monthlyTransactions,
+          averageTicketSize: formData.averageTicketSize,
+          painPoints: formData.painPoints,
+          currentProcessor: formData.currentProcessor,
+          industrySpecificData: formData.industrySpecificData,
+          formCompletionTime: completionTime,
+          country: formData.country,
+          submittedAt: new Date().toISOString(),
+        },
       };
 
-      if (isEditMode && submissionId) {
-        // Update existing submission
-        await updateSubmission(submissionId, submissionData);
-        setSuccess(true);
-        
-        // Redirect to submission detail page after success
-        setTimeout(() => {
-          router.push(`/dashboard/submissions/${submissionId}`);
-        }, 1500);
-      } else {
-        // Create new submission
-        await createSubmission(submissionData);
-        setSuccess(true);
+      const supabase = getSupabase();
 
-        // Reset form for new submission
-        const user = getUserFromStorage();
-        const defaultTerritory = localStorage.getItem(`defaultTerritory_${user?.username}`) || "";
-        setFormData({
-          ...initialFormData,
-          username: user?.username || "",
-          territory: defaultTerritory,
-        });
-        setCurrentStep(1);
+      // First, check if organization exists or create it
+      let organizationId = null;
+      if (formData.businessName) {
+        const { data: existingOrg } = await supabase.from("organizations").select("id").eq("name", formData.businessName).single();
 
-        // Keep on the same page for continuous entry
-        setTimeout(() => {
-          setSuccess(false);
-        }, 3000);
+        if (existingOrg) {
+          organizationId = existingOrg.id;
+        } else {
+          // Create new organization
+          const { data: newOrg, error: orgError } = await supabase
+            .from("organizations")
+            .insert({
+              name: formData.businessName,
+              state_province: formData.territory || "",
+              country: formData.country || "",
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (orgError) throw orgError;
+          organizationId = newOrg.id;
+        }
       }
-    } catch (err) {
-      console.error("Error submitting form:", err);
-      setError("Failed to submit form. Please try again.");
+
+      // Create contact if phone number is provided
+      let contactId = null;
+      if (formData.phoneNumber && organizationId) {
+        const { data: newContact, error: contactError } = await supabase
+          .from("contacts")
+          .insert({
+            organization_id: organizationId,
+            phone_primary: formData.phoneNumber,
+            email: formData.email || null,
+            first_name: formData.ownerName.split(" ")[0] || "",
+            last_name: formData.ownerName.split(" ").slice(1).join(" ") || "",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (!contactError && newContact) {
+          contactId = newContact.id;
+        }
+      }
+
+      // Create the deal
+      const { data: newDeal, error: dealError } = await supabase
+        .from("deals")
+        .insert({
+          name: formData.businessName,
+          organization_id: organizationId,
+          primary_contact_id: contactId,
+          package_seen: formData.packageSeen || false,
+          decision_makers: formData.decisionMakers || "",
+          interest_level: formData.interestLevel || 3,
+          status: formData.signedUp ? "won" : "open",
+          lead_status: "new",
+          specific_needs: formData.specificNeeds || "",
+          stage: "initial_contact",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          metadata: submissionData.metadata,
+        })
+        .select()
+        .single();
+
+      if (dealError) throw dealError;
+
+      // Create an activity to track the form submission
+      if (newDeal) {
+        await supabase.from("activities").insert({
+          deal_id: newDeal.id,
+          organization_id: organizationId,
+          contact_id: contactId,
+          type: "note",
+          subject: "Website Form Submission",
+          description: `Lead submitted intake form. Lead Score: ${leadScore}/100. Completion time: ${completionTime}s`,
+          status: "completed",
+          metadata: {
+            leadScore,
+            formData: submissionData.metadata,
+          },
+          created_at: new Date().toISOString(),
+        });
+      }
+
+      setSubmissionId(newDeal.id);
+      setSuccess(true);
+    } catch (error: any) {
+      console.error("Error submitting form:", error);
+      setError(error.message || "Failed to submit form. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const getLeadScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const renderStepContent = () => {
@@ -595,111 +437,82 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold mb-4">Business Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Business Name</label>
-                <Input name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="ABC Restaurant" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Owner Name</label>
-                <Input name="ownerName" value={formData.ownerName} onChange={handleInputChange} placeholder="John Smith" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Phone Number</label>
-                <Input name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleInputChange} placeholder="(555) 123-4567" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Email</label>
-                <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Business Name</label>
+              <Input name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="Flash Payments Inc." autoFocus />
             </div>
-            <div className="mt-4">
-              <h4 className="text-md font-medium text-light-text-primary mb-3">Location</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-light-text-primary mb-1">Address</label>
-                  <Input name="address" value={formData.address} onChange={handleInputChange} placeholder="123 Main Street" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-light-text-primary mb-1">City</label>
-                  <Input name="city" value={formData.city} onChange={handleInputChange} placeholder="Kingston" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-light-text-primary mb-1">Territory</label>
-                  <select
-                    name="territory"
-                    value={formData.territory}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
-                  >
-                    <option value="">Select Territory</option>
-                    <option value="Kingston">Kingston</option>
-                    <option value="St. Andrew">St. Andrew</option>
-                    <option value="St. Thomas">St. Thomas</option>
-                    <option value="Portland">Portland</option>
-                    <option value="St. Mary">St. Mary</option>
-                    <option value="St. Ann">St. Ann</option>
-                    <option value="Trelawny">Trelawny</option>
-                    <option value="St. James">St. James</option>
-                    <option value="Hanover">Hanover</option>
-                    <option value="Westmoreland">Westmoreland</option>
-                    <option value="St. Elizabeth">St. Elizabeth</option>
-                    <option value="Manchester">Manchester</option>
-                    <option value="Clarendon">Clarendon</option>
-                    <option value="St. Catherine">St. Catherine</option>
-                  </select>
-                </div>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Business Type</label>
+              <select
+                name="businessType"
+                value={formData.businessType}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+              >
+                <option value="">Select business type</option>
+                {Object.entries(INDUSTRY_CONFIGS).map(([key, config]) => (
+                  <option key={key} value={key}>
+                    {config.label}
+                  </option>
+                ))}
+              </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Country</label>
+              <select
+                name="country"
+                value={formData.country}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+              >
+                <option value="">Select country</option>
+                <option value="Jamaica">Jamaica</option>
+                <option value="Cayman Islands">Cayman Islands</option>
+                <option value="Curaçao">Curaçao</option>
+              </select>
+            </div>
+            {formData.country && (
+              <div>
+                <label className="block text-sm font-medium text-light-text-primary mb-1">
+                  {formData.country === "Jamaica" ? "Parish" : "Region"}
+                </label>
+                <select
+                  name="territory"
+                  value={formData.territory}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+                >
+                  <option value="">Select {formData.country === "Jamaica" ? "parish" : "region"}</option>
+                  {getTerritoryOptions().map((territory) => (
+                    <option key={territory} value={territory}>
+                      {territory}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         );
 
       case 2:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Business Type & Details</h3>
+            <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-2">Select Business Type</label>
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(INDUSTRY_CONFIGS).map(([key, config]) => {
-                  const Icon = config.icon;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() =>
-                        handleInputChange({
-                          target: { name: "businessType", value: key, type: "text" },
-                        } as any)
-                      }
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        formData.businessType === key ? "border-flash-green bg-green-50" : "border-light-border hover:border-flash-green-light"
-                      }`}
-                    >
-                      <Icon className="h-8 w-8 mx-auto mb-2 text-flash-green" />
-                      <span className="text-sm font-medium">{config.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Owner/Manager Name</label>
+              <Input name="ownerName" value={formData.ownerName} onChange={handleInputChange} placeholder="John Smith" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Year Established</label>
-                <Input
-                  name="yearEstablished"
-                  type="number"
-                  value={formData.yearEstablished}
-                  onChange={handleInputChange}
-                  placeholder="2015"
-                  min="1900"
-                  max={new Date().getFullYear()}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Current Payment Processor</label>
-                <Input name="currentProcessor" value={formData.currentProcessor} onChange={handleInputChange} placeholder="Square, Stripe, etc." />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Phone Number</label>
+              <Input name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleInputChange} placeholder="+1 (876) 555-0123" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Email Address</label>
+              <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@business.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-light-text-primary mb-1">Year Established</label>
+              <Input name="yearEstablished" type="number" value={formData.yearEstablished} onChange={handleInputChange} placeholder="2020" min="1900" max={new Date().getFullYear()} />
             </div>
           </div>
         );
@@ -770,134 +583,89 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
         );
 
       case 4:
-        // This case should never be reached if no business type is selected
-        // because handleNext/handlePrevious skip it
-        if (!formData.businessType || !INDUSTRY_CONFIGS[formData.businessType]) {
-          return null;
-        }
-
-        const industryConfig = INDUSTRY_CONFIGS[formData.businessType];
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">{industryConfig.label} Specific Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {industryConfig.additionalFields.map((field) => (
-                <div key={field.name}>
-                  <label className="block text-sm font-medium text-light-text-primary mb-1">
-                    {field.label} {field.required && "*"}
-                  </label>
-                  {field.type === "checkbox" ? (
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.industrySpecificData[field.name] || false}
-                        onChange={(e) => handleIndustrySpecificChange(field.name, e.target.checked)}
-                        className="rounded border-light-border text-flash-green focus:ring-flash-green"
-                      />
-                      <span className="text-sm">Yes</span>
+        // Show industry-specific fields if business type is selected, otherwise show general fields
+        if (formData.businessType && INDUSTRY_CONFIGS[formData.businessType]) {
+          const industryConfig = INDUSTRY_CONFIGS[formData.businessType];
+          return (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold mb-4">{industryConfig.label} Specific Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {industryConfig.additionalFields.map((field) => (
+                  <div key={field.name}>
+                    <label className="block text-sm font-medium text-light-text-primary mb-1">
+                      {field.label}
                     </label>
-                  ) : (
-                    <Input
-                      type={field.type}
-                      value={formData.industrySpecificData[field.name] || ""}
-                      onChange={(e) => handleIndustrySpecificChange(field.name, e.target.value)}
-                      placeholder={field.label}
-                      required={field.required}
-                    />
-                  )}
-                </div>
-              ))}
+                    {field.type === "checkbox" ? (
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.industrySpecificData[field.name] || false}
+                          onChange={(e) => handleIndustrySpecificChange(field.name, e.target.checked)}
+                          className="rounded border-light-border text-flash-green focus:ring-flash-green"
+                        />
+                        <span className="text-sm">Yes</span>
+                      </label>
+                    ) : (
+                      <Input
+                        type={field.type}
+                        value={formData.industrySpecificData[field.name] || ""}
+                        onChange={(e) => handleIndustrySpecificChange(field.name, e.target.value)}
+                        placeholder={field.label}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <AdditionalDetailsFields formData={formData} handleInputChange={handleInputChange} />
             </div>
-          </div>
-        );
+          );
+        } else {
+          // No business type selected, show general additional details
+          return (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold mb-4">Additional Information</h3>
+              <AdditionalDetailsFields formData={formData} handleInputChange={handleInputChange} />
+            </div>
+          );
+        }
 
       case 5:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Interest & Next Steps</h3>
-            <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-2">Interest Level</label>
-              <div className="space-y-2">
-                <div className="relative">
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    value={formData.interestLevel}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        interestLevel: parseInt(e.target.value),
-                      }))
-                    }
-                    className="w-full slider"
-                  />
-                  {/* Tick marks */}
-                  <div className="absolute w-full flex justify-between px-2 -bottom-1">
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <div key={num} className="flex flex-col items-center">
-                        <div className="w-0.5 h-2 bg-gray-400"></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex justify-between text-sm font-medium text-light-text-primary mt-3">
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <span key={num} className={formData.interestLevel === num ? "text-flash-green font-bold" : ""}>
-                      {num}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex justify-between text-xs text-light-text-tertiary mt-1">
-                  <span>Not Interested</span>
-                  <span className="text-center">Moderate</span>
-                  <span>Very Interested</span>
-                </div>
-                <div className="text-center mt-3">
-                  <Badge
-                    variant={formData.interestLevel >= 4 ? "default" : "secondary"}
-                    className={`text-base ${formData.interestLevel >= 4 ? "bg-green-100 text-green-800 border-green-300" : ""}`}
-                  >
-                    Interest Level: {formData.interestLevel}/5
-                  </Badge>
-                </div>
-              </div>
+            <h3 className="text-lg font-semibold mb-4">Review Your Information</h3>
+            <div className="bg-light-bg-secondary p-4 rounded-lg space-y-2">
+              <p>
+                <strong>Business:</strong> {formData.businessName || "Not provided"}
+              </p>
+              <p>
+                <strong>Type:</strong> {formData.businessType ? INDUSTRY_CONFIGS[formData.businessType].label : "Not provided"}
+              </p>
+              <p>
+                <strong>Location:</strong> {formData.territory || "Not provided"}, {formData.country || "Not provided"}
+              </p>
+              <p>
+                <strong>Contact:</strong> {formData.ownerName || "Not provided"}
+              </p>
+              <p>
+                <strong>Phone:</strong> {formData.phoneNumber || "Not provided"}
+              </p>
+              <p>
+                <strong>Interest Level:</strong> {formData.interestLevel}/5
+              </p>
+              <p className={`font-semibold ${getLeadScoreColor(leadScore)}`}>
+                <strong>Lead Score:</strong> {leadScore}/100
+              </p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Decision Makers</label>
-              <Input name="decisionMakers" value={formData.decisionMakers} onChange={handleInputChange} placeholder="Owner, CFO, Manager" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Specific Needs or Questions</label>
-              <textarea
-                name="specificNeeds"
-                value={formData.specificNeeds}
-                onChange={handleInputChange}
-                placeholder="Tell us about any specific requirements..."
-                className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
-                rows={4}
-              />
-            </div>
-            <div className="flex items-center space-x-4">
+            <div className="mt-4">
               <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="packageSeen"
-                  checked={formData.packageSeen}
-                  onChange={handleInputChange}
-                  className="rounded border-light-border text-flash-green focus:ring-flash-green"
-                />
-                <span className="text-sm">Has seen package/demo</span>
+                <input type="checkbox" checked={formData.packageSeen} onChange={handleInputChange} name="packageSeen" className="rounded border-light-border text-flash-green focus:ring-flash-green" />
+                <span className="text-sm">I have reviewed the Flash payment processing packages</span>
               </label>
+            </div>
+            <div className="mt-2">
               <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="signedUp"
-                  checked={formData.signedUp}
-                  onChange={handleInputChange}
-                  className="rounded border-light-border text-flash-green focus:ring-flash-green"
-                />
-                <span className="text-sm font-medium">Ready to sign up</span>
+                <input type="checkbox" checked={formData.signedUp} onChange={handleInputChange} name="signedUp" className="rounded border-light-border text-flash-green focus:ring-flash-green" />
+                <span className="text-sm">I want to sign up for Flash payment processing</span>
               </label>
             </div>
           </div>
@@ -908,110 +676,86 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg p-12 shadow-lg border border-light-border text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
-          <p className="mt-4 text-light-text-secondary">Loading submission data...</p>
+  // Helper component for additional details fields
+  const AdditionalDetailsFields = ({ formData, handleInputChange }: { formData: FormData; handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void }) => (
+    <>
+      <div>
+        <label className="block text-sm font-medium text-light-text-primary mb-1">Current Payment Processor</label>
+        <Input name="currentProcessor" value={formData.currentProcessor} onChange={handleInputChange} placeholder="e.g., Square, Stripe, None" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-light-text-primary mb-1">Interest Level</label>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm">Low</span>
+          <input type="range" name="interestLevel" min="1" max="5" value={formData.interestLevel} onChange={handleInputChange} className="flex-1" />
+          <span className="text-sm">High</span>
+          <span className="ml-2 font-semibold">{formData.interestLevel}/5</span>
         </div>
       </div>
-    );
-  }
+      <div>
+        <label className="block text-sm font-medium text-light-text-primary mb-1">Decision Makers</label>
+        <Input name="decisionMakers" value={formData.decisionMakers} onChange={handleInputChange} placeholder="e.g., Owner, Manager, CFO" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-light-text-primary mb-1">Specific Needs or Questions</label>
+        <textarea
+          name="specificNeeds"
+          value={formData.specificNeeds}
+          onChange={handleInputChange}
+          rows={3}
+          className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+          placeholder="Tell us about your specific payment processing needs..."
+        />
+      </div>
+    </>
+  );
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <div className="relative">
-            {/* Username display in top right */}
-            {formData.username && (
-              <div className="absolute top-0 right-0 flex items-center text-sm text-light-text-secondary bg-light-bg-secondary px-3 py-1 rounded-full">
-                <UserIcon className="w-4 h-4 mr-2" />
-                <span className="font-medium text-light-text-primary">{formData.username}</span>
-              </div>
-            )}
-
-            <div className="flex justify-between items-start mt-6">
-              <div>
-                <CardTitle>{isEditMode ? "Edit Submission" : "Flash Sales Intake Form"}</CardTitle>
-                <CardDescription>
-                  {isEditMode ? "Update existing lead information" : "Capture lead information with intelligent field adaptation"}
-                </CardDescription>
-              </div>
-              <div className="text-right">
-                <div className={`text-2xl font-bold ${getLeadScoreColor(formData.leadScore)}`}>{formData.leadScore}</div>
-                <Badge variant="outline" className="mt-1">
-                  {getLeadScoreLabel(formData.leadScore)}
-                </Badge>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-light-text-secondary mb-2">
-              <span>
-                Step {getDisplayStep()} of {getTotalSteps()}
-              </span>
-              <span>{Math.round(getStepProgress())}% Complete</span>
-            </div>
-            <Progress value={getStepProgress()} className="h-2" />
-          </div>
-        </CardHeader>
-        <CardContent>
+    <div className="min-h-screen bg-gradient-to-b from-light-bg-primary to-light-bg-secondary py-12 px-4">
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="p-8">
           {success ? (
             <div className="text-center py-8">
-              <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Submission Successful!</h3>
-              <p className="text-light-text-secondary">
-                Lead score:{" "}
-                <span className={`font-bold ${getLeadScoreColor(formData.leadScore)}`}>
-                  {formData.leadScore} - {getLeadScoreLabel(formData.leadScore)}
-                </span>
-              </p>
-              <p className="text-light-text-secondary mt-2">
-                {isEditMode ? "Redirecting to submission details..." : "Ready for next entry..."}
-              </p>
+              <CheckCircleIcon className="h-16 w-16 text-flash-green mx-auto mb-4" />
+              <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
+              <p className="text-light-text-secondary mb-4">Your information has been submitted successfully.</p>
+              <p className="text-sm text-light-text-secondary">Submission ID: {submissionId}</p>
+              <p className="text-lg font-semibold mt-4 text-flash-green">Lead Score: {leadScore}/100</p>
+              <Button onClick={() => window.location.reload()} className="mt-6 bg-flash-green hover:bg-flash-green-light">
+                Submit Another
+              </Button>
             </div>
           ) : (
             <>
-              {/* Search Section - Only show for new submissions on step 1 */}
-              {!isEditMode && !submissionId && currentStep === 1 && (
-                <div className="mb-6 p-4 bg-light-bg-secondary rounded-lg border border-light-border">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <label className="block text-sm font-medium text-light-text-primary">
-                        Search Existing Submissions
-                      </label>
-                      <p className="text-xs text-light-text-secondary mt-1">
-                        Start typing to find and update an existing lead
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowSearch(!showSearch)}
-                      className="text-sm text-light-text-secondary hover:text-light-text-primary flex items-center"
-                    >
-                      {showSearch ? "Hide" : "Show"} Search
-                    </button>
-                  </div>
-                  {showSearch && (
-                    <SubmissionSearch
-                      onSelect={handleSubmissionSelect}
-                      onClear={handleClearSearch}
-                      currentSubmissionId={submissionId}
-                    />
-                  )}
+              <div className="mb-6">
+                <div className="flex items-center justify-center mb-4">
+                  <RocketLaunchIcon className="h-8 w-8 text-flash-green mr-2" />
+                  <h2 className="text-2xl font-bold">Get Started with Flash</h2>
                 </div>
-              )}
+                <p className="text-center text-light-text-secondary">Complete this form to learn how Flash can transform your payment processing</p>
+              </div>
+              <div className="mt-4">
+                <div className="flex justify-between text-sm text-light-text-secondary mb-2">
+                  <span>
+                    Step {currentStep} of {FORM_STEPS.length}
+                  </span>
+                  <span>{Math.round((currentStep / FORM_STEPS.length) * 100)}% Complete</span>
+                </div>
+                <Progress value={(currentStep / FORM_STEPS.length) * 100} className="h-2" />
+              </div>
 
               <form
                 onSubmit={handleSubmit}
-                className="space-y-6"
+                className="space-y-6 mt-6"
                 autoComplete="off"
                 onKeyDown={(e) => {
-                  // Prevent form submission on Enter key except for submit button
-                  if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+                  // Prevent form submission on Enter key
+                  if (e.key === "Enter" && e.target instanceof HTMLInputElement && e.target.type !== "submit") {
                     e.preventDefault();
+                    // Allow Enter to move to next step if not on last step
+                    if (currentStep < FORM_STEPS.length) {
+                      handleNext();
+                    }
                   }
                 }}
               >
@@ -1024,22 +768,22 @@ export default function DynamicCanvasForm({ submissionId }: DynamicCanvasFormPro
 
                 {renderStepContent()}
 
-              <div className="flex justify-between pt-6">
-                <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
-                  Previous
-                </Button>
+                <div className="flex justify-between pt-6">
+                  <Button type="button" variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
+                    Previous
+                  </Button>
 
-                {currentStep < getTotalSteps() ? (
-                  <Button type="button" onClick={handleNext} className="bg-flash-green hover:bg-flash-green-light">
-                    Next
-                  </Button>
-                ) : (
-                  <Button type="submit" disabled={isSubmitting} className="bg-flash-green hover:bg-flash-green-light">
-                    {isSubmitting ? "Submitting..." : "Submit"}
-                  </Button>
-                )}
-              </div>
-            </form>
+                  {currentStep < FORM_STEPS.length ? (
+                    <Button type="button" onClick={handleNext} className="bg-flash-green hover:bg-flash-green-light">
+                      Next
+                    </Button>
+                  ) : (
+                    <Button type="submit" disabled={isSubmitting} className="bg-flash-green hover:bg-flash-green-light">
+                      {isSubmitting ? "Submitting..." : "Submit"}
+                    </Button>
+                  )}
+                </div>
+              </form>
             </>
           )}
         </CardContent>
