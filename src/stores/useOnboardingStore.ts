@@ -162,7 +162,15 @@ export const useOnboardingStore = create<OnboardingState>()(
         const currentIndex = STEP_ORDER.indexOf(currentStep);
         
         if (currentIndex < STEP_ORDER.length - 1) {
-          const nextStep = STEP_ORDER[currentIndex + 1];
+          let nextStep = STEP_ORDER[currentIndex + 1];
+          
+          // Skip tour steps (temporarily disabled)
+          const tourSteps = ['dashboard-tour', 'leads-tour', 'program-tour'];
+          while (tourSteps.includes(nextStep) && STEP_ORDER.indexOf(nextStep) < STEP_ORDER.length - 1) {
+            const nextIndex = STEP_ORDER.indexOf(nextStep);
+            nextStep = STEP_ORDER[nextIndex + 1];
+          }
+          
           set({
             currentStep: nextStep,
             completedSteps: [...completedSteps, currentStep],

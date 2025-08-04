@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
 import WelcomeModal from './WelcomeModal';
 import RoleSelectionModal from './RoleSelectionModal';
-import InteractiveTour from './InteractiveTour';
+// import InteractiveTour from './InteractiveTour'; // Temporarily disabled
 import QuickSetupChecklist from './QuickSetupChecklist';
 import { getUserFromStorage } from '@/lib/auth';
 
@@ -32,7 +32,7 @@ export default function OnboardingFlow() {
     <>
       <WelcomeModal />
       <RoleSelectionModal />
-      <InteractiveTour />
+      {/* <InteractiveTour /> */} {/* Temporarily disabled */}
       <QuickSetupChecklist />
     </>
   );

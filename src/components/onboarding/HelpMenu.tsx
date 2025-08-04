@@ -45,9 +45,11 @@ export default function HelpMenu() {
                   className={`${
                     active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
                   } group flex w-full items-center px-4 py-2 text-sm`}
+                  disabled
+                  title="Tour temporarily disabled"
                 >
-                  <SparklesIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                  Restart Onboarding Tour
+                  <SparklesIcon className="mr-3 h-5 w-5 text-gray-300" />
+                  <span className="text-gray-400">Restart Onboarding Tour (Coming Soon)</span>
                 </button>
               )}
             </Menu.Item>

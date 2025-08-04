@@ -50,25 +50,7 @@ describe('useOnboardingStore', () => {
       });
       expect(result.current.selectedRole).toBe('sales-rep');
 
-      // Go to dashboard tour
-      act(() => {
-        result.current.nextStep();
-      });
-      expect(result.current.currentStep).toBe('dashboard-tour');
-
-      // Go to leads tour
-      act(() => {
-        result.current.nextStep();
-      });
-      expect(result.current.currentStep).toBe('leads-tour');
-
-      // Go to program tour
-      act(() => {
-        result.current.nextStep();
-      });
-      expect(result.current.currentStep).toBe('program-tour');
-
-      // Go to quick setup
+      // Go to quick setup (tour steps are skipped)
       act(() => {
         result.current.nextStep();
       });
