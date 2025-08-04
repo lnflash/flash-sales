@@ -393,7 +393,7 @@ export default function DynamicIntakeForm() {
       const { data: newDeal, error: dealError } = await supabase
         .from("deals")
         .insert({
-          name: formData.businessName,
+          name: formData.businessName || "Unnamed Business",
           organization_id: organizationId,
           primary_contact_id: contactId,
           package_seen: formData.packageSeen || false,
@@ -410,7 +410,10 @@ export default function DynamicIntakeForm() {
         .select()
         .single();
 
-      if (dealError) throw dealError;
+      if (dealError) {
+        console.error("Deal creation error:", dealError);
+        throw dealError;
+      }
 
       // Create an activity to track the form submission
       if (newDeal) {
