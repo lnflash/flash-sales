@@ -265,15 +265,39 @@ export function useSupabaseProfile() {
       }
 
       const supabase = getSupabase();
-      const { data, error: updateError } = await supabase.from("users").update(updateData).eq("id", profile.id).select().single();
+      
+      // Use RPC function to bypass CORS issues
+      const { data, error: updateError } = await supabase.rpc('update_user_profile', {
+        user_id: profile.id,
+        first_name_param: updates.first_name,
+        last_name_param: updates.last_name,
+        timezone_param: updates.timezone,
+        phone_param: updates.phone,
+        default_territory_param: updates.default_territory
+      });
 
       if (updateError) {
         console.error("Error updating profile:", updateError);
-        setError(updateError.message);
-        return false;
-      }
-
-      if (data) {
+        
+        // If RPC function doesn't exist, fall back to direct update
+        if (updateError.message.includes('function') || updateError.message.includes('does not exist')) {
+          console.log("RPC function not found, falling back to direct update");
+          const { data: fallbackData, error: fallbackError } = await supabase.from("users").update(updateData).eq("id", profile.id).select().single();
+          
+          if (fallbackError) {
+            console.error("Error with fallback update:", fallbackError);
+            setError(fallbackError.message);
+            return false;
+          }
+          
+          if (fallbackData) {
+            setProfile(formatProfile(fallbackData));
+          }
+        } else {
+          setError(updateError.message);
+          return false;
+        }
+      } else if (data) {
         setProfile(formatProfile(data));
       }
 
