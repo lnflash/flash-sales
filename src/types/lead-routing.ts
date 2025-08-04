@@ -31,6 +31,40 @@ export const JAMAICA_PARISHES: JamaicaParish[] = [
   'St. Thomas'
 ];
 
+export type CaymanRegion = 
+  | 'George Town'
+  | 'West Bay'
+  | 'Bodden Town'
+  | 'North Side'
+  | 'East End'
+  | 'Sister Islands';
+
+export const CAYMAN_REGIONS: CaymanRegion[] = [
+  'George Town',
+  'West Bay',
+  'Bodden Town',
+  'North Side',
+  'East End',
+  'Sister Islands'
+];
+
+export type CuracaoRegion = 
+  | 'Willemstad'
+  | 'Westpunt'
+  | 'Sint Michiel'
+  | 'Barber'
+  | 'Jan Thiel'
+  | 'Nieuwpoort';
+
+export const CURACAO_REGIONS: CuracaoRegion[] = [
+  'Willemstad',
+  'Westpunt',
+  'Sint Michiel',
+  'Barber',
+  'Jan Thiel',
+  'Nieuwpoort'
+];
+
 export interface SalesRep {
   id: string;
   name: string;
