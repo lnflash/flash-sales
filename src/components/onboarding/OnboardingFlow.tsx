@@ -14,6 +14,10 @@ export default function OnboardingFlow() {
   } = useOnboardingStore();
 
   useEffect(() => {
+    // Onboarding auto-start is temporarily disabled
+    // Uncomment the code below to re-enable automatic onboarding for new users
+    
+    /*
     // Check if user is logged in and hasn't completed onboarding
     const user = getUserFromStorage();
     
@@ -26,6 +30,7 @@ export default function OnboardingFlow() {
       
       return () => clearTimeout(timer);
     }
+    */
   }, [hasCompletedOnboarding, skipCount, startOnboarding]);
 
   return (
