@@ -149,9 +149,20 @@ export function useSupabaseProfile() {
       const lastName = nameParts[1] || "User";
 
       const supabase = getSupabase();
+      
+      // Get the current auth user to get their ID
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const userId = authUser?.id;
+      
+      if (!userId) {
+        console.error("No auth user found, cannot create profile");
+        return null;
+      }
+      
       const { data, error } = await supabase
         .from("users")
         .insert({
+          id: userId, // Use the auth user's ID
           email,
           username: username.toLowerCase(), // Ensure lowercase for consistency
           first_name: firstName,
