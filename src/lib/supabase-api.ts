@@ -39,7 +39,7 @@ export function mapDealToSubmission(deal: any): Submission {
     phoneNumber: deal.primary_contact?.phone_primary || "",
     packageSeen: deal.package_seen || false,
     decisionMakers: deal.decision_makers || "",
-    interestLevel: 3, // Default value since interest_level doesn't exist on deals table
+    interestLevel: deal.interest_level || 3, // Use actual value or default to 3
     signedUp: deal.status === "won" || false,
     leadStatus: leadStatus as any,
     specificNeeds: deal.specific_needs || "",
@@ -93,11 +93,9 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
     if (filters.dateRange?.end) {
       query = query.lte("created_at", filters.dateRange.end);
     }
-    // Note: interest_level doesn't exist on deals table
-    // Skipping this filter to avoid 400 errors
-    // if (filters.interestLevel?.length) {
-    //   query = query.in("interest_level", filters.interestLevel);
-    // }
+    if (filters.interestLevel?.length) {
+      query = query.in("interest_level", filters.interestLevel);
+    }
     if (filters.signedUp !== undefined) {
       query = filters.signedUp ? query.eq("status", "won") : query.neq("status", "won");
     }

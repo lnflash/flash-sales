@@ -132,13 +132,12 @@ export class AILeadScoringService {
   // Get historical comparison data
   private async getHistoricalComparison(leadData: LeadData) {
     try {
-      // Note: business_type and interest_level fields don't exist on deals table
-      // Return default values for now to avoid console errors
-      
-      // For now, we'll query basic deal data without these fields
+      // Query similar leads based on interest level
       const { data: similarLeads } = await supabase
         .from('deals')
-        .select('id, status, created_at, closed_at')
+        .select('id, status, created_at, closed_at, interest_level')
+        .gte('interest_level', leadData.interestLevel - 1)
+        .lte('interest_level', leadData.interestLevel + 1)
         .limit(100);
 
       if (!similarLeads || similarLeads.length === 0) {
