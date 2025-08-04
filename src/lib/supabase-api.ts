@@ -39,7 +39,7 @@ export function mapDealToSubmission(deal: any): Submission {
     phoneNumber: deal.primary_contact?.phone_primary || "",
     packageSeen: deal.package_seen || false,
     decisionMakers: deal.decision_makers || "",
-    interestLevel: deal.interest_level || 0,
+    interestLevel: 3, // Default value since interest_level doesn't exist on deals table
     signedUp: deal.status === "won" || false,
     leadStatus: leadStatus as any,
     specificNeeds: deal.specific_needs || "",
@@ -73,7 +73,7 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
       const isNumeric = !isNaN(Number(searchTerm));
       if (isNumeric) {
         searchConditions.push(
-          `interest_level.eq.${searchTerm}`,
+          // Note: interest_level doesn't exist on deals table
           `amount.eq.${searchTerm}`
         );
       }
@@ -93,9 +93,11 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
     if (filters.dateRange?.end) {
       query = query.lte("created_at", filters.dateRange.end);
     }
-    if (filters.interestLevel?.length) {
-      query = query.in("interest_level", filters.interestLevel);
-    }
+    // Note: interest_level doesn't exist on deals table
+    // Skipping this filter to avoid 400 errors
+    // if (filters.interestLevel?.length) {
+    //   query = query.in("interest_level", filters.interestLevel);
+    // }
     if (filters.signedUp !== undefined) {
       query = filters.signedUp ? query.eq("status", "won") : query.neq("status", "won");
     }
