@@ -283,9 +283,11 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
           setSuccess(false);
         }, 3000);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error submitting form:", err);
-      setError("Failed to submit form. Please try again.");
+      // Show more specific error message if available
+      const errorMessage = err.message || "Failed to submit form. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

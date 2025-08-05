@@ -27,9 +27,13 @@ export function mapDealToSubmission(deal: any): Submission {
 
   // Map deal status to lead status
   let leadStatus: string | undefined;
-  if (deal.lead_status) {
-    leadStatus = deal.lead_status;
-  } else if (deal.status === "won") {
+  // Temporarily disabled until DB migration is applied
+  // if (deal.lead_status) {
+  //   leadStatus = deal.lead_status;
+  // } else if (deal.status === "won") {
+  //   leadStatus = "signed_up";
+  // }
+  if (deal.status === "won") {
     leadStatus = "signed_up";
   }
 
@@ -364,7 +368,7 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
         decision_makers: data.decisionMakers || "",
         interest_level: data.interestLevel || 0,
         status: data.signedUp ? "won" : "open",
-        lead_status: data.leadStatus || (data.signedUp ? "signed_up" : undefined),
+        // lead_status: data.leadStatus || (data.signedUp ? "signed_up" : undefined), // Temporarily commented until DB migration is applied
         specific_needs: data.specificNeeds || "",
         stage: "initial_contact",
         created_at: new Date().toISOString(),
@@ -381,9 +385,25 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
     if (dealError) throw dealError;
     
     return mapDealToSubmission(newDeal);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating submission in Supabase:", error);
-    throw error;
+    console.error("Error details:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    
+    // Provide more specific error messages
+    if (error.code === '42P01') {
+      throw new Error('Database table not found. Please ensure migrations have been applied.');
+    } else if (error.code === '42703') {
+      throw new Error('Database column not found. The lead_status field may not exist yet. Please contact support.');
+    } else if (error.code === '23505') {
+      throw new Error('A record with this information already exists.');
+    } else {
+      throw new Error(`Failed to submit form: ${error.message || 'Unknown error'}`);
+    }
   }
 }
 
@@ -468,7 +488,7 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
     if (data.decisionMakers !== undefined) updateData.decision_makers = data.decisionMakers;
     if (data.interestLevel !== undefined) updateData.interest_level = data.interestLevel;
     if (data.signedUp !== undefined) updateData.status = data.signedUp ? "won" : "open";
-    if (data.leadStatus !== undefined) updateData.lead_status = data.leadStatus;
+    // if (data.leadStatus !== undefined) updateData.lead_status = data.leadStatus; // Temporarily commented until DB migration is applied
     if (data.specificNeeds !== undefined) updateData.specific_needs = data.specificNeeds;
 
     const { data: updatedDeal, error } = await supabase
@@ -492,9 +512,25 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
     if (!updatedDeal) throw new Error("Failed to update submission");
 
     return mapDealToSubmission(updatedDeal);
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error updating submission ${id} in Supabase:`, error);
-    throw error;
+    console.error("Error details:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    
+    // Provide more specific error messages
+    if (error.code === '42P01') {
+      throw new Error('Database table not found. Please ensure migrations have been applied.');
+    } else if (error.code === '42703') {
+      throw new Error('Database column not found. The lead_status field may not exist yet. Please contact support.');
+    } else if (error.code === '23505') {
+      throw new Error('A record with this information already exists.');
+    } else {
+      throw new Error(`Failed to update form: ${error.message || 'Unknown error'}`);
+    }
   }
 }
 
