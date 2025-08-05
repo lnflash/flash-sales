@@ -294,7 +294,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white dark:bg-dark-bg-primary rounded-lg p-12 shadow-lg border border-light-border dark:border-dark-border text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-12 shadow-lg border border-light-border dark:border-gray-700 text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
           <p className="mt-4 text-light-text-secondary dark:text-dark-text-secondary">Loading submission data...</p>
         </div>
@@ -304,7 +304,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <Card className="bg-white dark:bg-dark-bg-primary shadow-lg border-light-border dark:border-dark-border">
+      <Card className="shadow-lg">
         <CardHeader className="border-b border-light-border pb-4 sm:pb-6">
           <div className="relative">
             {/* Username display in top right */}

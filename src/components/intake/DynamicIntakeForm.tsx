@@ -782,7 +782,7 @@ export default function DynamicIntakeForm() {
     <div className="min-h-screen bg-gradient-to-b from-light-bg-primary to-light-bg-secondary dark:from-dark-bg-primary dark:to-dark-bg-secondary py-12 px-4">
       {showSearch && !success && (
         <div className="max-w-2xl mx-auto mb-8">
-          <Card className="dark:bg-dark-bg-primary dark:border-dark-border">
+          <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">Search Existing Submissions</h3>
               <SubmissionSearch 
@@ -797,7 +797,7 @@ export default function DynamicIntakeForm() {
         </div>
       )}
       
-      <Card className="max-w-2xl mx-auto dark:bg-dark-bg-primary dark:border-dark-border">
+      <Card className="max-w-2xl mx-auto">
         <CardContent className="p-8">
           {success ? (
             <div className="text-center py-8">
