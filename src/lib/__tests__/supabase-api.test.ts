@@ -43,6 +43,7 @@ describe('supabase-api', () => {
         id: '123',
         ownerName: 'Test Organization',
         phoneNumber: '876-555-1234',
+        email: '',
         packageSeen: true,
         decisionMakers: 'John Doe',
         interestLevel: 4,
@@ -52,6 +53,14 @@ describe('supabase-api', () => {
         username: 'testuser',
         territory: 'Kingston',
         timestamp: '2024-01-01T00:00:00Z',
+        businessType: '',
+        monthlyRevenue: '',
+        numberOfEmployees: '',
+        yearEstablished: '',
+        currentProcessor: '',
+        monthlyTransactions: '',
+        averageTicketSize: '',
+        painPoints: [],
       });
     });
 
@@ -68,6 +77,7 @@ describe('supabase-api', () => {
         id: '123',
         ownerName: 'Test Business',
         phoneNumber: '',
+        email: '',
         packageSeen: false,
         decisionMakers: '',
         interestLevel: 3,
@@ -77,6 +87,14 @@ describe('supabase-api', () => {
         username: 'Unassigned',
         territory: '',
         timestamp: '2024-01-01T00:00:00Z',
+        businessType: '',
+        monthlyRevenue: '',
+        numberOfEmployees: '',
+        yearEstablished: '',
+        currentProcessor: '',
+        monthlyTransactions: '',
+        averageTicketSize: '',
+        painPoints: [],
       });
     });
 

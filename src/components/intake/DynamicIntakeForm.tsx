@@ -278,27 +278,30 @@ export default function DynamicIntakeForm() {
             country = "Curaçao";
           }
 
+          // Try custom_fields first, fallback to metadata
+          const metadataSource = deal.custom_fields || deal.metadata || {};
+          
           setFormData({
             businessName: deal.organization?.name || deal.name || "",
-            businessType: deal.metadata?.businessType || "",
+            businessType: metadataSource.businessType || "",
             country,
             territory,
-            ownerName: deal.metadata?.ownerName || "",
+            ownerName: metadataSource.ownerName || "",
             phoneNumber: deal.primary_contact?.phone_primary || "",
-            email: deal.metadata?.email || "",
-            monthlyRevenue: deal.metadata?.monthlyRevenue || "",
-            numberOfEmployees: deal.metadata?.numberOfEmployees || "",
-            yearEstablished: deal.metadata?.yearEstablished || new Date().getFullYear().toString(),
-            monthlyTransactions: deal.metadata?.monthlyTransactions || "",
-            averageTicketSize: deal.metadata?.averageTicketSize || "",
-            painPoints: deal.metadata?.painPoints || [],
-            currentProcessor: deal.metadata?.currentProcessor || "",
+            email: metadataSource.email || "",
+            monthlyRevenue: metadataSource.monthlyRevenue || "",
+            numberOfEmployees: metadataSource.numberOfEmployees || "",
+            yearEstablished: metadataSource.yearEstablished || new Date().getFullYear().toString(),
+            monthlyTransactions: metadataSource.monthlyTransactions || "",
+            averageTicketSize: metadataSource.averageTicketSize || "",
+            painPoints: metadataSource.painPoints || [],
+            currentProcessor: metadataSource.currentProcessor || "",
             interestLevel: deal.interest_level || 3,
             specificNeeds: deal.specific_needs || "",
             packageSeen: deal.package_seen || false,
             decisionMakers: deal.decision_makers || "",
             signedUp: deal.status === "won" || false,
-            industrySpecificData: deal.metadata?.industrySpecificData || {},
+            industrySpecificData: metadataSource.industrySpecificData || {},
           });
         } catch (error) {
           console.error("Error loading submission:", error);

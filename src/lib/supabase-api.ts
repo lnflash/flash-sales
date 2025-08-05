@@ -37,10 +37,14 @@ export function mapDealToSubmission(deal: any): Submission {
     leadStatus = "signed_up";
   }
 
+  // Get metadata from custom_fields first, fallback to metadata
+  const metadata = deal.custom_fields || deal.metadata || {};
+
   return {
     id: deal.id, // Keep as string UUID
     ownerName: deal.organization?.name || deal.name || "",
     phoneNumber: deal.primary_contact?.phone_primary || "",
+    email: metadata.email || "",
     packageSeen: deal.package_seen || false,
     decisionMakers: deal.decision_makers || "",
     interestLevel: deal.interest_level || 3, // Use actual value or default to 3
@@ -50,6 +54,15 @@ export function mapDealToSubmission(deal: any): Submission {
     username: deal.owner?.username || deal.owner?.email?.split("@")[0] || "Unassigned",
     territory: territory,
     timestamp: deal.created_at || new Date().toISOString(),
+    // Additional fields from metadata
+    businessType: metadata.businessType || "",
+    monthlyRevenue: metadata.monthlyRevenue || "",
+    numberOfEmployees: metadata.numberOfEmployees || "",
+    yearEstablished: metadata.yearEstablished || "",
+    currentProcessor: metadata.currentProcessor || "",
+    monthlyTransactions: metadata.monthlyTransactions || "",
+    averageTicketSize: metadata.averageTicketSize || "",
+    painPoints: metadata.painPoints || [],
   };
 }
 

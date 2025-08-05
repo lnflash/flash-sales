@@ -199,6 +199,78 @@ export default function SubmissionDetail({
               </p>
             </div>
 
+            {submission.email && (
+              <div>
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Email</h3>
+                <p className="text-light-text-primary">{submission.email}</p>
+              </div>
+            )}
+
+            {submission.businessType && (
+              <div>
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Business Type</h3>
+                <p className="text-light-text-primary">{submission.businessType}</p>
+              </div>
+            )}
+
+            {submission.monthlyRevenue && (
+              <div>
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Monthly Revenue</h3>
+                <p className="text-light-text-primary">{submission.monthlyRevenue}</p>
+              </div>
+            )}
+
+            {submission.numberOfEmployees && (
+              <div>
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Number of Employees</h3>
+                <p className="text-light-text-primary">{submission.numberOfEmployees}</p>
+              </div>
+            )}
+
+            {submission.yearEstablished && (
+              <div>
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Year Established</h3>
+                <p className="text-light-text-primary">{submission.yearEstablished}</p>
+              </div>
+            )}
+
+            {submission.currentProcessor && (
+              <div>
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Current Processor</h3>
+                <p className="text-light-text-primary">{submission.currentProcessor}</p>
+              </div>
+            )}
+
+            {submission.monthlyTransactions && (
+              <div>
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Monthly Transactions</h3>
+                <p className="text-light-text-primary">{submission.monthlyTransactions}</p>
+              </div>
+            )}
+
+            {submission.averageTicketSize && (
+              <div>
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Average Ticket Size</h3>
+                <p className="text-light-text-primary">{submission.averageTicketSize}</p>
+              </div>
+            )}
+
+            {submission.painPoints && submission.painPoints.length > 0 && (
+              <div className="md:col-span-2">
+                <h3 className="text-light-text-secondary text-sm font-medium mb-1">Pain Points</h3>
+                <div className="flex flex-wrap gap-2">
+                  {submission.painPoints.map((point, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-light-bg-secondary text-light-text-primary border border-light-border"
+                    >
+                      {point}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div>
               <h3 className="text-light-text-secondary text-sm font-medium mb-1">Sales Rep</h3>
               <p className="text-light-text-primary flex items-center">
