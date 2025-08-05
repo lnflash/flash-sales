@@ -5,6 +5,7 @@ import { JamaicaParish, JAMAICA_PARISHES } from "@/types/lead-routing";
 import { formatDate } from "@/utils/date-formatter";
 import { getUserFromStorage } from "@/lib/auth";
 import { useRouter } from "next/router";
+import PinManagement from "@/components/profile/PinManagement";
 import {
   UserIcon,
   PhoneIcon,
@@ -320,6 +321,11 @@ export default function ProfilePage() {
               </button>
             </div>
           )}
+        </div>
+
+        {/* PIN Management */}
+        <div className="mb-6">
+          <PinManagement />
         </div>
 
         {/* Territory Settings */}
