@@ -130,9 +130,12 @@ interface FormData {
 
 export default function DynamicIntakeForm() {
   const router = useRouter();
+  const { id, mode } = router.query;
   const [user] = useState(getUserFromStorage());
   const [currentStep, setCurrentStep] = useState(1);
   const [showSearch, setShowSearch] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     // Business Information
     businessName: "",
@@ -238,6 +241,76 @@ export default function DynamicIntakeForm() {
 
     loadUserDefaults();
   }, [user]);
+
+  // Load submission data if in edit mode
+  useEffect(() => {
+    const loadSubmission = async () => {
+      if (id && mode === 'edit' && typeof id === 'string') {
+        setIsLoading(true);
+        setIsEditMode(true);
+        setShowSearch(false);
+        
+        try {
+          const supabase = getSupabase();
+          const { data: deal, error } = await supabase
+            .from("deals")
+            .select(`
+              *,
+              organization:organizations!organization_id(name, state_province),
+              primary_contact:contacts!primary_contact_id(phone_primary),
+              owner:users!owner_id(email, username)
+            `)
+            .eq("id", id)
+            .single();
+
+          if (error) throw error;
+          if (!deal) throw new Error("Submission not found");
+
+          // Map deal data to form data
+          const territory = deal.organization?.state_province || "";
+          let country = "";
+          
+          if (JAMAICA_PARISHES.includes(territory as JamaicaParish)) {
+            country = "Jamaica";
+          } else if (CAYMAN_REGIONS.includes(territory as CaymanRegion)) {
+            country = "Cayman Islands";
+          } else if (CURACAO_REGIONS.includes(territory as CuracaoRegion)) {
+            country = "Curaçao";
+          }
+
+          setFormData({
+            businessName: deal.organization?.name || deal.name || "",
+            businessType: deal.metadata?.businessType || "",
+            country,
+            territory,
+            ownerName: deal.metadata?.ownerName || "",
+            phoneNumber: deal.primary_contact?.phone_primary || "",
+            email: deal.metadata?.email || "",
+            monthlyRevenue: deal.metadata?.monthlyRevenue || "",
+            numberOfEmployees: deal.metadata?.numberOfEmployees || "",
+            yearEstablished: deal.metadata?.yearEstablished || new Date().getFullYear().toString(),
+            monthlyTransactions: deal.metadata?.monthlyTransactions || "",
+            averageTicketSize: deal.metadata?.averageTicketSize || "",
+            painPoints: deal.metadata?.painPoints || [],
+            currentProcessor: deal.metadata?.currentProcessor || "",
+            interestLevel: deal.interest_level || 3,
+            specificNeeds: deal.specific_needs || "",
+            packageSeen: deal.package_seen || false,
+            decisionMakers: deal.decision_makers || "",
+            signedUp: deal.status === "won" || false,
+            industrySpecificData: deal.metadata?.industrySpecificData || {},
+          });
+        } catch (error) {
+          console.error("Error loading submission:", error);
+          setError("Failed to load submission data");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadSubmission();
+  }, [id, mode]);
 
   useEffect(() => {
     // Calculate lead score whenever form data changes
@@ -504,53 +577,106 @@ export default function DynamicIntakeForm() {
         }
       }
 
-      // Create the deal
-      const { data: newDeal, error: dealError } = await supabase
-        .from("deals")
-        .insert({
-          name: formData.businessName || "Unnamed Business",
-          organization_id: organizationId,
-          primary_contact_id: contactId,
-          package_seen: formData.packageSeen || false,
-          decision_makers: formData.decisionMakers || "",
-          interest_level: formData.interestLevel || 3,
-          status: formData.signedUp ? "won" : "open",
-          lead_status: "contacted",
-          specific_needs: formData.specificNeeds || "",
-          stage: "initial_contact",
-          owner_id: ownerId, // Assign to logged-in user or null
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          metadata: submissionData.metadata,
-        })
-        .select()
-        .single();
+      let dealResult;
+      
+      if (isEditMode && id) {
+        // Update existing deal
+        const { data: updatedDeal, error: updateError } = await supabase
+          .from("deals")
+          .update({
+            name: formData.businessName || "Unnamed Business",
+            organization_id: organizationId,
+            primary_contact_id: contactId,
+            package_seen: formData.packageSeen || false,
+            decision_makers: formData.decisionMakers || "",
+            interest_level: formData.interestLevel || 3,
+            status: formData.signedUp ? "won" : "open",
+            lead_status: formData.signedUp ? "converted" : "contacted",
+            specific_needs: formData.specificNeeds || "",
+            stage: formData.signedUp ? "closed_won" : "initial_contact",
+            updated_at: new Date().toISOString(),
+            metadata: submissionData.metadata,
+          })
+          .eq("id", id)
+          .select()
+          .single();
 
-      if (dealError) {
-        console.error("Deal creation error:", dealError);
-        throw dealError;
+        if (updateError) {
+          console.error("Deal update error:", updateError);
+          throw updateError;
+        }
+        
+        dealResult = updatedDeal;
+        
+        // Create an activity to track the update
+        if (updatedDeal) {
+          await supabase.from("activities").insert({
+            deal_id: updatedDeal.id,
+            organization_id: organizationId,
+            contact_id: contactId,
+            owner_id: ownerId,
+            type: "note",
+            subject: "Intake Form Updated",
+            description: `Lead information updated via intake form. Lead Score: ${leadScore}/100`,
+            status: "completed",
+            metadata: {
+              leadScore,
+              formData: submissionData.metadata,
+            },
+            created_at: new Date().toISOString(),
+          });
+        }
+      } else {
+        // Create new deal
+        const { data: newDeal, error: dealError } = await supabase
+          .from("deals")
+          .insert({
+            name: formData.businessName || "Unnamed Business",
+            organization_id: organizationId,
+            primary_contact_id: contactId,
+            package_seen: formData.packageSeen || false,
+            decision_makers: formData.decisionMakers || "",
+            interest_level: formData.interestLevel || 3,
+            status: formData.signedUp ? "won" : "open",
+            lead_status: "contacted",
+            specific_needs: formData.specificNeeds || "",
+            stage: "initial_contact",
+            owner_id: ownerId, // Assign to logged-in user or null
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            metadata: submissionData.metadata,
+          })
+          .select()
+          .single();
+
+        if (dealError) {
+          console.error("Deal creation error:", dealError);
+          throw dealError;
+        }
+        
+        dealResult = newDeal;
+
+        // Create an activity to track the form submission
+        if (newDeal) {
+          await supabase.from("activities").insert({
+            deal_id: newDeal.id,
+            organization_id: organizationId,
+            contact_id: contactId,
+            owner_id: ownerId,
+            type: "note",
+            subject: "Website Form Submission",
+            description: `Lead submitted intake form. Lead Score: ${leadScore}/100. Completion time: ${completionTime}s`,
+            status: "completed",
+            metadata: {
+              leadScore,
+              formData: submissionData.metadata,
+            },
+            created_at: new Date().toISOString(),
+          });
+        }
       }
 
-      // Create an activity to track the form submission
-      if (newDeal) {
-        await supabase.from("activities").insert({
-          deal_id: newDeal.id,
-          organization_id: organizationId,
-          contact_id: contactId,
-          owner_id: ownerId,
-          type: "note",
-          subject: "Website Form Submission",
-          description: `Lead submitted intake form. Lead Score: ${leadScore}/100. Completion time: ${completionTime}s`,
-          status: "completed",
-          metadata: {
-            leadScore,
-            formData: submissionData.metadata,
-          },
-          created_at: new Date().toISOString(),
-        });
-      }
-
-      setSubmissionId(newDeal.id);
+      setSubmissionId(dealResult.id);
       setSuccess(true);
     } catch (error: any) {
       console.error("Error submitting form:", error);
@@ -845,15 +971,30 @@ export default function DynamicIntakeForm() {
     </>
   );
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-light-bg-primary to-light-bg-secondary dark:from-dark-bg-primary dark:to-dark-bg-secondary py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <Card>
+            <CardContent className="p-12 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
+              <p className="mt-4 text-light-text-secondary dark:text-dark-text-secondary">Loading submission data...</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-light-bg-primary to-light-bg-secondary dark:from-dark-bg-primary dark:to-dark-bg-secondary py-12 px-4">
-      {showSearch && !success && (
+      {showSearch && !success && !isEditMode && (
         <div className="max-w-2xl mx-auto mb-8">
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">Search Existing Submissions</h3>
               <SubmissionSearch 
-                onSelect={(submission) => router.push(`/dashboard/submissions/${submission.id}`)}
+                onSelect={(submission) => router.push(`/intake-dynamic?id=${submission.id}&mode=edit`)}
                 onClear={() => {}}
               />
               <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-2">
@@ -880,9 +1021,11 @@ export default function DynamicIntakeForm() {
           ) : (
             <>
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-center mb-2 dark:text-dark-text-primary">Flash Sales Intake Form</h2>
+                <h2 className="text-2xl font-bold text-center mb-2 dark:text-dark-text-primary">
+                  {isEditMode ? 'Edit Submission' : 'Flash Sales Intake Form'}
+                </h2>
                 <p className="text-center text-light-text-secondary dark:text-dark-text-secondary">
-                  Capture lead information and qualify prospects
+                  {isEditMode ? 'Update lead information' : 'Capture lead information and qualify prospects'}
                 </p>
               </div>
               <div className="mt-4">
@@ -955,7 +1098,7 @@ export default function DynamicIntakeForm() {
                       disabled={isSubmitting} 
                       className="bg-flash-green hover:bg-flash-green-light"
                     >
-                      {isSubmitting ? "Submitting..." : "Submit"}
+                      {isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update Submission" : "Submit")}
                     </Button>
                   )}
                 </div>
