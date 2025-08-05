@@ -52,11 +52,29 @@ export default function LoginV2() {
             first_name: username,
             last_name: 'User',
             role: 'sales_rep',
+            // Add PIN columns with defaults to avoid errors
+            pin_hash: null,
+            pin_attempts: 0,
+            pin_locked_until: null,
+            pin_required: true,
           })
           .select('id')
           .single();
 
         if (createError) {
+          // If user already exists (duplicate key error), try to fetch them
+          if (createError.code === '23505') {
+            const { data: existingUser } = await supabase
+              .from('users')
+              .select('id, pin_hash')
+              .eq('email', `${username}@flash.co`)
+              .single();
+            
+            if (existingUser) {
+              setUserId(existingUser.id);
+              return !!existingUser.pin_hash;
+            }
+          }
           console.error('Error creating user:', createError);
           return false;
         }
