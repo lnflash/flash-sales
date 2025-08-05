@@ -318,6 +318,7 @@ export default function DynamicIntakeForm() {
 
       // If we have a logged-in user, get their ID from Supabase
       if (currentUser?.username) {
+        console.log("Assigning submission to logged-in user:", currentUser.username);
         const supabase = getSupabase();
         const { data: userData } = await supabase
           .from("users")
@@ -327,7 +328,12 @@ export default function DynamicIntakeForm() {
         
         if (userData) {
           ownerId = userData.id;
+          console.log("Found user ID:", ownerId);
+        } else {
+          console.log("No user found in database for username:", currentUser.username);
         }
+      } else {
+        console.log("No logged-in user found, submission will be unassigned");
       }
 
       // Prepare submission data
@@ -776,7 +782,18 @@ export default function DynamicIntakeForm() {
     <div className="min-h-screen bg-gradient-to-b from-light-bg-primary to-light-bg-secondary py-12 px-4">
       {showSearch && !success && (
         <div className="max-w-2xl mx-auto mb-8">
-          <SubmissionSearch onSelect={() => router.push('/dashboard/submissions')} />
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Search Existing Submissions</h3>
+              <SubmissionSearch 
+                onSelect={(submission) => router.push(`/dashboard/submissions/${submission.id}`)}
+                onClear={() => {}}
+              />
+              <p className="text-sm text-light-text-secondary mt-2">
+                Search for existing submissions to view or edit them
+              </p>
+            </CardContent>
+          </Card>
         </div>
       )}
       
