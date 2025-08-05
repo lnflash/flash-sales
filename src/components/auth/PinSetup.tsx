@@ -163,7 +163,7 @@ export default function PinSetup({
       <CardContent>
         <div className="space-y-4">
           {error && (
-            <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 rounded-lg">
+            <div className="flex items-center gap-2 p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg">
               <AlertCircle className="h-4 w-4" />
               <span>{error}</span>
             </div>
@@ -194,7 +194,7 @@ export default function PinSetup({
           </div>
 
           {step === 'create' && (
-            <div className="space-y-3 text-sm text-light-text-secondary">
+            <div className="space-y-3 text-sm text-light-text-secondary dark:text-gray-400">
               <div className="flex items-start gap-2">
                 <Check className="h-4 w-4 text-flash-green mt-0.5" />
                 <span>Your PIN adds an extra layer of security</span>
@@ -260,7 +260,7 @@ export default function PinSetup({
                 variant="link"
                 onClick={onSkip}
                 disabled={isLoading || isSubmitting}
-                className="text-sm text-light-text-secondary hover:text-flash-green"
+                className="text-sm text-light-text-secondary dark:text-gray-400 hover:text-flash-green dark:hover:text-flash-green"
               >
                 Skip for now
               </Button>
