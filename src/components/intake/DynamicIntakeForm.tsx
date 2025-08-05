@@ -421,6 +421,7 @@ export default function DynamicIntakeForm() {
           lead_status: "contacted",
           specific_needs: formData.specificNeeds || "",
           stage: "initial_contact",
+          owner_id: null, // Explicitly set to null for unassigned deals
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           metadata: submissionData.metadata,
