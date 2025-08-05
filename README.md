@@ -1,151 +1,183 @@
-# Flash Sales Dashboard
+# Flash Sales Dashboard 🚀
 
-An administrative dashboard for Flash sales management, designed to work with data collected from the Flash Intake Form application.
+> A comprehensive CRM and sales intelligence platform designed for multi-territory Bitcoin adoption across the Caribbean region.
 
-## Overview
+[![Next.js](https://img.shields.io/badge/Next.js-14.2.0-blue.svg)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Enabled-green.svg)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.1-blue.svg)](https://tailwindcss.com/)
 
-The Flash Sales Dashboard provides a comprehensive view of merchant data captured by the intake form app, allowing administrators to monitor sales performance, analyze trends, and manage merchant relationships. It features a modern, dark-themed UI with intuitive navigation and interactive visualizations.
+## 📋 Table of Contents
 
-## Features
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Quick Start](#quick-start)
+- [Documentation](#documentation)
+- [Technology Stack](#technology-stack)
+- [Contributing](#contributing)
+- [Support](#support)
 
-- **Real-Time Dashboard**: Overview of key metrics including total submissions, signups, and interest levels
-- **Interactive Data Visualization**: Charts and graphs showing trends and distributions
-- **Submission Management**: View, filter, and search through all merchant submissions
-- **Detailed Analytics**: In-depth analysis of sales performance and merchant engagement
-- **Responsive Design**: Fully mobile-friendly interface that works well on all devices
-- **Dark Theme**: Modern dark UI with green and yellow accents matching Flash branding
+## 🎯 Overview
 
-## Technology Stack
+Flash Sales Dashboard is a Next.js-powered CRM platform specifically designed for managing Bitcoin adoption initiatives across Caribbean territories (Jamaica, Cayman Islands, and Curaçao). It combines real-time collaboration, AI-powered lead scoring, and comprehensive sales intelligence to drive merchant onboarding and territory expansion.
 
-- **Frontend**: React, Next.js, TypeScript
-- **State Management**: React Query for server state, React Hooks for local state
-- **Styling**: Tailwind CSS for utility-first styling
-- **Data Visualization**: Chart.js with React Chart.js 2
-- **Data Fetching**: React Query
-- **Tables**: TanStack Table (React Table)
-- **Forms**: React Hook Form with Zod validation
-- **Testing**: Jest and React Testing Library
-- **Containerization**: Docker for deployment
+### 🌍 Multi-Territory Support
+- **Jamaica**: Primary market with full feature set
+- **Cayman Islands**: Expanding market with specialized compliance features  
+- **Curaçao**: Growing market with localized business requirements
 
-## Prerequisites
+## ✨ Key Features
 
-- Node.js v18.x or higher
-- npm v9.x or higher
+### 🤖 AI-Powered Intelligence
+- **Smart Lead Scoring**: Machine learning algorithms evaluate lead quality and conversion probability
+- **Predictive Analytics**: Forecast sales trends and territory performance
+- **Automated Data Enrichment**: Enhance lead profiles with external data sources
 
-## Getting Started
+### 🔄 Real-Time Collaboration  
+- **Live User Presence**: See who's working on leads in real-time
+- **Real-Time Updates**: Instant synchronization across all connected users
+- **Activity Streams**: Track all interactions and changes as they happen
 
-### Local Development
+### 📊 Advanced Analytics
+- **Territory Dashboards**: Region-specific performance metrics and insights
+- **Sales Pipeline Visualization**: Interactive funnel analysis and conversion tracking
+- **Performance Heatmaps**: Visual representation of rep and territory performance
 
-1. Clone the repository:
+### 🎯 Lead Management
+- **Dynamic Intake Forms**: Territory-specific lead capture with smart validation
+- **Intelligent Routing**: Automatic lead assignment based on territory and expertise
+- **Workflow Automation**: Streamlined processes for lead qualification and follow-up
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Node.js** 18.x or higher
+- **npm** 9.x or higher  
+- **Supabase** project (for backend services)
+
+### Installation
+
+1. **Clone the repository**
    ```bash
-   git clone [repository-url]
+   git clone https://github.com/your-org/flash-sales-dashboard.git
    cd flash-sales-dashboard
    ```
 
-2. Install dependencies:
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. Create a `.env.local` file in the root directory with the following variables:
-   ```
-   INTAKE_API_URL=http://localhost:3000/api
-   NEXT_PUBLIC_API_BASE_URL=/api
-   NEXT_PUBLIC_APP_ENV=development
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your Supabase credentials
    ```
 
-4. Start the development server:
+4. **Start development server**
    ```bash
    npm run dev
    ```
 
-5. Open your browser to `http://localhost:3000`
+5. **Open your browser**
+   ```
+   http://localhost:3000
+   ```
 
-### Running Tests
-
+### Quick Commands
 ```bash
-# Run all tests
-npm test
+# Development
+npm run dev              # Start development server
+npm run build           # Build for production
+npm run start           # Start production server
 
-# Run tests in watch mode
-npm run test:watch
+# Testing
+npm test                # Run test suite
+npm run test:watch      # Run tests in watch mode
+
+# Database
+npm run supabase:setup  # Initialize Supabase project
+npm run supabase:types  # Generate TypeScript types
+
+# Docker
+npm run docker:build    # Build Docker image
+npm run docker:run      # Run containerized app
 ```
 
-### Building for Production
+## 📚 Documentation
 
-```bash
-npm run build
-npm start
-```
+| Document | Description |
+|----------|-------------|
+| **[🔧 Development Guide](docs/DEVELOPMENT.md)** | Local setup, coding standards, and best practices |
+| **[🏗️ Architecture Overview](docs/ARCHITECTURE.md)** | System design, data flow, and technical decisions |
+| **[🚀 Deployment Guide](docs/DEPLOYMENT.md)** | Production deployment across different platforms |
+| **[🤝 Contributing Guidelines](docs/CONTRIBUTING.md)** | How to contribute, PR process, and code standards |
+| **[📋 Features Documentation](docs/FEATURES.md)** | Detailed feature guides and user documentation |
+| **[🔌 API Reference](docs/API.md)** | GraphQL schema, endpoints, and integration examples |
 
-## Docker Deployment
+## 🛠️ Technology Stack
 
-### Building the Docker Image
+### Core Framework
+- **[Next.js 14](https://nextjs.org/)** - React framework with SSR/SSG
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
+- **[React 18](https://reactjs.org/)** - UI component library
 
-```bash
-npm run docker:build
-```
+### Backend & Database
+- **[Supabase](https://supabase.com/)** - Backend-as-a-Service with PostgreSQL
+- **[GraphQL](https://graphql.org/)** - API query language with Apollo Client
+- **[Row Level Security](https://supabase.com/docs/guides/auth/row-level-security)** - Fine-grained data access control
 
-Or manually:
+### UI & Styling
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Radix UI](https://www.radix-ui.com/)** - Accessible component primitives
+- **[Chart.js](https://www.chartjs.org/)** - Interactive data visualization
+- **[Lucide Icons](https://lucide.dev/)** - Beautiful & consistent icons
 
-```bash
-docker build -t flash-sales-dashboard .
-```
+### State Management & Data
+- **[TanStack Query](https://tanstack.com/query)** - Server state management
+- **[Zustand](https://zustand-demo.pmnd.rs/)** - Lightweight client state
+- **[React Hook Form](https://react-hook-form.com/)** - Performant form handling
+- **[Zod](https://zod.dev/)** - TypeScript-first schema validation
 
-### Running the Docker Container
+### Development & Testing
+- **[Jest](https://jestjs.io/)** - JavaScript testing framework
+- **[React Testing Library](https://testing-library.com/)** - Component testing utilities
+- **[ESLint](https://eslint.org/)** - Code linting and formatting
+- **[Docker](https://www.docker.com/)** - Containerization platform
 
-```bash
-npm run docker:run
-```
+## 🤝 Contributing
 
-Or manually:
+We welcome contributions from the community! Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) for details on:
 
-```bash
-docker run -p 3000:3000 flash-sales-dashboard
-```
+- **Code of Conduct** - Community standards and expectations
+- **Development Workflow** - Branch strategy and PR process  
+- **Coding Standards** - Style guides and best practices
+- **Testing Requirements** - Unit tests and integration testing
 
-## Deployment on DigitalOcean
+### Quick Contribution Steps
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
 
-This application is designed to be deployed on the DigitalOcean App Platform. Follow these steps:
+## 📞 Support
 
-1. Create a new app on DigitalOcean App Platform
-2. Connect your GitHub repository
-3. Configure the app settings:
-   - Choose the Docker build type
-   - Set the environment variables:
-     - `INTAKE_API_URL`: URL of the Flash Intake Form API
-     - `NEXT_PUBLIC_APP_ENV`: Set to `production`
-4. Deploy the app
+### Getting Help
+- **📖 Documentation**: Check our comprehensive [docs](docs/) folder
+- **🐛 Bug Reports**: Open an issue with detailed reproduction steps
+- **💡 Feature Requests**: Submit enhancement proposals via GitHub issues
+- **💬 Discussions**: Join community conversations in GitHub Discussions
 
-For detailed deployment instructions, please refer to the [DigitalOcean App Platform documentation](https://docs.digitalocean.com/products/app-platform/).
+### Community Resources
+- **Development Team**: Flash Bitcoin development team
+- **Project Maintainers**: Core contributors and reviewers
+- **Community Guidelines**: Please follow our code of conduct
 
-## Project Structure
+---
 
-```
-flash-sales-dashboard/
-├── public/            # Static assets
-├── src/
-│   ├── components/    # React components
-│   │   ├── dashboard/ # Dashboard specific components
-│   │   ├── layout/    # Layout components
-│   │   └── submissions/ # Submission management components
-│   ├── hooks/         # Custom React hooks
-│   ├── lib/           # Utilities and API client
-│   ├── pages/         # Next.js pages
-│   ├── styles/        # Global styles
-│   ├── types/         # TypeScript type definitions
-│   └── utils/         # Helper functions
-├── Dockerfile         # Docker configuration
-├── jest.config.js     # Jest configuration
-├── next.config.js     # Next.js configuration
-├── tailwind.config.js # Tailwind CSS configuration
-└── tsconfig.json      # TypeScript configuration
-```
-
-## License
+## 📄 License
 
 This project is proprietary and confidential. Unauthorized copying, transferring, or reproduction of the contents of this project, via any medium is strictly prohibited.
 
-## Contact
-
-For questions or support, please contact the Flash development team.
+**© 2024 Flash Bitcoin. All rights reserved.**
