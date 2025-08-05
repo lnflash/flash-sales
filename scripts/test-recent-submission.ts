@@ -72,19 +72,19 @@ async function checkRecentSubmission() {
   
   console.log('\n📢 Organization:');
   if (deal.organization) {
-    console.log(`  ID: ${deal.organization.id}`);
-    console.log(`  Name: ${deal.organization.name}`);
-    console.log(`  Territory: ${deal.organization.state_province || 'Not set'}`);
+    console.log(`  ID: ${(deal.organization as any).id}`);
+    console.log(`  Name: ${(deal.organization as any).name}`);
+    console.log(`  Territory: ${(deal.organization as any).state_province || 'Not set'}`);
   } else {
     console.log('  ⚠️  No organization linked');
   }
 
   console.log('\n📞 Contact:');
   if (deal.primary_contact) {
-    console.log(`  ID: ${deal.primary_contact.id}`);
-    console.log(`  Name: ${deal.primary_contact.first_name} ${deal.primary_contact.last_name}`);
-    console.log(`  Phone: ${deal.primary_contact.phone_primary || 'NO PHONE NUMBER'}`);
-    console.log(`  Email: ${deal.primary_contact.email || 'No email'}`);
+    console.log(`  ID: ${(deal.primary_contact as any).id}`);
+    console.log(`  Name: ${(deal.primary_contact as any).first_name} ${(deal.primary_contact as any).last_name}`);
+    console.log(`  Phone: ${(deal.primary_contact as any).phone_primary || 'NO PHONE NUMBER'}`);
+    console.log(`  Email: ${(deal.primary_contact as any).email || 'No email'}`);
   } else {
     console.log('  ⚠️  No contact linked');
     console.log(`  Primary Contact ID in deal: ${deal.primary_contact_id || 'NULL'}`);
@@ -92,8 +92,8 @@ async function checkRecentSubmission() {
 
   console.log('\n👤 Assigned To:');
   if (deal.owner) {
-    console.log(`  Username: ${deal.owner.username}`);
-    console.log(`  Email: ${deal.owner.email}`);
+    console.log(`  Username: ${(deal.owner as any).username}`);
+    console.log(`  Email: ${(deal.owner as any).email}`);
   } else {
     console.log('  Unassigned');
   }

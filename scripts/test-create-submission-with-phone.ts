@@ -99,7 +99,7 @@ async function testCreateSubmission() {
     }
     console.log('✅ Deal created:', deal.id);
     console.log('   Contact ID in deal:', deal.primary_contact_id);
-    console.log('   Phone from contact:', deal.primary_contact?.phone_primary);
+    console.log('   Phone from contact:', (deal.primary_contact as any)?.phone_primary);
 
     // Clean up
     console.log('\n🧹 Cleaning up test data...');

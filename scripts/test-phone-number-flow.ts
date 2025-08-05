@@ -44,12 +44,12 @@ async function testPhoneNumberFlow() {
   // Step 2: Analyze each deal
   for (const deal of deals || []) {
     console.log(`\n📋 Deal: ${deal.name}`);
-    console.log(`   Organization: ${deal.organization?.name || 'N/A'}`);
+    console.log(`   Organization: ${(deal.organization as any)?.name || 'N/A'}`);
     console.log(`   Contact ID: ${deal.primary_contact_id || 'None'}`);
     
     if (deal.primary_contact) {
-      console.log(`   Contact Name: ${deal.primary_contact.first_name} ${deal.primary_contact.last_name}`);
-      console.log(`   Phone Number: ${deal.primary_contact.phone_primary || 'Not provided'}`);
+      console.log(`   Contact Name: ${(deal.primary_contact as any).first_name} ${(deal.primary_contact as any).last_name}`);
+      console.log(`   Phone Number: ${(deal.primary_contact as any).phone_primary || 'Not provided'}`);
     } else {
       console.log(`   ⚠️  No contact linked to this deal`);
     }
@@ -110,7 +110,7 @@ async function testPhoneNumberFlow() {
       ownerName: submission.ownerName,
       phoneNumber: submission.phoneNumber,
       hasContact: !!testDeal.primary_contact,
-      contactPhone: testDeal.primary_contact?.phone_primary
+      contactPhone: (testDeal.primary_contact as any)?.phone_primary
     });
   }
 }
