@@ -535,12 +535,17 @@ export default function DynamicIntakeForm() {
             if (existingDeal?.organization_id) {
               organizationId = existingDeal.organization_id;
               // Update the existing organization
-              await supabase.rpc('update_organization_safe', {
+              const { data: updateOrgResult, error: updateOrgError } = await supabase.rpc('update_organization_safe', {
                 org_id_param: organizationId,
                 name_param: formData.businessName,
                 state_province_param: formData.territory || "",
                 country_param: formData.country || ""
               });
+              
+              if (updateOrgError) {
+                console.error("Failed to update organization:", updateOrgError);
+                throw updateOrgError;
+              }
             }
           }
           
@@ -558,6 +563,7 @@ export default function DynamicIntakeForm() {
 
             if (existingOrg) {
               organizationId = existingOrg.id;
+              console.log("Using existing organization:", organizationId);
             } else {
               // Create new organization
               const { data: newOrg, error: orgError } = await supabase
@@ -574,20 +580,30 @@ export default function DynamicIntakeForm() {
 
               if (orgError) {
                 console.error("Error creating organization:", orgError);
+                throw orgError;
               } else if (newOrg) {
                 organizationId = newOrg.id;
+                console.log("Created new organization:", organizationId);
               }
             }
           }
         } catch (err) {
           console.error("Organization handling error:", err);
+          // Continue anyway - we can create deal without org
         }
       }
 
-      // Handle contact
+      // Handle contact - create if we have any contact info
       let contactId = null;
-      console.log("Creating contact with phone:", formData.phoneNumber, "for org:", organizationId);
-      if (formData.phoneNumber && organizationId) {
+      console.log("Processing contact data:", {
+        phoneNumber: formData.phoneNumber,
+        email: formData.email,
+        ownerName: formData.ownerName,
+        organizationId: organizationId
+      });
+      
+      // Create contact if we have any contact information (phone, email, or name)
+      if (formData.phoneNumber || formData.email || formData.ownerName) {
         try {
           if (isEditMode && id) {
             // In edit mode, get the existing contact from the deal
@@ -600,50 +616,132 @@ export default function DynamicIntakeForm() {
             if (existingDeal?.primary_contact_id) {
               contactId = existingDeal.primary_contact_id;
               // Update the existing contact
-              await supabase.rpc('update_contact_safe', {
+              const { data: updateContactResult, error: updateContactError } = await supabase.rpc('update_contact_safe', {
                 contact_id_param: contactId,
-                phone_primary_param: formData.phoneNumber,
+                phone_primary_param: formData.phoneNumber || null,
                 email_param: formData.email || null,
                 first_name_param: formData.ownerName.split(" ")[0] || "",
                 last_name_param: formData.ownerName.split(" ").slice(1).join(" ") || ""
               });
+              
+              if (updateContactError) {
+                console.error("Failed to update contact:", updateContactError);
+                throw updateContactError;
+              }
+              console.log("Updated existing contact:", contactId);
             }
           }
           
           // If not in edit mode or no existing contact, create new
           if (!contactId) {
-            const { data: newContact, error: contactError } = await supabase
-              .from("contacts")
-              .insert({
-                organization_id: organizationId,
-                phone_primary: formData.phoneNumber,
-                email: formData.email || null,
-                first_name: formData.ownerName.split(" ")[0] || "",
-                last_name: formData.ownerName.split(" ").slice(1).join(" ") || "",
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              })
-              .select()
-              .single();
+            // First try to find existing contact by email if provided
+            if (formData.email) {
+              const { data: existingContact } = await supabase
+                .from("contacts")
+                .select("id")
+                .eq("email", formData.email)
+                .single();
+              
+              if (existingContact) {
+                contactId = existingContact.id;
+                console.log("Found existing contact by email:", contactId);
+                
+                // Update the existing contact with new info
+                const { error: updateError } = await supabase
+                  .from("contacts")
+                  .update({
+                    phone_primary: formData.phoneNumber || null,
+                    first_name: formData.ownerName.split(" ")[0] || "Unknown",
+                    last_name: formData.ownerName.split(" ").slice(1).join(" ") || "Contact",
+                    organization_id: organizationId,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq("id", contactId);
+                  
+                if (updateError) {
+                  console.error("Failed to update existing contact:", updateError);
+                }
+              }
+            }
+            
+            // If no existing contact found, create new
+            if (!contactId) {
+              const { data: newContact, error: contactError } = await supabase
+                .from("contacts")
+                .insert({
+                  organization_id: organizationId, // This can be null if org creation failed
+                  phone_primary: formData.phoneNumber || null,
+                  email: formData.email || null,
+                  first_name: formData.ownerName.split(" ")[0] || "Unknown",
+                  last_name: formData.ownerName.split(" ").slice(1).join(" ") || "Contact",
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .select()
+                .single();
 
-            if (contactError) {
-              console.error("Contact creation error:", contactError);
-            } else if (newContact) {
-              contactId = newContact.id;
-              console.log("Created contact with ID:", contactId);
+              if (contactError) {
+                console.error("Contact creation error:", contactError);
+                console.error("Error code:", contactError.code);
+                console.error("Error details:", contactError.details);
+                console.error("Attempted contact data:", {
+                  organization_id: organizationId,
+                  phone_primary: formData.phoneNumber,
+                  email: formData.email,
+                  first_name: formData.ownerName.split(" ")[0] || "Unknown",
+                  last_name: formData.ownerName.split(" ").slice(1).join(" ") || "Contact"
+                });
+                
+                // If email constraint error, try without email
+                if (contactError.code === '23505' && formData.email) {
+                  console.log("Retrying contact creation without email due to duplicate...");
+                  const { data: retryContact, error: retryError } = await supabase
+                    .from("contacts")
+                    .insert({
+                      organization_id: organizationId,
+                      phone_primary: formData.phoneNumber || null,
+                      email: null, // Remove email to avoid duplicate
+                      first_name: formData.ownerName.split(" ")[0] || "Unknown",
+                      last_name: formData.ownerName.split(" ").slice(1).join(" ") || "Contact",
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                    })
+                    .select()
+                    .single();
+                    
+                  if (!retryError && retryContact) {
+                    contactId = retryContact.id;
+                    console.log("Contact created without email:", contactId);
+                  }
+                }
+              } else if (newContact) {
+                contactId = newContact.id;
+                console.log("Created contact successfully:", {
+                  id: contactId,
+                  phone: newContact.phone_primary,
+                  email: newContact.email
+                });
+              }
             }
           }
         } catch (err) {
           console.error("Contact handling error:", err);
         }
       } else {
-        console.log("Skipping contact creation - no phone number or org ID");
+        console.log("No contact information provided - skipping contact creation");
       }
 
       let dealResult;
       
       if (isEditMode && id) {
         // Update existing deal using RPC to bypass CORS
+        console.log("Updating deal with RPC, params:", {
+          deal_id: id,
+          org_id: organizationId,
+          contact_id: contactId,
+          lead_status: formData.signedUp ? "converted" : "contacted"
+        });
+        
         const { data: updatedDeal, error: updateError } = await supabase.rpc('update_deal', {
           deal_id_param: id,
           name_param: formData.businessName || "Unnamed Business",
@@ -686,7 +784,18 @@ export default function DynamicIntakeForm() {
         }
       } else {
         // Create new deal
-        console.log("Creating deal with contact ID:", contactId, "org ID:", organizationId);
+        console.log("Creating deal with:", {
+          contactId,
+          organizationId,
+          leadStatus: submissionData.leadStatus,
+          customFields: submissionData.metadata
+        });
+        
+        // Don't create deal if we have contact info but no contact was created
+        if ((formData.phoneNumber || formData.email) && !contactId) {
+          throw new Error("Failed to create contact - cannot proceed with deal creation");
+        }
+        
         const { data: newDeal, error: dealError } = await supabase
           .from("deals")
           .insert({
@@ -697,7 +806,7 @@ export default function DynamicIntakeForm() {
             decision_makers: formData.decisionMakers || "",
             interest_level: formData.interestLevel || 3,
             status: formData.signedUp ? "won" : "open",
-            lead_status: "contacted",
+            lead_status: submissionData.leadStatus,
             specific_needs: formData.specificNeeds || "",
             stage: "initial_contact",
             owner_id: ownerId, // Assign to logged-in user or null
@@ -733,6 +842,33 @@ export default function DynamicIntakeForm() {
             created_at: new Date().toISOString(),
           });
         }
+      }
+
+      // Log the final deal result to verify all fields were saved
+      console.log("Deal creation/update result:", {
+        dealId: dealResult.id,
+        organizationId: dealResult.organization_id,
+        contactId: dealResult.primary_contact_id,
+        leadStatus: dealResult.lead_status,
+        interestLevel: dealResult.interest_level,
+        packageSeen: dealResult.package_seen,
+        specificNeeds: dealResult.specific_needs,
+        customFields: dealResult.custom_fields
+      });
+
+      // Verify the contact was created with phone number
+      if (contactId) {
+        const { data: verifyContact } = await supabase
+          .from("contacts")
+          .select("phone_primary, email")
+          .eq("id", contactId)
+          .single();
+        
+        console.log("Contact verification:", {
+          contactId,
+          phone: verifyContact?.phone_primary,
+          email: verifyContact?.email
+        });
       }
 
       setSubmissionId(dealResult.id);

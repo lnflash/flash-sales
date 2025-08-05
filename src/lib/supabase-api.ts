@@ -27,13 +27,9 @@ export function mapDealToSubmission(deal: any): Submission {
 
   // Map deal status to lead status
   let leadStatus: string | undefined;
-  // Temporarily disabled until DB migration is applied
-  // if (deal.lead_status) {
-  //   leadStatus = deal.lead_status;
-  // } else if (deal.status === "won") {
-  //   leadStatus = "signed_up";
-  // }
-  if (deal.status === "won") {
+  if (deal.lead_status) {
+    leadStatus = deal.lead_status;
+  } else if (deal.status === "won") {
     leadStatus = "signed_up";
   }
 
