@@ -418,7 +418,7 @@ export default function DynamicIntakeForm() {
           decision_makers: formData.decisionMakers || "",
           interest_level: formData.interestLevel || 3,
           status: formData.signedUp ? "won" : "open",
-          lead_status: "new",
+          lead_status: "contacted",
           specific_needs: formData.specificNeeds || "",
           stage: "initial_contact",
           created_at: new Date().toISOString(),
