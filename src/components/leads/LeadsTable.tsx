@@ -79,19 +79,19 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'canvas': return 'bg-gray-100 text-gray-800';
-      case 'contacted': return 'bg-blue-100 text-blue-800';
-      case 'prospect': return 'bg-yellow-100 text-yellow-800';
-      case 'opportunity': return 'bg-purple-100 text-purple-800';
-      case 'signed_up': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'canvas': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      case 'contacted': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'prospect': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'opportunity': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+      case 'signed_up': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
   const SortButton: React.FC<{ field: SortField; children: React.ReactNode }> = ({ field, children }) => (
     <button
       onClick={() => handleSort(field)}
-      className="flex items-center gap-1 text-left font-semibold text-muted-foreground hover:text-foreground transition-colors"
+      className="flex items-center gap-1 text-left font-semibold text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors"
     >
       {children}
       {sortField === field && (
@@ -111,10 +111,10 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
         />
       </div>
       
-      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-light-border dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-muted/50">
+            <thead className="bg-light-bg-secondary dark:bg-gray-900">
               <tr>
                 <th className="px-4 py-3 text-left">
                   <Checkbox
@@ -126,7 +126,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
                   <SortButton field="ownerName">Lead</SortButton>
                 </th>
                 <th className="px-4 py-3 text-left">
-                  <span className="font-semibold text-muted-foreground">Contact</span>
+                  <span className="font-semibold text-light-text-secondary dark:text-gray-400">Contact</span>
                 </th>
                 <th className="px-4 py-3 text-left">
                   <SortButton field="leadStatus">Status</SortButton>
@@ -138,16 +138,16 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
                   <SortButton field="timestamp">Created</SortButton>
                 </th>
                 <th className="px-4 py-3 text-left">
-                  <span className="font-semibold text-muted-foreground">Actions</span>
+                  <span className="font-semibold text-light-text-secondary dark:text-gray-400">Actions</span>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-light-border dark:divide-gray-700">
               {sortedSubmissions.map((submission) => (
                 <tr 
                   key={submission.id} 
-                  className={`hover:bg-muted/50 transition-colors ${
-                    selectedIds.includes(submission.id) ? 'bg-muted/30' : ''
+                  className={`hover:bg-light-bg-secondary dark:hover:bg-gray-700 transition-colors ${
+                    selectedIds.includes(submission.id) ? 'bg-light-bg-secondary dark:bg-gray-700' : ''
                   }`}
                 >
                   <td className="px-4 py-3">
@@ -158,22 +158,22 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
                   </td>
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-foreground">{submission.ownerName}</p>
+                      <p className="font-medium text-light-text-primary dark:text-white">{submission.ownerName}</p>
                       {submission.businessType && (
-                        <p className="text-sm text-muted-foreground">{submission.businessType}</p>
+                        <p className="text-sm text-light-text-secondary dark:text-gray-400">{submission.businessType}</p>
                       )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="space-y-1">
                       {submission.phoneNumber && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 text-sm text-light-text-secondary dark:text-gray-400">
                           <PhoneIcon className="h-4 w-4" />
                           <span>{submission.phoneNumber}</span>
                         </div>
                       )}
                       {submission.territory && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 text-sm text-light-text-secondary dark:text-gray-400">
                           <MapPinIcon className="h-4 w-4" />
                           <span>{submission.territory}</span>
                         </div>
@@ -189,12 +189,12 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-sm text-foreground">
+                    <span className="text-sm text-light-text-primary dark:text-gray-300">
                       {submission.username || '-'}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-light-text-secondary dark:text-gray-400">
                       {formatDate(submission.timestamp)}
                     </span>
                   </td>
@@ -216,13 +216,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ submissions, onRefresh }
         </div>
         
         {filteredData.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-12 text-light-text-secondary dark:text-gray-400">
             {submissions.length === 0 ? 'No leads found' : 'No leads match the selected filters'}
           </div>
         )}
 
         {filteredData.length > 0 && filteredData.length < submissions.length && (
-          <div className="px-4 py-2 bg-muted/50 text-sm text-muted-foreground">
+          <div className="px-4 py-2 bg-light-bg-secondary dark:bg-gray-900 text-sm text-light-text-secondary dark:text-gray-400">
             Showing {filteredData.length} of {submissions.length} leads
           </div>
         )}

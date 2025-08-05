@@ -37,8 +37,8 @@ export default function AnalyticsPage() {
       {/* Executive Summary Row */}
       <section className="mb-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-light-text-primary mb-2">Executive Summary</h2>
-          <p className="text-light-text-secondary">Strategic insights and performance metrics for data-driven decision making</p>
+          <h2 className="text-2xl font-semibold text-light-text-primary dark:text-white mb-2">Executive Summary</h2>
+          <p className="text-light-text-secondary dark:text-gray-400">Strategic insights and performance metrics for data-driven decision making</p>
         </div>
         <ExecutiveDashboard 
           analytics={advancedAnalytics}
@@ -66,35 +66,35 @@ export default function AnalyticsPage() {
           isLoading={isLoadingSubmissions}
         />
         <div className="space-y-6">
-          <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+          <Card className="bg-white dark:bg-gray-800 border-light-border dark:border-gray-700 hover:shadow-lg transition-shadow duration-200">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-light-text-primary flex items-center">
+              <CardTitle className="text-lg font-semibold text-light-text-primary dark:text-white flex items-center">
                 <TrophyIcon className="h-5 w-5 mr-2 text-flash-green" />
                 Market Intelligence
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
-                  <div className="text-sm text-light-text-secondary mb-1">Market Penetration</div>
+                <div className="bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-4 border border-light-border dark:border-gray-600">
+                  <div className="text-sm text-light-text-secondary dark:text-gray-400 mb-1">Market Penetration</div>
                   <div className="text-xl font-bold text-flash-green">
                     {advancedAnalytics.marketIntel.opportunitySize.currentPenetration.toFixed(2)}%
                   </div>
                 </div>
-                <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
-                  <div className="text-sm text-light-text-secondary mb-1">Win Rate</div>
+                <div className="bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-4 border border-light-border dark:border-gray-600">
+                  <div className="text-sm text-light-text-secondary dark:text-gray-400 mb-1">Win Rate</div>
                   <div className="text-xl font-bold text-blue-600">
                     {advancedAnalytics.marketIntel.competitivePosition.winRate.toFixed(1)}%
                   </div>
                 </div>
-                <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
-                  <div className="text-sm text-light-text-secondary mb-1">Growth Rate</div>
+                <div className="bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-4 border border-light-border dark:border-gray-600">
+                  <div className="text-sm text-light-text-secondary dark:text-gray-400 mb-1">Growth Rate</div>
                   <div className="text-xl font-bold text-purple-600">
                     {advancedAnalytics.marketIntel.opportunitySize.projectedGrowth.toFixed(1)}%
                   </div>
                 </div>
-                <div className="bg-light-bg-secondary rounded-lg p-4 border border-light-border">
-                  <div className="text-sm text-light-text-secondary mb-1">Market Share</div>
+                <div className="bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-4 border border-light-border dark:border-gray-600">
+                  <div className="text-sm text-light-text-secondary dark:text-gray-400 mb-1">Market Share</div>
                   <div className="text-xl font-bold text-amber-600">
                     {advancedAnalytics.marketIntel.competitivePosition.marketShare}%
                   </div>

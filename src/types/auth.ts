@@ -1,3 +1,5 @@
+import { User, Session } from '@supabase/auth-helpers-nextjs';
+
 export interface UserSecurity {
   id: string;
   userId: string;

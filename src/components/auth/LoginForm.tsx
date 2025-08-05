@@ -20,7 +20,11 @@ const CHECK_USERNAME_QUERY = gql`
   }
 `;
 
-export default function LoginForm() {
+interface LoginFormProps {
+  onSubmit?: (username: string) => Promise<boolean>;
+}
+
+export default function LoginForm({ onSubmit }: LoginFormProps = {}) {
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,6 +44,17 @@ export default function LoginForm() {
     
     try {
       const trimmedUsername = username.trim();
+      
+      // If custom onSubmit handler is provided, use it
+      if (onSubmit) {
+        const success = await onSubmit(trimmedUsername);
+        if (!success) {
+          setError('Username not found. Please try again.');
+        }
+        return;
+      }
+      
+      // Otherwise, use default behavior
       console.log("Checking username:", trimmedUsername);
       
       const { data } = await client.query({

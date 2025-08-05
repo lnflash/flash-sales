@@ -41,69 +41,69 @@ export default function PerformanceDashboard() {
       <div className="space-y-6">
         {/* Performance Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-white border-light-border">
+          <Card className="bg-white dark:bg-gray-800 border-light-border dark:border-gray-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-light-text-secondary flex items-center">
+              <CardTitle className="text-sm font-medium text-light-text-secondary dark:text-gray-400 flex items-center">
                 <BoltIcon className="h-4 w-4 mr-2 text-yellow-500" />
                 Page Load Time
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-light-text-primary">
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white">
                 {metrics.web_vital_lcp?.avg ? formatMetric(metrics.web_vital_lcp.avg, 'time') : 'Loading...'}
               </p>
-              <p className="text-xs text-light-text-tertiary mt-1">
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500 mt-1">
                 Largest Contentful Paint
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-light-border">
+          <Card className="bg-white dark:bg-gray-800 border-light-border dark:border-gray-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-light-text-secondary flex items-center">
+              <CardTitle className="text-sm font-medium text-light-text-secondary dark:text-gray-400 flex items-center">
                 <ClockIcon className="h-4 w-4 mr-2 text-blue-500" />
                 First Input Delay
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-light-text-primary">
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white">
                 {metrics.web_vital_fid?.avg ? formatMetric(metrics.web_vital_fid.avg, 'time') : 'No data'}
               </p>
-              <p className="text-xs text-light-text-tertiary mt-1">
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500 mt-1">
                 Interaction responsiveness
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-light-border">
+          <Card className="bg-white dark:bg-gray-800 border-light-border dark:border-gray-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-light-text-secondary flex items-center">
+              <CardTitle className="text-sm font-medium text-light-text-secondary dark:text-gray-400 flex items-center">
                 <ArrowTrendingUpIcon className="h-4 w-4 mr-2 text-green-500" />
                 Layout Shift
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-light-text-primary">
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white">
                 {metrics.web_vital_cls?.avg ? metrics.web_vital_cls.avg.toFixed(3) : '0.000'}
               </p>
-              <p className="text-xs text-light-text-tertiary mt-1">
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500 mt-1">
                 Visual stability score
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-light-border">
+          <Card className="bg-white dark:bg-gray-800 border-light-border dark:border-gray-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-light-text-secondary flex items-center">
+              <CardTitle className="text-sm font-medium text-light-text-secondary dark:text-gray-400 flex items-center">
                 <CpuChipIcon className="h-4 w-4 mr-2 text-purple-500" />
                 Memory Usage
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-light-text-primary">
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white">
                 {metrics.memory_usage?.avg ? formatMetric(metrics.memory_usage.avg, 'memory') : 'Loading...'}
               </p>
-              <p className="text-xs text-light-text-tertiary mt-1">
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500 mt-1">
                 Average heap size
               </p>
             </CardContent>
@@ -185,7 +185,7 @@ export default function PerformanceDashboard() {
 
         {/* Detailed Metrics */}
         {Object.keys(metrics).length > 0 && (
-          <Card className="bg-white border-light-border">
+          <Card className="bg-white dark:bg-gray-800 border-light-border dark:border-gray-700">
             <CardHeader>
               <CardTitle>Detailed Performance Metrics</CardTitle>
             </CardHeader>

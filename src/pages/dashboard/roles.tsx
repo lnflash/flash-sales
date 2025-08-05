@@ -87,22 +87,22 @@ export default function RoleManagement() {
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
       case 'Flash Admin':
-        return <ShieldCheckIcon className="h-5 w-5 text-purple-600" />;
+        return <ShieldCheckIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />;
       case 'Flash Management':
-        return <UserGroupIcon className="h-5 w-5 text-blue-600" />;
+        return <UserGroupIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />;
       default:
-        return <UserIcon className="h-5 w-5 text-gray-600" />;
+        return <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />;
     }
   };
 
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
       case 'Flash Admin':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border-purple-300 dark:border-purple-700';
       case 'Flash Management':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 border-blue-300 dark:border-blue-700';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border-gray-300 dark:border-gray-600';
     }
   };
 
@@ -129,13 +129,13 @@ export default function RoleManagement() {
 
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-light-text-primary">Role Management</h1>
-          <p className="text-light-text-secondary mt-2">Manage user roles and permissions</p>
+          <h1 className="text-3xl font-bold text-light-text-primary dark:text-white">Role Management</h1>
+          <p className="text-light-text-secondary dark:text-gray-400 mt-2">Manage user roles and permissions</p>
         </div>
 
         {message && (
           <div className={`p-4 rounded-lg flex items-center gap-2 ${
-            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400'
           }`}>
             {message.type === 'success' ? (
               <CheckIcon className="h-5 w-5" />
@@ -162,7 +162,7 @@ export default function RoleManagement() {
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                className="px-4 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+                className="px-4 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
               >
                 <option value="Flash Sales Rep">Flash Sales Rep</option>
                 <option value="Flash Management">Flash Management</option>
@@ -186,7 +186,7 @@ export default function RoleManagement() {
           <CardContent>
             <div className="mb-4">
               <div className="relative">
-                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Search users..."
                   value={searchTerm}
@@ -200,21 +200,21 @@ export default function RoleManagement() {
               {allUsers.map((user) => (
                 <div
                   key={user.username}
-                  className="flex items-center justify-between p-4 border border-light-border rounded-lg hover:bg-light-bg-secondary transition-colors"
+                  className="flex items-center justify-between p-4 border border-light-border dark:border-gray-700 rounded-lg hover:bg-light-bg-secondary dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold">
                       {user.username.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-medium text-light-text-primary">{user.username}</p>
+                      <p className="font-medium text-light-text-primary dark:text-white">{user.username}</p>
                       <div className="flex items-center gap-2 mt-1">
                         {getRoleIcon(user.role)}
                         <Badge className={getRoleBadgeColor(user.role)}>
                           {user.role}
                         </Badge>
                         {user.isSystemAdmin && (
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-300">
+                          <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border-purple-300 dark:border-purple-700">
                             System Admin
                           </Badge>
                         )}
@@ -226,7 +226,7 @@ export default function RoleManagement() {
                     <select
                       value={user.role}
                       onChange={(e) => handleUpdateRole(user.username, e.target.value as UserRole)}
-                      className="px-3 py-1 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green text-sm"
+                      className="px-3 py-1 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green text-sm"
                     >
                       <option value="Flash Sales Rep">Flash Sales Rep</option>
                       <option value="Flash Management">Flash Management</option>
@@ -237,7 +237,7 @@ export default function RoleManagement() {
               ))}
 
               {allUsers.length === 0 && (
-                <div className="text-center py-8 text-light-text-secondary">
+                <div className="text-center py-8 text-light-text-secondary dark:text-gray-400">
                   No users found
                 </div>
               )}

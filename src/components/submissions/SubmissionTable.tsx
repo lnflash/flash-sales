@@ -63,13 +63,13 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
           const level = info.getValue();
           return (
             <div className="flex items-center">
-              <div className="w-1/2 bg-light-bg-tertiary rounded-full h-2">
+              <div className="w-1/2 bg-light-bg-tertiary dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-gradient-to-r from-flash-green to-flash-yellow h-2 rounded-full"
                   style={{ width: `${(level / 5) * 100}%` }}
                 ></div>
               </div>
-              <span className="ml-2 text-sm text-light-text-primary">{level}/5</span>
+              <span className="ml-2 text-sm text-light-text-primary dark:text-gray-300">{level}/5</span>
             </div>
           );
         },
@@ -85,14 +85,14 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 displayStatus === 'signed_up'
-                  ? 'bg-flash-green/10 text-flash-green border border-flash-green/20'
+                  ? 'bg-flash-green/10 text-flash-green border border-flash-green/20 dark:bg-flash-green/20 dark:text-flash-green dark:border-flash-green/30'
                   : displayStatus === 'opportunity'
-                  ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                  ? 'bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-700'
                   : displayStatus === 'prospect'
-                  ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                  ? 'bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
                   : displayStatus === 'contacted'
-                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
-                  : 'bg-gray-100 text-light-text-secondary border border-light-border'
+                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700'
+                  : 'bg-gray-100 text-light-text-secondary border border-light-border dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600'
               }`}
             >
               {displayStatus.split('_').map(word => 
@@ -105,13 +105,13 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
       columnHelper.accessor('username', {
         header: 'Rep',
         cell: (info) => (
-          <span className="text-light-text-primary">{info.getValue() || 'N/A'}</span>
+          <span className="text-light-text-primary dark:text-gray-300">{info.getValue() || 'N/A'}</span>
         ),
       }),
       columnHelper.accessor('territory', {
         header: 'Territory',
         cell: (info) => (
-          <span className="text-light-text-primary">{info.getValue() || 'N/A'}</span>
+          <span className="text-light-text-primary dark:text-gray-300">{info.getValue() || 'N/A'}</span>
         ),
       }),
       columnHelper.accessor('timestamp', {
@@ -174,11 +174,11 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-light-border">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-light-border dark:border-gray-700">
         <div className="animate-pulse">
-          <div className="h-12 bg-light-bg-tertiary"></div>
+          <div className="h-12 bg-light-bg-tertiary dark:bg-gray-700"></div>
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-14 border-t border-light-border bg-light-bg-secondary"></div>
+            <div key={i} className="h-14 border-t border-light-border dark:border-gray-700 bg-light-bg-secondary dark:bg-gray-700"></div>
           ))}
         </div>
       </div>
@@ -190,26 +190,26 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
     return (
       <div className="flex flex-col space-y-4">
         {data.length === 0 ? (
-          <div className="text-center py-8 bg-white rounded-lg shadow-sm border border-light-border">
-            <p className="text-light-text-secondary">No submissions found</p>
+          <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-light-border dark:border-gray-700">
+            <p className="text-light-text-secondary dark:text-gray-400">No submissions found</p>
           </div>
         ) : (
           <>
-            <div className="text-sm text-light-text-secondary mb-2">
+            <div className="text-sm text-light-text-secondary dark:text-gray-400 mb-2">
               Showing {data.length} of {totalItems || data.length} submissions
             </div>
             {data.map((submission) => {
               const displayStatus = submission.leadStatus || (submission.signedUp ? 'signed_up' : 'canvas');
               
               return (
-                <div key={submission.id} className="bg-white rounded-lg shadow-sm border border-light-border overflow-hidden">
+                <div key={submission.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-light-border dark:border-gray-700 overflow-hidden">
                   <MobileCard>
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
-                        <h3 className="font-medium text-light-text-primary text-lg">
+                        <h3 className="font-medium text-light-text-primary dark:text-white text-lg">
                           {submission.ownerName}
                         </h3>
-                        <p className="text-sm text-light-text-secondary mt-1">
+                        <p className="text-sm text-light-text-secondary dark:text-gray-400 mt-1">
                           {formatDate(submission.timestamp)}
                         </p>
                       </div>
@@ -241,7 +241,7 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                       
                       <MobileCardRow label="Interest Level" value={
                         <div className="flex items-center">
-                          <div className="w-16 bg-light-bg-tertiary rounded-full h-2 mr-2">
+                          <div className="w-16 bg-light-bg-tertiary dark:bg-gray-700 rounded-full h-2 mr-2">
                             <div
                               className="bg-gradient-to-r from-flash-green to-flash-yellow h-2 rounded-full"
                               style={{ width: `${(submission.interestLevel / 5) * 100}%` }}
@@ -255,14 +255,14 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                       <MobileCardRow label="Territory" value={submission.territory || 'N/A'} />
                     </div>
                     
-                    <div className="flex items-center space-x-3 mt-4 pt-4 border-t border-light-border">
+                    <div className="flex items-center space-x-3 mt-4 pt-4 border-t border-light-border dark:border-gray-700">
                       <Link
                         href={`/dashboard/submissions/${submission.id}`}
                         className="flex-1 text-center py-2 text-sm font-medium text-flash-green hover:text-flash-green-light transition-colors"
                       >
                         View Details
                       </Link>
-                      <div className="h-4 w-px bg-light-border" />
+                      <div className="h-4 w-px bg-light-border dark:bg-gray-700" />
                       <Link
                         href={`/dashboard/submissions/${submission.id}/edit`}
                         className="flex-1 text-center py-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
@@ -271,7 +271,7 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                       </Link>
                       {onDelete && (
                         <>
-                          <div className="h-4 w-px bg-light-border" />
+                          <div className="h-4 w-px bg-light-border dark:bg-gray-700" />
                           <button
                             onClick={() => {
                               if (window.confirm('Are you sure you want to delete this submission?')) {
@@ -297,17 +297,17 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
 
   // Desktop Table View
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-light-border">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-light-border dark:border-gray-700">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-light-border">
-          <thead className="bg-light-bg-secondary">
+        <table className="min-w-full divide-y divide-light-border dark:divide-gray-700">
+          <thead className="bg-light-bg-secondary dark:bg-gray-900">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary uppercase tracking-wider whitespace-nowrap"
+                    className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-gray-400 uppercase tracking-wider whitespace-nowrap"
                   >
                     {header.isPlaceholder ? null : (
                       <div
@@ -325,7 +325,7 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                           desc: <ChevronDownIcon className="w-4 h-4 ml-1" />,
                         }[header.column.getIsSorted() as string] ??
                           (header.column.getCanSort() ? (
-                            <ArrowsUpDownIcon className="w-4 h-4 ml-1 text-light-text-tertiary" />
+                            <ArrowsUpDownIcon className="w-4 h-4 ml-1 text-light-text-tertiary dark:text-gray-500" />
                           ) : null)}
                       </div>
                     )}
@@ -334,11 +334,11 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-light-border">
+          <tbody className="divide-y divide-light-border dark:divide-gray-700">
             {table.getRowModel().rows.map((row) => (
               <tr 
                 key={row.id} 
-                className="hover:bg-light-bg-secondary transition-colors"
+                className="hover:bg-light-bg-secondary dark:hover:bg-gray-700 transition-colors"
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-4 py-3 whitespace-nowrap">
@@ -355,13 +355,13 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
       </div>
       
       {data.length === 0 && (
-        <div className="py-12 text-center text-light-text-tertiary">
+        <div className="py-12 text-center text-light-text-tertiary dark:text-gray-500">
           <p>No submissions found</p>
         </div>
       )}
       
       {data.length > 0 && (
-        <div className="py-4 px-6 border-t border-light-border text-light-text-secondary text-sm">
+        <div className="py-4 px-6 border-t border-light-border dark:border-gray-700 text-light-text-secondary dark:text-gray-400 text-sm">
           Showing {data.length} of {totalItems} submissions
         </div>
       )}

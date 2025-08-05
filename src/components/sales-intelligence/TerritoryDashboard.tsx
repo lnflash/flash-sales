@@ -100,17 +100,17 @@ export default function TerritoryDashboard({
 
   const getRegionColor = (region: string) => {
     switch (region) {
-      case 'Eastern': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'Central': return 'bg-green-100 text-green-800 border-green-300';
-      case 'Western': return 'bg-purple-100 text-purple-800 border-purple-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Eastern': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 border-blue-300 dark:border-blue-700';
+      case 'Central': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border-green-300 dark:border-green-700';
+      case 'Western': return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 border-purple-300 dark:border-purple-700';
+      default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border-gray-300 dark:border-gray-600';
     }
   };
 
   const getPerformanceColor = (rate: number) => {
-    if (rate >= 0.4) return 'text-green-600';
-    if (rate >= 0.3) return 'text-yellow-600';
-    return 'text-red-600';
+    if (rate >= 0.4) return 'text-green-600 dark:text-green-400';
+    if (rate >= 0.3) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const regionStats = {
@@ -120,24 +120,24 @@ export default function TerritoryDashboard({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-light-text-primary flex items-center">
+          <h3 className="text-lg font-semibold text-light-text-primary dark:text-white flex items-center">
             <MapIcon className="w-5 h-5 mr-2 text-flash-green" />
             Territory Management
           </h3>
           
           <div className="flex items-center gap-2">
-            <div className="flex bg-light-bg-secondary rounded-lg p-1">
+            <div className="flex bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-1">
               {regions.map(region => (
                 <button
                   key={region}
                   onClick={() => setSelectedRegion(region)}
                   className={`px-3 py-1 rounded text-sm font-medium transition-all ${
                     selectedRegion === region
-                      ? 'bg-white shadow-sm text-light-text-primary'
-                      : 'text-light-text-secondary hover:text-light-text-primary'
+                      ? 'bg-white dark:bg-gray-800 shadow-sm text-light-text-primary dark:text-white'
+                      : 'text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white'
                   }`}
                 >
                   {region}
@@ -157,7 +157,7 @@ export default function TerritoryDashboard({
               return (
                 <div 
                   key={region}
-                  className="p-4 bg-light-bg-secondary rounded-lg border border-light-border"
+                  className="p-4 bg-light-bg-secondary dark:bg-gray-700 rounded-lg border border-light-border dark:border-gray-600"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
@@ -165,11 +165,11 @@ export default function TerritoryDashboard({
                     }`}>
                       {region}
                     </span>
-                    <span className="text-2xl font-bold text-light-text-primary">
+                    <span className="text-2xl font-bold text-light-text-primary dark:text-white">
                       {totalLeads}
                     </span>
                   </div>
-                  <p className="text-xs text-light-text-secondary">Active Leads</p>
+                  <p className="text-xs text-light-text-secondary dark:text-gray-400">Active Leads</p>
                   <p className={`text-sm font-medium mt-1 ${getPerformanceColor(avgConversion)}`}>
                     {(avgConversion * 100).toFixed(1)}% conversion
                   </p>
@@ -182,10 +182,10 @@ export default function TerritoryDashboard({
 
       {/* Territory Grid/List */}
       {filteredStats.length === 0 ? (
-        <div className="bg-gray-50 rounded-lg p-8 text-center">
-          <MapIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-600 mb-2">No territories with active leads</p>
-          <p className="text-sm text-gray-500">Territories will appear here once leads are assigned</p>
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-8 text-center">
+          <MapIcon className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+          <p className="text-gray-600 dark:text-gray-300 mb-2">No territories with active leads</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Territories will appear here once leads are assigned</p>
         </div>
       ) : (
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
@@ -202,14 +202,14 @@ export default function TerritoryDashboard({
               className={`
                 p-4 rounded-lg border transition-all cursor-pointer
                 ${hasCapacityIssue 
-                  ? 'border-amber-300 bg-amber-50 hover:border-amber-400' 
-                  : 'border-light-border bg-white hover:border-flash-green/50'
+                  ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 hover:border-amber-400 dark:hover:border-amber-600' 
+                  : 'border-light-border dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-flash-green/50'
                 }
               `}
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h4 className="font-medium text-light-text-primary">
+                  <h4 className="font-medium text-light-text-primary dark:text-white">
                     {stat.parish}
                   </h4>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border mt-1 ${
@@ -220,38 +220,38 @@ export default function TerritoryDashboard({
                 </div>
                 
                 {hasCapacityIssue && (
-                  <ExclamationCircleIcon className="w-5 h-5 text-amber-600" />
+                  <ExclamationCircleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p className="text-light-text-tertiary">Active Leads</p>
-                  <p className="font-semibold text-light-text-primary">
+                  <p className="text-light-text-tertiary dark:text-gray-500">Active Leads</p>
+                  <p className="font-semibold text-light-text-primary dark:text-white">
                     {stat.activeLeads}
                   </p>
                 </div>
                 
                 <div>
-                  <p className="text-light-text-tertiary">Conversion</p>
+                  <p className="text-light-text-tertiary dark:text-gray-500">Conversion</p>
                   <p className={`font-semibold ${getPerformanceColor(stat.conversionRate)}`}>
                     {(stat.conversionRate * 100).toFixed(0)}%
                   </p>
                 </div>
                 
                 <div>
-                  <p className="text-light-text-tertiary">Reps</p>
-                  <p className="font-semibold text-light-text-primary">
+                  <p className="text-light-text-tertiary dark:text-gray-500">Reps</p>
+                  <p className="font-semibold text-light-text-primary dark:text-white">
                     {stat.assignedReps}
                   </p>
                 </div>
               </div>
 
               {stat.topPerformer && (
-                <div className="mt-3 pt-3 border-t border-light-border">
+                <div className="mt-3 pt-3 border-t border-light-border dark:border-gray-600">
                   <div className="flex items-center text-xs">
                     <TrophyIcon className="w-4 h-4 text-yellow-500 mr-1" />
-                    <span className="text-light-text-secondary">
+                    <span className="text-light-text-secondary dark:text-gray-400">
                       Top: {stat.topPerformer}
                     </span>
                   </div>
@@ -265,14 +265,14 @@ export default function TerritoryDashboard({
 
       {/* Territory Coverage Warning */}
       {territoryStats.filter(s => s.assignedReps === 0).length > 0 && (
-        <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
+        <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
           <div className="flex items-start">
-            <ExclamationCircleIcon className="w-5 h-5 text-red-600 mr-2 flex-shrink-0" />
+            <ExclamationCircleIcon className="w-5 h-5 text-red-600 dark:text-red-400 mr-2 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-red-800">
+              <p className="text-sm font-medium text-red-800 dark:text-red-400">
                 Territory Coverage Gap
               </p>
-              <p className="text-sm text-red-700 mt-1">
+              <p className="text-sm text-red-700 dark:text-red-300 mt-1">
                 {territoryStats.filter(s => s.assignedReps === 0).length} territories have no assigned reps
               </p>
             </div>

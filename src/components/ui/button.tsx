@@ -11,10 +11,10 @@ const buttonVariants = cva(
         destructive:
           "bg-red-500 text-white hover:bg-red-600",
         outline:
-          "border border-light-border bg-white hover:bg-light-bg-secondary hover:text-light-text-primary",
+          "border border-light-border dark:border-gray-600 bg-white dark:bg-gray-700 text-light-text-primary dark:text-gray-300 hover:bg-light-bg-secondary dark:hover:bg-gray-600 hover:text-light-text-primary dark:hover:text-white",
         secondary:
-          "bg-light-bg-secondary text-light-text-primary hover:bg-light-bg-tertiary",
-        ghost: "hover:bg-light-bg-secondary hover:text-light-text-primary shadow-none",
+          "bg-light-bg-secondary dark:bg-gray-700 text-light-text-primary dark:text-gray-300 hover:bg-light-bg-tertiary dark:hover:bg-gray-600",
+        ghost: "hover:bg-light-bg-secondary dark:hover:bg-gray-700 hover:text-light-text-primary dark:hover:text-white shadow-none",
         link: "text-flash-green underline-offset-4 hover:underline shadow-none",
         btcOrange: "bg-btc-orange text-white hover:bg-btc-orange/90",
       },

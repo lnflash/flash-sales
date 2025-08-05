@@ -251,7 +251,7 @@ export default function LeadsPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
-            <p className="mt-4 text-light-text-secondary">Loading lead data...</p>
+            <p className="mt-4 text-light-text-secondary dark:text-gray-400">Loading lead data...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -276,56 +276,56 @@ export default function LeadsPage() {
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-        <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Leads</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.totalLeads}</p>
+              <p className="text-sm text-light-text-secondary dark:text-gray-400">Total Leads</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.totalLeads}</p>
             </div>
-            <FunnelIcon className="w-8 h-8 text-primary opacity-50" />
+            <FunnelIcon className="w-8 h-8 text-flash-green opacity-50" />
           </div>
         </div>
 
-        <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Active Leads</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.activeLeads}</p>
-              <p className="text-xs text-muted-foreground">Last 30 days</p>
+              <p className="text-sm text-light-text-secondary dark:text-gray-400">Active Leads</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.activeLeads}</p>
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500">Last 30 days</p>
             </div>
             <ClipboardDocumentCheckIcon className="w-8 h-8 text-blue-500 opacity-50" />
           </div>
         </div>
 
-        <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">New Leads</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.newLeads}</p>
-              <p className="text-xs text-muted-foreground">Last 7 days</p>
+              <p className="text-sm text-light-text-secondary dark:text-gray-400">New Leads</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.newLeads}</p>
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500">Last 7 days</p>
             </div>
             <PlusIcon className="w-8 h-8 text-green-500 opacity-50" />
           </div>
         </div>
 
-        <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Stale Leads</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.staleLeads}</p>
-              <p className="text-xs text-muted-foreground">30+ days</p>
+              <p className="text-sm text-light-text-secondary dark:text-gray-400">Stale Leads</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.staleLeads}</p>
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500">30+ days</p>
             </div>
-            <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
-              <span className="text-sm font-bold text-yellow-600">!</span>
+            <div className="w-8 h-8 rounded-full bg-yellow-500/20 dark:bg-yellow-500/30 flex items-center justify-center">
+              <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">!</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Conversion Rate</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.conversionRate}%</p>
+              <p className="text-sm text-light-text-secondary dark:text-gray-400">Conversion Rate</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.conversionRate}%</p>
             </div>
             <ArrowTrendingUpIcon className="w-8 h-8 text-green-500 opacity-50" />
           </div>
@@ -396,7 +396,7 @@ export default function LeadsPage() {
       {/* Follow-up Recommendations */}
       {workflows.length > 0 && (
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
+          <h3 className="text-lg font-semibold text-light-text-primary dark:text-white mb-4">
             Today's Priority Actions
           </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -432,10 +432,10 @@ export default function LeadsPage() {
       <div className="mb-8">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-foreground">
+            <h3 className="text-lg font-semibold text-light-text-primary dark:text-white">
               All Leads ({submissions.length})
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-light-text-secondary dark:text-gray-400">
               Manage and track all your leads in one place
             </p>
           </div>
@@ -444,7 +444,7 @@ export default function LeadsPage() {
               const event = new CustomEvent('createNewLead');
               window.dispatchEvent(event);
             }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all flex items-center gap-2"
+            className="px-4 py-2 bg-flash-green text-white rounded-lg hover:bg-flash-green-light transition-all flex items-center gap-2"
           >
             <PlusIcon className="w-5 h-5" />
             New Lead

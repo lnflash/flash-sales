@@ -733,9 +733,9 @@ export default function DynamicIntakeForm() {
   };
 
   const getLeadScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
-    return "text-red-600";
+    if (score >= 80) return "text-green-600 dark:text-green-400";
+    if (score >= 60) return "text-yellow-600 dark:text-yellow-400";
+    return "text-red-600 dark:text-red-400";
   };
 
   const renderStepContent = () => {
@@ -827,10 +827,10 @@ export default function DynamicIntakeForm() {
       case 3:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Business Metrics</h3>
+            <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">Business Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Monthly Revenue</label>
+                <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Monthly Revenue</label>
                 <select
                   name="monthlyRevenue"
                   value={formData.monthlyRevenue}
@@ -846,7 +846,7 @@ export default function DynamicIntakeForm() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Number of Employees</label>
+                <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Number of Employees</label>
                 <select
                   name="numberOfEmployees"
                   value={formData.numberOfEmployees}
@@ -1109,7 +1109,7 @@ export default function DynamicIntakeForm() {
                 }}
               >
                 {error && (
-                  <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 rounded-lg">
+                  <div className="flex items-center gap-2 p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg">
                     <ExclamationCircleIcon className="h-5 w-5" />
                     <span>{error}</span>
                   </div>

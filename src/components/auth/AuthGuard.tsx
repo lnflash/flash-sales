@@ -14,7 +14,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   useEffect(() => {
     const checkAuth = () => {
       if (!isSessionValid()) {
-        router.push('/login');
+        router.push('/login-v2');
       }
     };
 
