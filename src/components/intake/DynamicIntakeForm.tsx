@@ -172,6 +172,73 @@ export default function DynamicIntakeForm() {
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [formStartTime] = useState(Date.now());
 
+  // Load user's default territory on component mount
+  useEffect(() => {
+    const loadUserDefaults = async () => {
+      if (user) {
+        // Get default territory from localStorage
+        const defaultTerritory = localStorage.getItem(`defaultTerritory_${user.username}`);
+        
+        if (defaultTerritory) {
+          // Determine country based on territory
+          let country = "";
+          if (JAMAICA_PARISHES.includes(defaultTerritory as JamaicaParish)) {
+            country = "Jamaica";
+          } else if (CAYMAN_REGIONS.includes(defaultTerritory as CaymanRegion)) {
+            country = "Cayman Islands";
+          } else if (CURACAO_REGIONS.includes(defaultTerritory as CuracaoRegion)) {
+            country = "Curaçao";
+          }
+          
+          if (country) {
+            setFormData(prev => ({
+              ...prev,
+              country,
+              territory: defaultTerritory
+            }));
+          }
+        }
+        
+        // Also try to load from Supabase profile
+        try {
+          const { getSupabase } = await import("@/lib/supabase/client");
+          const supabase = getSupabase();
+          const { data } = await supabase
+            .from("users")
+            .select("dashboard_preferences")
+            .or(`username.eq.${user.username},email.eq.${user.username}@getflash.io`)
+            .single();
+
+          if (data?.dashboard_preferences?.default_territory) {
+            const territory = data.dashboard_preferences.default_territory;
+            let country = "";
+            
+            if (JAMAICA_PARISHES.includes(territory as JamaicaParish)) {
+              country = "Jamaica";
+            } else if (CAYMAN_REGIONS.includes(territory as CaymanRegion)) {
+              country = "Cayman Islands";
+            } else if (CURACAO_REGIONS.includes(territory as CuracaoRegion)) {
+              country = "Curaçao";
+            }
+            
+            if (country) {
+              setFormData(prev => ({
+                ...prev,
+                country,
+                territory
+              }));
+            }
+          }
+        } catch (error) {
+          // Silently fail - localStorage fallback is already in place
+          console.log("Could not load profile from Supabase:", error);
+        }
+      }
+    };
+
+    loadUserDefaults();
+  }, [user]);
+
   useEffect(() => {
     // Calculate lead score whenever form data changes
     const calculateScore = () => {
