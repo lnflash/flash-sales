@@ -59,8 +59,8 @@ Flash Sales Dashboard is a Next.js-powered CRM platform specifically designed fo
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-org/flash-sales-dashboard.git
-   cd flash-sales-dashboard
+   git clone https://github.com/your-org/flash-sales.git
+   cd flash-sales
    ```
 
 2. **Install dependencies**
