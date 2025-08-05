@@ -196,7 +196,7 @@ export default function RepDashboard() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
-            <p className="mt-4 text-light-text-secondary">Loading your dashboard...</p>
+            <p className="mt-4 text-light-text-secondary dark:text-gray-400">Loading your dashboard...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -207,8 +207,8 @@ export default function RepDashboard() {
   if (!user) {
     return (
       <DashboardLayout title="Sales Rep Dashboard">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <p className="text-yellow-800">Please log in to view your dashboard.</p>
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-center">
+          <p className="text-yellow-800 dark:text-yellow-400">Please log in to view your dashboard.</p>
         </div>
       </DashboardLayout>
     );
@@ -230,38 +230,38 @@ export default function RepDashboard() {
       />
 
       {/* User Info Bar */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-light-border flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6 border border-light-border dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold">
             {displayUsername.charAt(0).toUpperCase()}
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-light-text-primary">
+            <p className="text-sm font-medium text-light-text-primary dark:text-white">
               {isViewingOwnDashboard ? `Welcome back, ${user.username}!` : `Viewing ${displayUsername}'s Dashboard`}
             </p>
-            <p className="text-xs text-light-text-secondary">
+            <p className="text-xs text-light-text-secondary dark:text-gray-400">
               {canViewAllReps && selectedUsername && selectedUsername !== user.username ? `Admin view of ${selectedUsername}'s data` : 
                'Viewing your personal dashboard'}
             </p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs text-light-text-secondary">
+          <p className="text-xs text-light-text-secondary dark:text-gray-400">
             Your Submissions
           </p>
-          <p className="text-lg font-semibold text-light-text-primary">{submissions.length}</p>
+          <p className="text-lg font-semibold text-light-text-primary dark:text-white">{submissions.length}</p>
         </div>
       </div>
 
       {/* Empty state if no submissions */}
       {submissions.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 border border-light-border text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 border border-light-border dark:border-gray-700 text-center">
           <div className="max-w-md mx-auto">
             <DocumentTextIcon className="w-16 h-16 text-light-text-tertiary mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-light-text-primary mb-2">
+            <h3 className="text-lg font-semibold text-light-text-primary dark:text-white mb-2">
               No Leads Yet
             </h3>
-            <p className="text-light-text-secondary mb-6">
+            <p className="text-light-text-secondary dark:text-gray-400 mb-6">
               Start building your pipeline by adding your first lead!
             </p>
             <Link
@@ -277,33 +277,33 @@ export default function RepDashboard() {
         <>
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 border border-light-border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Total Leads</p>
-              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.totalLeads}</p>
+              <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 truncate">Total Leads</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.totalLeads}</p>
             </div>
             <ChartBarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-flash-green opacity-50 flex-shrink-0 ml-2" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 border border-light-border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Hot Leads</p>
-              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.hotLeads}</p>
-              <p className="text-xs text-light-text-tertiary hidden sm:block">Interest 4-5</p>
+              <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 truncate">Hot Leads</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.hotLeads}</p>
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500 hidden sm:block">Interest 4-5</p>
             </div>
             <FireIcon className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 opacity-50 flex-shrink-0 ml-2" />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 border border-light-border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Follow-up</p>
-              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.needsFollowUp}</p>
-              <p className="text-xs text-light-text-tertiary hidden sm:block">Urgent/High</p>
+              <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 truncate">Follow-up</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.needsFollowUp}</p>
+              <p className="text-xs text-light-text-tertiary dark:text-gray-500 hidden sm:block">Urgent/High</p>
             </div>
             <ExclamationTriangleIcon className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500 opacity-50 flex-shrink-0 ml-2" />
           </div>
@@ -312,8 +312,8 @@ export default function RepDashboard() {
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Closed/Month</p>
-              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.closedThisMonth}</p>
+              <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 truncate">Closed/Month</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.closedThisMonth}</p>
             </div>
             <CheckCircleIcon className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 opacity-50 flex-shrink-0 ml-2" />
           </div>
@@ -322,16 +322,16 @@ export default function RepDashboard() {
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm text-light-text-secondary truncate">Conversion</p>
-              <p className="text-xl sm:text-2xl font-bold text-light-text-primary mt-1">{stats.conversionRate}%</p>
+              <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 truncate">Conversion</p>
+              <p className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.conversionRate}%</p>
             </div>
             <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 ml-2 ${
               stats.conversionRate >= 20 ? 'bg-green-100' : 
               stats.conversionRate >= 10 ? 'bg-yellow-100' : 'bg-red-100'
             } flex items-center justify-center`}>
               <span className={`text-sm font-bold ${
-                stats.conversionRate >= 20 ? 'text-green-600' : 
-                stats.conversionRate >= 10 ? 'text-yellow-600' : 'text-red-600'
+                stats.conversionRate >= 20 ? 'text-green-600 dark:text-green-400' : 
+                stats.conversionRate >= 10 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
               }`}>
                 {stats.conversionRate >= 20 ? '🎯' : stats.conversionRate >= 10 ? '📈' : '⚠️'}
               </span>
@@ -366,8 +366,8 @@ export default function RepDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-8 bg-white rounded-lg shadow-sm p-6 border border-light-border">
-        <h2 className="text-lg font-semibold text-light-text-primary mb-4">Quick Actions</h2>
+      <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-light-text-primary dark:text-white mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             href="/intake"
