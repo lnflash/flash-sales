@@ -27,6 +27,7 @@ export default function LoginV2() {
   const [step, setStep] = useState<LoginStep>('username');
   const [username, setUsername] = useState('');
   const [userId, setUserId] = useState('');
+  const [graphqlUserId, setGraphqlUserId] = useState(''); // Store the GraphQL user ID
   const [attemptsRemaining, setAttemptsRemaining] = useState<number | undefined>();
   const [lockedUntil, setLockedUntil] = useState<Date | undefined>();
   const router = useRouter();
@@ -74,29 +75,54 @@ export default function LoginV2() {
 
   const handleUsernameSubmit = async (submittedUsername: string) => {
     try {
-      // Verify username with GraphQL
-      const { data } = await client.query({
-        query: CHECK_USERNAME_QUERY,
-        variables: { username: submittedUsername },
-        fetchPolicy: 'network-only',
-      });
-
-      if (data?.accountDefaultWallet?.id) {
-        setUsername(submittedUsername);
-        
-        // Check if user has PIN setup
-        const hasPinSetup = await checkUserPinStatus(submittedUsername);
-        
-        if (hasPinSetup) {
-          setStep('pin-verify');
-        } else {
-          setStep('pin-setup');
+      // Try to verify username with GraphQL
+      let userId = '';
+      let skipGraphQL = false;
+      
+      // Check if we're in development mode without GraphQL
+      if (process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_GRAPHQL_URI) {
+        console.warn('GraphQL URI not configured, using development mode');
+        skipGraphQL = true;
+        // Generate a mock user ID for development
+        userId = `dev-${submittedUsername}`;
+      } else {
+        try {
+          const { data } = await client.query({
+            query: CHECK_USERNAME_QUERY,
+            variables: { username: submittedUsername },
+            fetchPolicy: 'network-only',
+          });
+          
+          if (!data?.accountDefaultWallet?.id) {
+            return false;
+          }
+          
+          userId = data.accountDefaultWallet.id;
+        } catch (graphqlError) {
+          // If GraphQL fails in development, allow bypass
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('GraphQL verification failed, using development bypass');
+            skipGraphQL = true;
+            userId = `dev-${submittedUsername}`;
+          } else {
+            throw graphqlError;
+          }
         }
-        
-        return true;
+      }
+
+      setUsername(submittedUsername);
+      setGraphqlUserId(userId); // Store the GraphQL user ID
+      
+      // Check if user has PIN setup
+      const hasPinSetup = await checkUserPinStatus(submittedUsername);
+      
+      if (hasPinSetup) {
+        setStep('pin-verify');
+      } else {
+        setStep('pin-setup');
       }
       
-      return false;
+      return true;
     } catch (error) {
       console.error('Username verification error:', error);
       return false;
@@ -111,7 +137,7 @@ export default function LoginV2() {
         // Save user to storage and redirect
         saveUserToStorage({
           username,
-          userId,
+          userId: graphqlUserId, // Use the GraphQL user ID
           loggedInAt: Date.now(),
         });
         
@@ -134,7 +160,7 @@ export default function LoginV2() {
         // Save user to storage and redirect
         saveUserToStorage({
           username,
-          userId,
+          userId: graphqlUserId, // Use the GraphQL user ID
           loggedInAt: Date.now(),
         });
         
