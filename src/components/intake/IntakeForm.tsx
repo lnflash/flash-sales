@@ -294,9 +294,9 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white rounded-lg p-12 shadow-lg border border-light-border text-center">
+        <div className="bg-white dark:bg-dark-bg-primary rounded-lg p-12 shadow-lg border border-light-border dark:border-dark-border text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
-          <p className="mt-4 text-light-text-secondary">Loading submission data...</p>
+          <p className="mt-4 text-light-text-secondary dark:text-dark-text-secondary">Loading submission data...</p>
         </div>
       </div>
     );
@@ -304,14 +304,14 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <Card className="bg-white shadow-lg border-light-border">
+      <Card className="bg-white dark:bg-dark-bg-primary shadow-lg border-light-border dark:border-dark-border">
         <CardHeader className="border-b border-light-border pb-4 sm:pb-6">
           <div className="relative">
             {/* Username display in top right */}
             {formData.username && (
-              <div className="absolute top-0 right-0 flex items-center text-xs sm:text-sm text-light-text-secondary bg-light-bg-secondary px-2 sm:px-3 py-1 rounded-full">
+              <div className="absolute top-0 right-0 flex items-center text-xs sm:text-sm text-light-text-secondary dark:text-dark-text-secondary bg-light-bg-secondary dark:bg-dark-bg-secondary px-2 sm:px-3 py-1 rounded-full">
                 <UserIcon className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
-                <span className="font-medium text-light-text-primary">{formData.username}</span>
+                <span className="font-medium text-light-text-primary dark:text-dark-text-primary">{formData.username}</span>
               </div>
             )}
 
@@ -321,10 +321,10 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                   <span className="text-white text-xl sm:text-2xl font-bold">F</span>
                 </div>
               </div>
-              <CardTitle className="text-xl sm:text-2xl font-bold text-light-text-primary">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">
                 {isEditMode ? "Edit Submission" : "Flash Sales Canvas Form"}
               </CardTitle>
-              <p className="text-light-text-secondary mt-1 sm:mt-2 text-sm sm:text-base px-4 sm:px-0">
+              <p className="text-light-text-secondary dark:text-dark-text-secondary mt-1 sm:mt-2 text-sm sm:text-base px-4 sm:px-0">
                 {isEditMode ? "Update existing lead information" : "Capture lead information quickly and efficiently"}
               </p>
             </div>
@@ -369,7 +369,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 <button
                   type="button"
                   onClick={() => setShowSearch(!showSearch)}
-                  className="text-xs sm:text-sm text-light-text-secondary hover:text-light-text-primary flex items-center self-end sm:self-auto"
+                  className="text-xs sm:text-sm text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary flex items-center self-end sm:self-auto"
                 >
                   {showSearch ? "Hide" : "Show"} Search
                 </button>
@@ -473,7 +473,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 name="territory"
                 value={formData.territory}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               >
                 <option value="">Select Territory</option>
                 <option value="Kingston">Kingston</option>
@@ -495,7 +495,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
             {/* Package Seen */}
             <div>
-              <label className="block text-sm font-medium text-light-text-secondary mb-2">Package Seen by Owner?</label>
+              <label className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">Package Seen by Owner?</label>
               <div className="flex items-center space-x-4">
                 <label className="flex items-center cursor-pointer">
                   <input
@@ -505,14 +505,14 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                     onChange={handleInputChange}
                     className="h-4 w-4 text-flash-green bg-white border-light-border rounded focus:ring-flash-green"
                   />
-                  <span className="ml-2 text-light-text-primary">Yes, owner has seen the package</span>
+                  <span className="ml-2 text-light-text-primary dark:text-dark-text-primary">Yes, owner has seen the package</span>
                 </label>
               </div>
             </div>
 
             {/* Decision Makers */}
             <div>
-              <label htmlFor="decisionMakers" className="block text-sm font-medium text-light-text-secondary mb-2">
+              <label htmlFor="decisionMakers" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 Other Key Decision-Makers
               </label>
               <textarea
@@ -522,13 +522,13 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 value={formData.decisionMakers}
                 onChange={handleInputChange}
                 placeholder="List other people involved in the decision..."
-                className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               />
             </div>
 
             {/* Interest Level */}
             <div>
-              <label className="block text-sm font-medium text-light-text-secondary mb-2">Level of Interest</label>
+              <label className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">Level of Interest</label>
               <div className="space-y-2">
                 <div className="relative">
                   <input
@@ -548,17 +548,17 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                     ))}
                   </div>
                 </div>
-                <div className="flex justify-between text-xs text-light-text-secondary mt-3">
+                <div className="flex justify-between text-xs text-light-text-secondary dark:text-dark-text-secondary mt-3">
                   {[1, 2, 3, 4, 5].map((num) => (
                     <span key={num} className="font-medium">
                       {num}
                     </span>
                   ))}
                 </div>
-                <div className="flex justify-between text-xs text-light-text-tertiary mt-1">
-                  <span>Not Interested</span>
-                  <span className="text-center">Moderate</span>
-                  <span>Very Interested</span>
+                <div className="flex justify-between text-xs text-light-text-tertiary dark:text-dark-text-tertiary mt-1">
+                  <span className="dark:text-dark-text-tertiary">Not Interested</span>
+                  <span className="text-center dark:text-dark-text-tertiary">Moderate</span>
+                  <span className="dark:text-dark-text-tertiary">Very Interested</span>
                 </div>
                 <div className="text-center mt-3">
                   <Badge
@@ -573,7 +573,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
             {/* Lead Status */}
             <div>
-              <label htmlFor="leadStatus" className="block text-sm font-medium text-light-text-secondary mb-2">
+              <label htmlFor="leadStatus" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 Lead Status *
               </label>
               <select
@@ -582,7 +582,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 value={formData.leadStatus || ""}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               >
                 <option value="">Select Status</option>
                 <option value="canvas">Canvas</option>
@@ -591,14 +591,14 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 <option value="opportunity">Opportunity</option>
                 <option value="signed_up">Signed Up</option>
               </select>
-              <p className="mt-1 text-xs text-light-text-tertiary">
+              <p className="mt-1 text-xs text-light-text-tertiary dark:text-dark-text-tertiary">
                 Select the current status of this lead
               </p>
             </div>
 
             {/* Specific Needs */}
             <div>
-              <label htmlFor="specificNeeds" className="block text-sm font-medium text-light-text-secondary mb-2">
+              <label htmlFor="specificNeeds" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
                 Specific Needs
               </label>
               <textarea
@@ -608,7 +608,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 value={formData.specificNeeds}
                 onChange={handleInputChange}
                 placeholder="Note any specific requirements or needs mentioned..."
-                className="w-full px-3 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               />
             </div>
 

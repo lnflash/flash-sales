@@ -504,18 +504,18 @@ export default function DynamicIntakeForm() {
       case 1:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Business Information</h3>
+            <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">Business Information</h3>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Business Name</label>
+              <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Business Name</label>
               <Input name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="Flash Payments Inc." autoFocus />
             </div>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Business Type</label>
+              <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Business Type</label>
               <select
                 name="businessType"
                 value={formData.businessType}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+                className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
               >
                 <option value="">Select business type</option>
                 {Object.entries(INDUSTRY_CONFIGS).map(([key, config]) => (
@@ -526,12 +526,12 @@ export default function DynamicIntakeForm() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Country</label>
+              <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Country</label>
               <select
                 name="country"
                 value={formData.country}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+                className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
               >
                 <option value="">Select country</option>
                 <option value="Jamaica">Jamaica</option>
@@ -541,14 +541,14 @@ export default function DynamicIntakeForm() {
             </div>
             {formData.country && (
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">
+                <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">
                   {formData.country === "Jamaica" ? "Parish" : "Region"}
                 </label>
                 <select
                   name="territory"
                   value={formData.territory}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                 >
                   <option value="">Select {formData.country === "Jamaica" ? "parish" : "region"}</option>
                   {getTerritoryOptions().map((territory) => (
@@ -565,21 +565,21 @@ export default function DynamicIntakeForm() {
       case 2:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
+            <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">Contact Information</h3>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Owner/Manager Name</label>
+              <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Owner/Manager Name</label>
               <Input name="ownerName" value={formData.ownerName} onChange={handleInputChange} placeholder="John Smith" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Phone Number</label>
+              <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Phone Number</label>
               <Input name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleInputChange} placeholder="+1 (876) 555-0123" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Email Address</label>
+              <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Email Address</label>
               <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="john@business.com" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-light-text-primary mb-1">Year Established</label>
+              <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Year Established</label>
               <Input name="yearEstablished" type="number" value={formData.yearEstablished} onChange={handleInputChange} placeholder="2020" min="1900" max={new Date().getFullYear()} />
             </div>
           </div>
@@ -596,7 +596,7 @@ export default function DynamicIntakeForm() {
                   name="monthlyRevenue"
                   value={formData.monthlyRevenue}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                 >
                   <option value="">Select range</option>
                   <option value="0-10k">$0 - $10,000</option>
@@ -612,7 +612,7 @@ export default function DynamicIntakeForm() {
                   name="numberOfEmployees"
                   value={formData.numberOfEmployees}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
                 >
                   <option value="">Select range</option>
                   <option value="1-5">1-5</option>
@@ -623,16 +623,16 @@ export default function DynamicIntakeForm() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Monthly Transactions</label>
+                <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Monthly Transactions</label>
                 <Input name="monthlyTransactions" type="number" value={formData.monthlyTransactions} onChange={handleInputChange} placeholder="500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-light-text-primary mb-1">Average Transaction Size</label>
+                <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Average Transaction Size</label>
                 <Input name="averageTicketSize" type="number" value={formData.averageTicketSize} onChange={handleInputChange} placeholder="75" />
               </div>
             </div>
             <div className="mt-4">
-              <label className="block text-sm font-medium text-light-text-primary mb-2">Current Pain Points</label>
+              <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-2">Current Pain Points</label>
               <div className="grid grid-cols-2 gap-2">
                 {PAIN_POINTS.map((painPoint) => (
                   <label key={painPoint} className="flex items-center space-x-2 cursor-pointer">
@@ -642,7 +642,7 @@ export default function DynamicIntakeForm() {
                       onChange={() => handlePainPointToggle(painPoint)}
                       className="rounded border-light-border text-flash-green focus:ring-flash-green"
                     />
-                    <span className="text-sm">{painPoint}</span>
+                    <span className="text-sm dark:text-dark-text-primary">{painPoint}</span>
                   </label>
                 ))}
               </div>
@@ -656,11 +656,11 @@ export default function DynamicIntakeForm() {
           const industryConfig = INDUSTRY_CONFIGS[formData.businessType];
           return (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold mb-4">{industryConfig.label} Specific Information</h3>
+              <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">{industryConfig.label} Specific Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {industryConfig.additionalFields.map((field) => (
                   <div key={field.name}>
-                    <label className="block text-sm font-medium text-light-text-primary mb-1">
+                    <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">
                       {field.label}
                     </label>
                     {field.type === "checkbox" ? (
@@ -671,7 +671,7 @@ export default function DynamicIntakeForm() {
                           onChange={(e) => handleIndustrySpecificChange(field.name, e.target.checked)}
                           className="rounded border-light-border text-flash-green focus:ring-flash-green"
                         />
-                        <span className="text-sm">Yes</span>
+                        <span className="text-sm dark:text-dark-text-primary">Yes</span>
                       </label>
                     ) : (
                       <Input
@@ -691,7 +691,7 @@ export default function DynamicIntakeForm() {
           // No business type selected, show general additional details
           return (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold mb-4">Additional Information</h3>
+              <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">Additional Information</h3>
               <AdditionalDetailsFields formData={formData} handleInputChange={handleInputChange} />
             </div>
           );
@@ -700,24 +700,24 @@ export default function DynamicIntakeForm() {
       case 5:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Review Your Information</h3>
-            <div className="bg-light-bg-secondary p-4 rounded-lg space-y-2">
-              <p>
+            <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">Review Your Information</h3>
+            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary p-4 rounded-lg space-y-2">
+              <p className="dark:text-dark-text-primary">
                 <strong>Business:</strong> {formData.businessName || "Not provided"}
               </p>
-              <p>
+              <p className="dark:text-dark-text-primary">
                 <strong>Type:</strong> {formData.businessType ? INDUSTRY_CONFIGS[formData.businessType].label : "Not provided"}
               </p>
-              <p>
+              <p className="dark:text-dark-text-primary">
                 <strong>Location:</strong> {formData.territory || "Not provided"}, {formData.country || "Not provided"}
               </p>
-              <p>
+              <p className="dark:text-dark-text-primary">
                 <strong>Contact:</strong> {formData.ownerName || "Not provided"}
               </p>
-              <p>
+              <p className="dark:text-dark-text-primary">
                 <strong>Phone:</strong> {formData.phoneNumber || "Not provided"}
               </p>
-              <p>
+              <p className="dark:text-dark-text-primary">
                 <strong>Interest Level:</strong> {formData.interestLevel}/5
               </p>
               <p className={`font-semibold ${getLeadScoreColor(leadScore)}`}>
@@ -727,13 +727,13 @@ export default function DynamicIntakeForm() {
             <div className="mt-4">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input type="checkbox" checked={formData.packageSeen} onChange={handleInputChange} name="packageSeen" className="rounded border-light-border text-flash-green focus:ring-flash-green" />
-                <span className="text-sm">I have reviewed the Flash payment processing packages</span>
+                <span className="text-sm dark:text-dark-text-primary">I have reviewed the Flash payment processing packages</span>
               </label>
             </div>
             <div className="mt-2">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input type="checkbox" checked={formData.signedUp} onChange={handleInputChange} name="signedUp" className="rounded border-light-border text-flash-green focus:ring-flash-green" />
-                <span className="text-sm">I want to sign up for Flash payment processing</span>
+                <span className="text-sm dark:text-dark-text-primary">I want to sign up for Flash payment processing</span>
               </label>
             </div>
           </div>
@@ -748,30 +748,30 @@ export default function DynamicIntakeForm() {
   const AdditionalDetailsFields = ({ formData, handleInputChange }: { formData: FormData; handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void }) => (
     <>
       <div>
-        <label className="block text-sm font-medium text-light-text-primary mb-1">Current Payment Processor</label>
+        <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Current Payment Processor</label>
         <Input name="currentProcessor" value={formData.currentProcessor} onChange={handleInputChange} placeholder="e.g., Square, Stripe, None" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-light-text-primary mb-1">Interest Level</label>
+        <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Interest Level</label>
         <div className="flex items-center space-x-2">
-          <span className="text-sm">Low</span>
+          <span className="text-sm dark:text-dark-text-primary">Low</span>
           <input type="range" name="interestLevel" min="1" max="5" value={formData.interestLevel} onChange={handleInputChange} className="flex-1" />
-          <span className="text-sm">High</span>
-          <span className="ml-2 font-semibold">{formData.interestLevel}/5</span>
+          <span className="text-sm dark:text-dark-text-primary">High</span>
+          <span className="ml-2 font-semibold dark:text-dark-text-primary">{formData.interestLevel}/5</span>
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-light-text-primary mb-1">Decision Makers</label>
+        <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Decision Makers</label>
         <Input name="decisionMakers" value={formData.decisionMakers} onChange={handleInputChange} placeholder="e.g., Owner, Manager, CFO" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-light-text-primary mb-1">Specific Needs or Questions</label>
+        <label className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-1">Specific Needs or Questions</label>
         <textarea
           name="specificNeeds"
           value={formData.specificNeeds}
           onChange={handleInputChange}
           rows={3}
-          className="w-full px-3 py-2 border border-light-border rounded-lg focus:outline-none focus:ring-2 focus:ring-flash-green"
+          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-2 focus:ring-flash-green"
           placeholder="Tell us about your specific payment processing needs..."
         />
       </div>
@@ -779,17 +779,17 @@ export default function DynamicIntakeForm() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-light-bg-primary to-light-bg-secondary py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-light-bg-primary to-light-bg-secondary dark:from-dark-bg-primary dark:to-dark-bg-secondary py-12 px-4">
       {showSearch && !success && (
         <div className="max-w-2xl mx-auto mb-8">
-          <Card>
+          <Card className="dark:bg-dark-bg-primary dark:border-dark-border">
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Search Existing Submissions</h3>
+              <h3 className="text-lg font-semibold mb-4 dark:text-dark-text-primary">Search Existing Submissions</h3>
               <SubmissionSearch 
                 onSelect={(submission) => router.push(`/dashboard/submissions/${submission.id}`)}
                 onClear={() => {}}
               />
-              <p className="text-sm text-light-text-secondary mt-2">
+              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-2">
                 Search for existing submissions to view or edit them
               </p>
             </CardContent>
@@ -797,14 +797,14 @@ export default function DynamicIntakeForm() {
         </div>
       )}
       
-      <Card className="max-w-2xl mx-auto">
+      <Card className="max-w-2xl mx-auto dark:bg-dark-bg-primary dark:border-dark-border">
         <CardContent className="p-8">
           {success ? (
             <div className="text-center py-8">
               <CheckCircleIcon className="h-16 w-16 text-flash-green mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
-              <p className="text-light-text-secondary mb-4">Your information has been submitted successfully.</p>
-              <p className="text-sm text-light-text-secondary">Submission ID: {submissionId}</p>
+              <h2 className="text-2xl font-bold mb-2 dark:text-dark-text-primary">Thank You!</h2>
+              <p className="text-light-text-secondary dark:text-dark-text-secondary mb-4">Your information has been submitted successfully.</p>
+              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">Submission ID: {submissionId}</p>
               <p className="text-lg font-semibold mt-4 text-flash-green">Lead Score: {leadScore}/100</p>
               <Button onClick={() => window.location.reload()} className="mt-6 bg-flash-green hover:bg-flash-green-light">
                 Submit Another
@@ -813,14 +813,13 @@ export default function DynamicIntakeForm() {
           ) : (
             <>
               <div className="mb-6">
-                <div className="flex items-center justify-center mb-4">
-                  <RocketLaunchIcon className="h-8 w-8 text-flash-green mr-2" />
-                  <h2 className="text-2xl font-bold">Get Started with Flash</h2>
-                </div>
-                <p className="text-center text-light-text-secondary">Complete this form to learn how Flash can transform your payment processing</p>
+                <h2 className="text-2xl font-bold text-center mb-2 dark:text-dark-text-primary">Flash Sales Intake Form</h2>
+                <p className="text-center text-light-text-secondary dark:text-dark-text-secondary">
+                  Capture lead information and qualify prospects
+                </p>
               </div>
               <div className="mt-4">
-                <div className="flex justify-between text-sm text-light-text-secondary mb-2">
+                <div className="flex justify-between text-sm text-light-text-secondary dark:text-dark-text-secondary mb-2">
                   <span>
                     Step {currentStep} of {FORM_STEPS.length}
                   </span>
