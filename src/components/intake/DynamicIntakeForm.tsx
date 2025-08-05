@@ -516,6 +516,12 @@ export default function DynamicIntakeForm() {
 
       // Handle organization
       let organizationId = null;
+      console.log("Form submission data:", {
+        businessName: formData.businessName,
+        phoneNumber: formData.phoneNumber,
+        ownerName: formData.ownerName,
+        email: formData.email
+      });
       if (formData.businessName) {
         try {
           if (isEditMode && id) {
@@ -580,6 +586,7 @@ export default function DynamicIntakeForm() {
 
       // Handle contact
       let contactId = null;
+      console.log("Creating contact with phone:", formData.phoneNumber, "for org:", organizationId);
       if (formData.phoneNumber && organizationId) {
         try {
           if (isEditMode && id) {
@@ -619,13 +626,18 @@ export default function DynamicIntakeForm() {
               .select()
               .single();
 
-            if (!contactError && newContact) {
+            if (contactError) {
+              console.error("Contact creation error:", contactError);
+            } else if (newContact) {
               contactId = newContact.id;
+              console.log("Created contact with ID:", contactId);
             }
           }
         } catch (err) {
           console.error("Contact handling error:", err);
         }
+      } else {
+        console.log("Skipping contact creation - no phone number or org ID");
       }
 
       let dealResult;
@@ -674,6 +686,7 @@ export default function DynamicIntakeForm() {
         }
       } else {
         // Create new deal
+        console.log("Creating deal with contact ID:", contactId, "org ID:", organizationId);
         const { data: newDeal, error: dealError } = await supabase
           .from("deals")
           .insert({

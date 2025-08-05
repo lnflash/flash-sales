@@ -49,6 +49,12 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
         header: 'Business Name',
         cell: (info) => info.getValue(),
       }),
+      columnHelper.accessor('phoneNumber', {
+        header: 'Phone',
+        cell: (info) => (
+          <span className="text-light-text-primary dark:text-gray-300">{info.getValue() || 'N/A'}</span>
+        ),
+      }),
       columnHelper.accessor('packageSeen', {
         header: 'Package Seen',
         cell: (info) => (
@@ -233,6 +239,8 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                     </div>
                     
                     <div className="space-y-2">
+                      <MobileCardRow label="Phone" value={submission.phoneNumber || 'N/A'} />
+                      
                       <MobileCardRow label="Package Seen" value={
                         <span className={submission.packageSeen ? 'text-flash-green' : 'text-light-text-tertiary'}>
                           {submission.packageSeen ? 'Yes' : 'No'}
