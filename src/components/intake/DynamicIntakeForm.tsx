@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { getUserFromStorage } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -6,6 +8,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, RocketLaunchIcon } from "@heroi
 import { getSupabase } from "@/lib/supabase/client";
 import { JAMAICA_PARISHES, CAYMAN_REGIONS, CURACAO_REGIONS, JamaicaParish, CaymanRegion, CuracaoRegion } from "@/types/lead-routing";
 import { Input } from "@/components/ui/input";
+import SubmissionSearch from "./SubmissionSearch";
 
 const PAIN_POINTS = [
   "High transaction fees",
@@ -126,7 +129,10 @@ interface FormData {
 }
 
 export default function DynamicIntakeForm() {
+  const router = useRouter();
+  const [user] = useState(getUserFromStorage());
   const [currentStep, setCurrentStep] = useState(1);
+  const [showSearch, setShowSearch] = useState(true);
   const [formData, setFormData] = useState<FormData>({
     // Business Information
     businessName: "",
@@ -306,6 +312,24 @@ export default function DynamicIntakeForm() {
     try {
       const completionTime = Math.round((Date.now() - formStartTime) / 1000); // in seconds
 
+      // Get current user for owner assignment
+      const currentUser = getUserFromStorage();
+      let ownerId = null;
+
+      // If we have a logged-in user, get their ID from Supabase
+      if (currentUser?.username) {
+        const supabase = getSupabase();
+        const { data: userData } = await supabase
+          .from("users")
+          .select("id")
+          .eq("username", currentUser.username)
+          .single();
+        
+        if (userData) {
+          ownerId = userData.id;
+        }
+      }
+
       // Prepare submission data
       const submissionData = {
         ownerName: `${formData.businessName} - ${formData.ownerName}`,
@@ -315,7 +339,7 @@ export default function DynamicIntakeForm() {
         interestLevel: formData.interestLevel,
         signedUp: formData.signedUp,
         specificNeeds: formData.specificNeeds,
-        username: "public_form", // For public submissions
+        username: currentUser?.username || "public_form",
         territory: formData.territory,
         leadScore: leadScore,
         leadStatus: "new" as const,
@@ -421,7 +445,7 @@ export default function DynamicIntakeForm() {
           lead_status: "contacted",
           specific_needs: formData.specificNeeds || "",
           stage: "initial_contact",
-          owner_id: null, // Explicitly set to null for unassigned deals
+          owner_id: ownerId, // Assign to logged-in user or null
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           metadata: submissionData.metadata,
@@ -440,6 +464,7 @@ export default function DynamicIntakeForm() {
           deal_id: newDeal.id,
           organization_id: organizationId,
           contact_id: contactId,
+          owner_id: ownerId,
           type: "note",
           subject: "Website Form Submission",
           description: `Lead submitted intake form. Lead Score: ${leadScore}/100. Completion time: ${completionTime}s`,
@@ -749,6 +774,12 @@ export default function DynamicIntakeForm() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-light-bg-primary to-light-bg-secondary py-12 px-4">
+      {showSearch && !success && (
+        <div className="max-w-2xl mx-auto mb-8">
+          <SubmissionSearch onSelect={() => router.push('/dashboard/submissions')} />
+        </div>
+      )}
+      
       <Card className="max-w-2xl mx-auto">
         <CardContent className="p-8">
           {success ? (
