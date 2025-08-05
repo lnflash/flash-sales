@@ -13,25 +13,13 @@ export default function SubmissionsPage() {
   const router = useRouter();
   const { search } = router.query;
   const [user, setUser] = useState<ReturnType<typeof getUserFromStorage>>(null);
+  const [initialFiltersSet, setInitialFiltersSet] = useState(false);
 
   useEffect(() => {
     setUser(getUserFromStorage());
   }, []);
   
-  // Set initial filters based on URL search parameter and user role
-  const getInitialFilters = (): SubmissionFilters => {
-    const filters: SubmissionFilters = search ? { search: search as string } : {};
-    
-    // If user is a Sales Rep or has no role (doesn't have permission to view all reps), filter by their username
-    if (user && (!user.role || !hasPermission(user.role, 'canViewAllReps'))) {
-      filters.username = user.username;
-    }
-    
-    return filters;
-  };
-  
-  const initialFilters = getInitialFilters();
-  
+  // Start with empty filters - we'll set them properly once user is loaded
   const {
     submissions,
     totalCount,
@@ -43,19 +31,38 @@ export default function SubmissionsPage() {
     setFilters,
     resetFilters,
     refetch
-  } = useSubmissions(initialFilters);
+  } = useSubmissions({});
+
+  // Update filters when user is loaded
+  useEffect(() => {
+    if (user && !initialFiltersSet) {
+      const initialFilters: SubmissionFilters = search ? { search: search as string } : {};
+      
+      // If user is a Sales Rep or has no role (doesn't have permission to view all reps), filter by their username
+      if (!user.role || !hasPermission(user.role, 'canViewAllReps')) {
+        initialFilters.username = user.username;
+        console.log('Setting username filter for non-admin user:', user.username);
+      } else {
+        console.log('User has admin permissions, showing all submissions');
+      }
+      
+      setFilters(initialFilters);
+      setInitialFiltersSet(true);
+    }
+  }, [user, search, setFilters, initialFiltersSet]);
 
   // Update filters when URL search parameter changes
   useEffect(() => {
-    if (search && search !== filters.search) {
+    if (search && search !== filters.search && user && initialFiltersSet) {
       const newFilters = { ...filters, search: search as string };
       // Always maintain username filter for Sales Reps or users with no role
-      if (user && (!user.role || !hasPermission(user.role, 'canViewAllReps'))) {
+      if (!user.role || !hasPermission(user.role, 'canViewAllReps')) {
         newFilters.username = user.username;
+        console.log('Maintaining username filter for search:', user.username);
       }
       setFilters(newFilters);
     }
-  }, [search]);
+  }, [search, user, filters.search, initialFiltersSet, setFilters]);
 
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
@@ -64,6 +71,7 @@ export default function SubmissionsPage() {
     // Always maintain username filter for Sales Reps or users with no role
     if (user && (!user.role || !hasPermission(user.role, 'canViewAllReps'))) {
       newFilters.username = user.username;
+      console.log('Maintaining username filter in handleSetFilters:', user.username);
     }
     setFilters(newFilters);
   };
@@ -74,6 +82,7 @@ export default function SubmissionsPage() {
     // Maintain username filter for Sales Reps or users with no role even after reset
     if (user && (!user.role || !hasPermission(user.role, 'canViewAllReps'))) {
       baseFilters.username = user.username;
+      console.log('Maintaining username filter in handleResetFilters:', user.username);
     }
     setFilters(baseFilters);
     setPagination({ pageIndex: 0, pageSize: 25 });
@@ -104,9 +113,19 @@ export default function SubmissionsPage() {
         
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4 flex justify-between items-center shadow-sm border border-light-border dark:border-gray-700">
           <div>
-            <h2 className="text-lg font-semibold text-light-text-primary dark:text-white">All Submissions</h2>
+            <h2 className="text-lg font-semibold text-light-text-primary dark:text-white">
+              {user && (!user.role || !hasPermission(user.role, 'canViewAllReps')) 
+                ? 'My Submissions' 
+                : 'All Submissions'
+              }
+            </h2>
             <p className="text-sm text-light-text-secondary dark:text-gray-400">
               {isLoading ? 'Loading...' : `${totalCount} submissions found`}
+              {user && (!user.role || !hasPermission(user.role, 'canViewAllReps')) && (
+                <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 px-2 py-1 rounded-full">
+                  Filtered to {user.username}
+                </span>
+              )}
             </p>
           </div>
         </div>

@@ -121,16 +121,14 @@ describe('SubmissionFilters Component', () => {
       expect(mockOnFilterChange).toHaveBeenCalledWith({
         interestLevel: [3],
       });
+    });
 
-      // Reset mock
-      mockOnFilterChange.mockClear();
+    it('should deselect interest levels correctly', () => {
+      // Start with Level 3 already selected
+      render(<SubmissionFilters {...defaultProps} filters={{ interestLevel: [3] }} />);
 
-      // Render with Level 3 selected
-      const { rerender } = render(
-        <SubmissionFilters {...defaultProps} filters={{ interestLevel: [3] }} />
-      );
-
-      fireEvent.click(screen.getByText('Filters'));
+      // Show filters
+      fireEvent.click(screen.getByText('Filters Active'));
 
       // Click Level 3 again to deselect
       fireEvent.click(screen.getByText('Level 3'));

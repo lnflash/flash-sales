@@ -71,22 +71,22 @@ export default function PerformanceSnapshot({ submissions }: PerformanceSnapshot
     if (current > previous) {
       return {
         icon: ArrowTrendingUpIcon,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
+        color: 'text-green-600 dark:text-green-400',
+        bgColor: 'bg-green-100 dark:bg-green-900/30',
         change: `+${((current - previous) / (previous || 1) * 100).toFixed(0)}%`
       };
     } else if (current < previous) {
       return {
         icon: ArrowTrendingDownIcon,
-        color: 'text-red-600',
-        bgColor: 'bg-red-100',
+        color: 'text-red-600 dark:text-red-400',
+        bgColor: 'bg-red-100 dark:bg-red-900/30',
         change: `-${((previous - current) / (previous || 1) * 100).toFixed(0)}%`
       };
     }
     return {
       icon: MinusIcon,
-      color: 'text-gray-600',
-      bgColor: 'bg-gray-100',
+      color: 'text-gray-600 dark:text-gray-400',
+      bgColor: 'bg-gray-100 dark:bg-gray-700',
       change: '0%'
     };
   };
@@ -95,17 +95,17 @@ export default function PerformanceSnapshot({ submissions }: PerformanceSnapshot
   const contactChange = getChangeIndicator(thisWeekContacts, lastWeekContacts);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border mb-8">
-      <h2 className="text-lg font-semibold text-light-text-primary mb-4 flex items-center">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700 mb-8">
+      <h2 className="text-lg font-semibold text-light-text-primary dark:text-white mb-4 flex items-center">
         <CalendarDaysIcon className="w-5 h-5 mr-2 text-flash-green" />
         This Week's Performance
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Contacts This Week */}
-        <div className="bg-light-bg-secondary rounded-lg p-4">
+        <div className="bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-light-text-secondary">Contacts</p>
+            <p className="text-sm text-light-text-secondary dark:text-gray-400">Contacts</p>
             <div className={`flex items-center ${contactChange.bgColor} px-2 py-0.5 rounded-full`}>
               <contactChange.icon className={`w-3 h-3 ${contactChange.color} mr-1`} />
               <span className={`text-xs font-medium ${contactChange.color}`}>
@@ -113,14 +113,14 @@ export default function PerformanceSnapshot({ submissions }: PerformanceSnapshot
               </span>
             </div>
           </div>
-          <p className="text-2xl font-bold text-light-text-primary">{thisWeekContacts}</p>
-          <p className="text-xs text-light-text-tertiary">vs {lastWeekContacts} last week</p>
+          <p className="text-2xl font-bold text-light-text-primary dark:text-white">{thisWeekContacts}</p>
+          <p className="text-xs text-light-text-tertiary dark:text-gray-500">vs {lastWeekContacts} last week</p>
         </div>
         
         {/* Sign-ups This Week */}
-        <div className="bg-light-bg-secondary rounded-lg p-4">
+        <div className="bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-light-text-secondary">Sign-ups</p>
+            <p className="text-sm text-light-text-secondary dark:text-gray-400">Sign-ups</p>
             <div className={`flex items-center ${signupChange.bgColor} px-2 py-0.5 rounded-full`}>
               <signupChange.icon className={`w-3 h-3 ${signupChange.color} mr-1`} />
               <span className={`text-xs font-medium ${signupChange.color}`}>
@@ -128,32 +128,32 @@ export default function PerformanceSnapshot({ submissions }: PerformanceSnapshot
               </span>
             </div>
           </div>
-          <p className="text-2xl font-bold text-light-text-primary">{thisWeekSignups}</p>
-          <p className="text-xs text-light-text-tertiary">vs {lastWeekSignups} last week</p>
+          <p className="text-2xl font-bold text-light-text-primary dark:text-white">{thisWeekSignups}</p>
+          <p className="text-xs text-light-text-tertiary dark:text-gray-500">vs {lastWeekSignups} last week</p>
         </div>
         
         {/* Contact Streak */}
-        <div className="bg-light-bg-secondary rounded-lg p-4">
+        <div className="bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-light-text-secondary">Contact Streak</p>
+            <p className="text-sm text-light-text-secondary dark:text-gray-400">Contact Streak</p>
             {contactStreak >= 3 && (
               <FireIcon className="w-4 h-4 text-orange-500" />
             )}
           </div>
-          <p className="text-2xl font-bold text-light-text-primary">{contactStreak} days</p>
-          <p className="text-xs text-light-text-tertiary">
+          <p className="text-2xl font-bold text-light-text-primary dark:text-white">{contactStreak} days</p>
+          <p className="text-xs text-light-text-tertiary dark:text-gray-500">
             {contactStreak === 0 ? 'Start today!' : contactStreak >= 7 ? 'Great job!' : 'Keep it up!'}
           </p>
         </div>
         
         {/* Average Interest */}
-        <div className="bg-light-bg-secondary rounded-lg p-4">
-          <p className="text-sm text-light-text-secondary mb-2">Avg Interest Level</p>
+        <div className="bg-light-bg-secondary dark:bg-gray-700 rounded-lg p-4">
+          <p className="text-sm text-light-text-secondary dark:text-gray-400 mb-2">Avg Interest Level</p>
           <div className="flex items-baseline">
-            <p className="text-2xl font-bold text-light-text-primary">{avgInterestThisWeek}</p>
-            <span className="text-lg text-light-text-secondary ml-1">/5</span>
+            <p className="text-2xl font-bold text-light-text-primary dark:text-white">{avgInterestThisWeek}</p>
+            <span className="text-lg text-light-text-secondary dark:text-gray-400 ml-1">/5</span>
           </div>
-          <div className="w-full bg-light-bg-tertiary rounded-full h-2 mt-2">
+          <div className="w-full bg-light-bg-tertiary dark:bg-gray-600 rounded-full h-2 mt-2">
             <div
               className="bg-gradient-to-r from-flash-green to-flash-yellow h-2 rounded-full"
               style={{ width: `${(parseFloat(avgInterestThisWeek) / 5) * 100}%` }}

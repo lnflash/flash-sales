@@ -50,28 +50,28 @@ export default function FollowUpRecommendations({
 
   if (activeRecommendations.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
         <div className="text-center py-8">
-          <CheckCircleIcon className="w-12 h-12 text-green-500 mx-auto mb-3" />
-          <p className="text-light-text-secondary">All follow-up actions completed!</p>
+          <CheckCircleIcon className="w-12 h-12 text-green-500 dark:text-green-400 mx-auto mb-3" />
+          <p className="text-light-text-secondary dark:text-gray-400">All follow-up actions completed!</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-light-text-primary flex items-center">
+          <h3 className="text-lg font-semibold text-light-text-primary dark:text-white flex items-center">
             <SparklesIcon className="w-5 h-5 mr-2 text-flash-green" />
             Smart Follow-Up Recommendations
           </h3>
-          <p className="text-sm text-light-text-secondary mt-1">
+          <p className="text-sm text-light-text-secondary dark:text-gray-400 mt-1">
             AI-powered suggestions for {submission.ownerName}
           </p>
         </div>
-        <div className="text-sm text-light-text-tertiary">
+        <div className="text-sm text-light-text-tertiary dark:text-gray-500">
           {activeRecommendations.length} action{activeRecommendations.length !== 1 ? 's' : ''} recommended
         </div>
       </div>
@@ -83,7 +83,7 @@ export default function FollowUpRecommendations({
           return (
             <div
               key={recommendation.id}
-              className={`border rounded-lg transition-all ${
+              className={`border border-light-border dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg transition-all ${
                 isExpanded ? 'shadow-md' : 'hover:shadow-sm'
               }`}
             >
@@ -103,35 +103,35 @@ export default function FollowUpRecommendations({
                         }`}>
                           {recommendation.priority}
                         </span>
-                        <span className="ml-2 text-xs text-light-text-tertiary flex items-center">
+                        <span className="ml-2 text-xs text-light-text-tertiary dark:text-gray-500 flex items-center">
                           <ClockIcon className="w-3 h-3 mr-1" />
                           {formatSuggestedTiming(recommendation.suggestedTiming)}
                         </span>
                       </div>
-                      <h4 className="font-medium text-light-text-primary">
+                      <h4 className="font-medium text-light-text-primary dark:text-white">
                         {recommendation.action}
                       </h4>
-                      <p className="text-sm text-light-text-secondary mt-1">
+                      <p className="text-sm text-light-text-secondary dark:text-gray-400 mt-1">
                         {recommendation.reason}
                       </p>
                     </div>
                   </div>
-                  <ChevronRightIcon className={`w-5 h-5 text-light-text-tertiary transition-transform ${
+                  <ChevronRightIcon className={`w-5 h-5 text-light-text-tertiary dark:text-gray-500 transition-transform ${
                     isExpanded ? 'rotate-90' : ''
                   }`} />
                 </div>
               </div>
 
               {isExpanded && (
-                <div className="px-4 pb-4 border-t border-light-border">
+                <div className="px-4 pb-4 border-t border-light-border dark:border-gray-600">
                   <div className="pt-4 space-y-4">
                     {recommendation.template && (
                       <div>
-                        <p className="text-sm font-medium text-light-text-primary mb-2">
+                        <p className="text-sm font-medium text-light-text-primary dark:text-white mb-2">
                           Suggested Template:
                         </p>
-                        <div className="bg-light-bg-secondary rounded-lg p-3">
-                          <pre className="text-sm text-light-text-secondary whitespace-pre-wrap font-sans">
+                        <div className="bg-light-bg-secondary dark:bg-gray-600 rounded-lg p-3">
+                          <pre className="text-sm text-light-text-secondary dark:text-gray-300 whitespace-pre-wrap font-sans">
                             {recommendation.template}
                           </pre>
                         </div>
@@ -151,13 +151,13 @@ export default function FollowUpRecommendations({
                       </button>
                       
                       {recommendation.type === 'email' && (
-                        <button className="px-4 py-2 border border-light-border text-light-text-primary rounded-md hover:bg-light-bg-secondary transition-colors">
+                        <button className="px-4 py-2 border border-light-border dark:border-gray-600 text-light-text-primary dark:text-white rounded-md hover:bg-light-bg-secondary dark:hover:bg-gray-600 transition-colors">
                           Copy Template
                         </button>
                       )}
                       
                       {recommendation.type === 'meeting' && (
-                        <button className="px-4 py-2 border border-light-border text-light-text-primary rounded-md hover:bg-light-bg-secondary transition-colors">
+                        <button className="px-4 py-2 border border-light-border dark:border-gray-600 text-light-text-primary dark:text-white rounded-md hover:bg-light-bg-secondary dark:hover:bg-gray-600 transition-colors">
                           Schedule Meeting
                         </button>
                       )}
@@ -171,10 +171,10 @@ export default function FollowUpRecommendations({
       </div>
 
       {completedActions.size > 0 && (
-        <div className="mt-4 pt-4 border-t border-light-border">
+        <div className="mt-4 pt-4 border-t border-light-border dark:border-gray-600">
           <button
             onClick={() => setCompletedActions(new Set())}
-            className="text-sm text-light-text-tertiary hover:text-light-text-primary transition-colors"
+            className="text-sm text-light-text-tertiary dark:text-gray-500 hover:text-light-text-primary dark:hover:text-white transition-colors"
           >
             Show {completedActions.size} completed action{completedActions.size !== 1 ? 's' : ''}
           </button>

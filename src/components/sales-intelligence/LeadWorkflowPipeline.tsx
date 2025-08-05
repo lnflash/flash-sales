@@ -65,10 +65,10 @@ export default function LeadWorkflowPipeline({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-light-border">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-light-border dark:border-gray-700">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-light-text-primary">Lead Pipeline</h3>
-        <p className="text-sm text-light-text-secondary mt-1">
+        <h3 className="text-lg font-semibold text-light-text-primary dark:text-white">Lead Pipeline</h3>
+        <p className="text-sm text-light-text-secondary dark:text-gray-400 mt-1">
           Track leads through qualification stages
         </p>
       </div>
@@ -87,10 +87,10 @@ export default function LeadWorkflowPipeline({
                   `}
                 >
                   <div className={`
-                    rounded-lg p-4 border-2 transition-all duration-200
+                    rounded-lg p-4 border-2 transition-all duration-200 bg-white dark:bg-gray-700
                     ${selectedStage === stage.key 
                       ? 'border-flash-green shadow-md' 
-                      : 'border-light-border hover:border-flash-green/50'
+                      : 'border-light-border dark:border-gray-600 hover:border-flash-green/50'
                     }
                     ${stage.count > 0 ? 'cursor-pointer' : 'opacity-50'}
                   `}>
@@ -99,10 +99,10 @@ export default function LeadWorkflowPipeline({
                     </div>
                     
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-light-text-primary">
+                      <div className="text-2xl font-bold text-light-text-primary dark:text-white">
                         {stage.count}
                       </div>
-                      <div className="text-xs text-light-text-secondary mt-1">
+                      <div className="text-xs text-light-text-secondary dark:text-gray-400 mt-1">
                         {stage.label}
                       </div>
                       {stage.value > 0 && (
@@ -114,7 +114,7 @@ export default function LeadWorkflowPipeline({
 
                     {/* Progress bar */}
                     <div className="mt-3">
-                      <div className="w-full bg-light-bg-tertiary rounded-full h-1.5">
+                      <div className="w-full bg-light-bg-tertiary dark:bg-gray-600 rounded-full h-1.5">
                         <div 
                           className="bg-flash-green h-1.5 rounded-full transition-all duration-500"
                           style={{ width: `${stage.percentage}%` }}
@@ -127,7 +127,7 @@ export default function LeadWorkflowPipeline({
                 {/* Arrow connector */}
                 {index < 4 && (
                   <div className="absolute top-1/2 -right-6 transform -translate-y-1/2 z-0">
-                    <ChevronRightIcon className="w-6 h-6 text-light-text-tertiary" />
+                    <ChevronRightIcon className="w-6 h-6 text-light-text-tertiary dark:text-gray-500" />
                   </div>
                 )}
               </div>
@@ -143,17 +143,17 @@ export default function LeadWorkflowPipeline({
               className={`
                 inline-flex items-center px-4 py-2 rounded-lg border-2 transition-all
                 ${selectedStage === 'lost'
-                  ? 'border-red-500 bg-red-50'
-                  : 'border-light-border hover:border-red-300'
+                  ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                  : 'border-light-border dark:border-gray-600 hover:border-red-300 dark:hover:border-red-400'
                 }
               `}
             >
               <span className="text-lg mr-2">{getStageIcon('lost')}</span>
               <div className="text-left">
-                <div className="text-sm font-medium text-light-text-primary">
+                <div className="text-sm font-medium text-light-text-primary dark:text-white">
                   {stageData.find(s => s.key === 'lost')?.count} Lost
                 </div>
-                <div className="text-xs text-light-text-secondary">
+                <div className="text-xs text-light-text-secondary dark:text-gray-400">
                   {stageData.find(s => s.key === 'lost')?.percentage.toFixed(1)}%
                 </div>
               </div>
@@ -163,15 +163,15 @@ export default function LeadWorkflowPipeline({
       </div>
 
       {/* Summary metrics */}
-      <div className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-light-border">
+      <div className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-light-border dark:border-gray-600">
         <div className="text-center">
           <div className="flex items-center justify-center mb-2">
-            <UserGroupIcon className="w-5 h-5 text-light-text-tertiary" />
+            <UserGroupIcon className="w-5 h-5 text-light-text-tertiary dark:text-gray-500" />
           </div>
-          <div className="text-2xl font-bold text-light-text-primary">
+          <div className="text-2xl font-bold text-light-text-primary dark:text-white">
             {workflows.length}
           </div>
-          <div className="text-xs text-light-text-secondary">Total Leads</div>
+          <div className="text-xs text-light-text-secondary dark:text-gray-400">Total Leads</div>
         </div>
 
         <div className="text-center">
@@ -183,20 +183,20 @@ export default function LeadWorkflowPipeline({
           <div className="text-2xl font-bold text-flash-green">
             {stageData.find(s => s.key === 'customer')?.count || 0}
           </div>
-          <div className="text-xs text-light-text-secondary">Conversions</div>
+          <div className="text-xs text-light-text-secondary dark:text-gray-400">Conversions</div>
         </div>
 
         <div className="text-center">
           <div className="flex items-center justify-center mb-2">
-            <ClockIcon className="w-5 h-5 text-light-text-tertiary" />
+            <ClockIcon className="w-5 h-5 text-light-text-tertiary dark:text-gray-500" />
           </div>
-          <div className="text-2xl font-bold text-light-text-primary">
+          <div className="text-2xl font-bold text-light-text-primary dark:text-white">
             {workflows.length > 0 
               ? ((stageData.find(s => s.key === 'customer')?.count || 0) / workflows.length * 100).toFixed(1)
               : '0'
             }%
           </div>
-          <div className="text-xs text-light-text-secondary">Conversion Rate</div>
+          <div className="text-xs text-light-text-secondary dark:text-gray-400">Conversion Rate</div>
         </div>
       </div>
     </div>

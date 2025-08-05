@@ -309,7 +309,7 @@ export default function RepDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border col-span-2 lg:col-span-1">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 border border-light-border dark:border-gray-700 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
               <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 truncate">Closed/Month</p>
@@ -319,15 +319,15 @@ export default function RepDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-light-border col-span-2 lg:col-span-1">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 border border-light-border dark:border-gray-700 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
               <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 truncate">Conversion</p>
               <p className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-white mt-1">{stats.conversionRate}%</p>
             </div>
             <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 ml-2 ${
-              stats.conversionRate >= 20 ? 'bg-green-100' : 
-              stats.conversionRate >= 10 ? 'bg-yellow-100' : 'bg-red-100'
+              stats.conversionRate >= 20 ? 'bg-green-100 dark:bg-green-900/30' : 
+              stats.conversionRate >= 10 ? 'bg-yellow-100 dark:bg-yellow-900/30' : 'bg-red-100 dark:bg-red-900/30'
             } flex items-center justify-center`}>
               <span className={`text-sm font-bold ${
                 stats.conversionRate >= 20 ? 'text-green-600 dark:text-green-400' : 

@@ -173,7 +173,7 @@ export default function PinSetup({
             {currentPinArray.map((digit, index) => (
               <Input
                 key={`${step}-${index}`}
-                ref={(el) => (refs.current[index] = el)}
+                ref={(el) => { refs.current[index] = el; }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
