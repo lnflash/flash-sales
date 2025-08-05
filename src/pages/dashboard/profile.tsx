@@ -37,7 +37,7 @@ import {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const user = getUserFromStorage();
+  const [user, setUser] = useState<ReturnType<typeof getUserFromStorage>>(null);
   const { profile, loading, error, isSaving, updateProfile } = useSupabaseProfile();
 
   // Form state
@@ -51,12 +51,14 @@ export default function ProfilePage() {
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Redirect if not logged in
+  // Get user from storage on client side only
   useEffect(() => {
-    if (!user) {
+    const storedUser = getUserFromStorage();
+    setUser(storedUser);
+    if (!storedUser) {
       router.push("/login");
     }
-  }, [user, router]);
+  }, [router]);
 
   // Initialize form data when profile loads
   useEffect(() => {
@@ -141,8 +143,8 @@ export default function ProfilePage() {
     return (
       <DashboardLayout title="Profile">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm p-8 border border-light-border">
-            <div className="flex items-center text-red-600">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-light-border dark:border-gray-700">
+            <div className="flex items-center text-red-600 dark:text-red-400">
               <ExclamationCircleIcon className="w-6 h-6 mr-2" />
               <p>Error loading profile data: {error}</p>
             </div>
@@ -164,7 +166,7 @@ export default function ProfilePage() {
               </div>
               <div className="ml-6">
                 <h1 className="text-2xl font-bold text-light-text-primary dark:text-white">{profile?.full_name || profile?.username || "Unknown User"}</h1>
-                <p className="text-light-text-secondary dark:text-gray-400">{profile?.email || `${user.username}@getflash.io`}</p>
+                <p className="text-light-text-secondary dark:text-gray-400">{profile?.email || (user ? `${user.username}@getflash.io` : '')}</p>
               </div>
             </div>
 
@@ -181,7 +183,7 @@ export default function ProfilePage() {
 
           {/* Success Message */}
           {saveSuccess && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md flex items-center text-green-700">
+            <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md flex items-center text-green-700 dark:text-green-400">
               <CheckCircleIcon className="w-5 h-5 mr-2" />
               Profile updated successfully!
             </div>
@@ -189,7 +191,7 @@ export default function ProfilePage() {
 
           {/* Error Message */}
           {error && profile && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center text-red-700">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md flex items-center text-red-700 dark:text-red-400">
               <ExclamationCircleIcon className="w-5 h-5 mr-2" />
               {error}
             </div>
@@ -241,7 +243,7 @@ export default function ProfilePage() {
                 <IdentificationIcon className="w-4 h-4 mr-1" />
                 Username
               </label>
-              <p className="text-light-text-primary">{profile?.username || user.username}</p>
+              <p className="text-light-text-primary dark:text-white">{profile?.username || user?.username}</p>
             </div>
 
             {/* Email */}
@@ -250,7 +252,7 @@ export default function ProfilePage() {
                 <EnvelopeIcon className="w-4 h-4 mr-1" />
                 Email
               </label>
-              <p className="text-light-text-primary">{profile?.email || `${user.username}@getflash.io`}</p>
+              <p className="text-light-text-primary dark:text-white">{profile?.email || (user ? `${user.username}@getflash.io` : '')}</p>
             </div>
 
             {/* Phone */}
@@ -303,7 +305,7 @@ export default function ProfilePage() {
                 <CalendarIcon className="w-4 h-4 mr-1" />
                 Member Since
               </label>
-              <p className="text-light-text-primary">{profile?.created_at ? formatDate(profile.created_at) : "N/A"}</p>
+              <p className="text-light-text-primary dark:text-white">{profile?.created_at ? formatDate(profile.created_at) : "N/A"}</p>
             </div>
 
             {/* Role */}
@@ -312,7 +314,7 @@ export default function ProfilePage() {
                 <IdentificationIcon className="w-4 h-4 mr-1" />
                 Role
               </label>
-              <p className="text-light-text-primary capitalize">{profile?.role?.replace("_", " ") || "Sales Rep"}</p>
+              <p className="text-light-text-primary dark:text-white capitalize">{profile?.role?.replace("_", " ") || "Sales Rep"}</p>
             </div>
           </div>
 
@@ -321,7 +323,7 @@ export default function ProfilePage() {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 border border-light-border text-light-text-primary rounded-md hover:bg-light-bg-secondary transition-colors"
+                className="px-4 py-2 border border-light-border dark:border-gray-600 text-light-text-primary dark:text-gray-300 rounded-md hover:bg-light-bg-secondary dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>

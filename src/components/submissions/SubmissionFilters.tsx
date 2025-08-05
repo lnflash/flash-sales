@@ -71,7 +71,7 @@ export default function SubmissionFiltersComponent({
   );
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm mb-4 border border-light-border">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm mb-4 border border-light-border dark:border-gray-700">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <form 
           onSubmit={handleSearchSubmit}
@@ -81,15 +81,15 @@ export default function SubmissionFiltersComponent({
             type="text"
             placeholder="Search by name, phone, email, territory, rep..."
             title="Search across all submission fields"
-            className="w-full pl-10 pr-4 py-2 bg-light-bg-secondary rounded-md text-light-text-primary placeholder-light-text-tertiary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+            className="w-full pl-10 pr-4 py-2 bg-light-bg-secondary dark:bg-gray-700 rounded-md text-light-text-primary dark:text-white placeholder-light-text-tertiary dark:placeholder-gray-400 border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
-          <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary absolute left-3 top-1/2 transform -translate-y-1/2" />
+          <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
           {searchInput && (
             <button
               type="button"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-light-text-tertiary hover:text-light-text-secondary"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-light-text-tertiary dark:text-gray-400 hover:text-light-text-secondary dark:hover:text-gray-300"
               onClick={() => {
                 setSearchInput('');
                 if (filters.search) {
@@ -108,7 +108,7 @@ export default function SubmissionFiltersComponent({
             className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
               isFilterActive
                 ? 'bg-flash-green text-white'
-                : 'bg-white text-light-text-primary border border-light-border hover:bg-light-bg-secondary'
+                : 'bg-white dark:bg-gray-700 text-light-text-primary dark:text-gray-300 border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600'
             }`}
             onClick={() => setShowFilters(!showFilters)}
           >
@@ -123,7 +123,7 @@ export default function SubmissionFiltersComponent({
           {isFilterActive && (
             <button
               type="button"
-              className="flex items-center px-3 py-2 rounded-md text-sm font-medium bg-white text-light-text-primary border border-light-border hover:bg-light-bg-secondary"
+              className="flex items-center px-3 py-2 rounded-md text-sm font-medium bg-white dark:bg-gray-700 text-light-text-primary dark:text-gray-300 border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600"
               onClick={onResetFilters}
             >
               <XMarkIcon className="h-5 w-5 mr-1" />
@@ -136,7 +136,7 @@ export default function SubmissionFiltersComponent({
       {showFilters && (
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-light-text-secondary mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">
               Interest Level
             </label>
             <div className="flex flex-wrap gap-2">
@@ -147,7 +147,7 @@ export default function SubmissionFiltersComponent({
                   className={`px-3 py-1 rounded-md text-sm ${
                     (filters.interestLevel || []).includes(level)
                       ? 'bg-flash-green text-white'
-                      : 'bg-white text-light-text-primary border border-light-border hover:bg-light-bg-secondary'
+                      : 'bg-white dark:bg-gray-700 text-light-text-primary dark:text-gray-300 border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600'
                   }`}
                   onClick={() => handleInterestLevelChange(level)}
                 >
@@ -158,7 +158,7 @@ export default function SubmissionFiltersComponent({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-light-text-secondary mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">
               Status
             </label>
             <div className="flex flex-wrap gap-2">
@@ -167,7 +167,7 @@ export default function SubmissionFiltersComponent({
                 className={`px-3 py-1 rounded-md text-sm ${
                   filters.signedUp === true
                     ? 'bg-flash-green text-white'
-                    : 'bg-flash-dark-2 text-gray-300 hover:bg-flash-dark-1'
+                    : 'bg-white dark:bg-gray-700 text-light-text-primary dark:text-gray-300 border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600'
                 }`}
                 onClick={() => handleSignedUpChange(true)}
               >
@@ -178,7 +178,7 @@ export default function SubmissionFiltersComponent({
                 className={`px-3 py-1 rounded-md text-sm ${
                   filters.signedUp === false
                     ? 'bg-flash-green text-white'
-                    : 'bg-flash-dark-2 text-gray-300 hover:bg-flash-dark-1'
+                    : 'bg-white dark:bg-gray-700 text-light-text-primary dark:text-gray-300 border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600'
                 }`}
                 onClick={() => handleSignedUpChange(false)}
               >
@@ -188,7 +188,7 @@ export default function SubmissionFiltersComponent({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-light-text-secondary mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">
               Package Seen
             </label>
             <div className="flex flex-wrap gap-2">
@@ -197,7 +197,7 @@ export default function SubmissionFiltersComponent({
                 className={`px-3 py-1 rounded-md text-sm ${
                   filters.packageSeen === true
                     ? 'bg-flash-green text-white'
-                    : 'bg-flash-dark-2 text-gray-300 hover:bg-flash-dark-1'
+                    : 'bg-white dark:bg-gray-700 text-light-text-primary dark:text-gray-300 border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600'
                 }`}
                 onClick={() => handlePackageSeenChange(true)}
               >
@@ -208,7 +208,7 @@ export default function SubmissionFiltersComponent({
                 className={`px-3 py-1 rounded-md text-sm ${
                   filters.packageSeen === false
                     ? 'bg-flash-green text-white'
-                    : 'bg-flash-dark-2 text-gray-300 hover:bg-flash-dark-1'
+                    : 'bg-white dark:bg-gray-700 text-light-text-primary dark:text-gray-300 border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600'
                 }`}
                 onClick={() => handlePackageSeenChange(false)}
               >
@@ -218,7 +218,7 @@ export default function SubmissionFiltersComponent({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-light-text-secondary mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">
               Sales Rep
             </label>
             <select
@@ -244,7 +244,7 @@ export default function SubmissionFiltersComponent({
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-light-text-secondary mb-2">
+            <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">
               Date Range
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

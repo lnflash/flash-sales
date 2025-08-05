@@ -12,7 +12,11 @@ import { hasPermission } from '@/types/roles';
 export default function SubmissionsPage() {
   const router = useRouter();
   const { search } = router.query;
-  const [user, setUser] = useState(getUserFromStorage());
+  const [user, setUser] = useState<ReturnType<typeof getUserFromStorage>>(null);
+
+  useEffect(() => {
+    setUser(getUserFromStorage());
+  }, []);
   
   // Set initial filters based on URL search parameter and user role
   const getInitialFilters = (): SubmissionFilters => {
@@ -98,10 +102,10 @@ export default function SubmissionsPage() {
           onResetFilters={handleResetFilters}
         />
         
-        <div className="bg-white p-4 rounded-lg mb-4 flex justify-between items-center shadow-sm border border-light-border">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4 flex justify-between items-center shadow-sm border border-light-border dark:border-gray-700">
           <div>
-            <h2 className="text-lg font-semibold text-light-text-primary">All Submissions</h2>
-            <p className="text-sm text-light-text-secondary">
+            <h2 className="text-lg font-semibold text-light-text-primary dark:text-white">All Submissions</h2>
+            <p className="text-sm text-light-text-secondary dark:text-gray-400">
               {isLoading ? 'Loading...' : `${totalCount} submissions found`}
             </p>
           </div>
@@ -117,34 +121,34 @@ export default function SubmissionsPage() {
         {pageCount > 0 && (
           <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center">
-              <label htmlFor="pageSize" className="mr-2 text-light-text-secondary text-xs sm:text-sm">Show:</label>
+              <label htmlFor="pageSize" className="mr-2 text-light-text-secondary dark:text-gray-400 text-xs sm:text-sm">Show:</label>
               <select
                 id="pageSize"
                 value={pagination.pageSize}
                 onChange={(e) => setPagination({ ...pagination, pageSize: Number(e.target.value), pageIndex: 0 })}
-                className="bg-white text-light-text-primary rounded p-1 text-xs sm:text-sm border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green"
+                className="bg-white dark:bg-gray-700 text-light-text-primary dark:text-white rounded p-1 text-xs sm:text-sm border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green"
               >
                 <option value="10">10</option>
                 <option value="25">25</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
               </select>
-              <span className="ml-2 text-light-text-secondary text-xs sm:text-sm">per page</span>
+              <span className="ml-2 text-light-text-secondary dark:text-gray-400 text-xs sm:text-sm">per page</span>
             </div>
             
             <nav className="flex items-center">
               <button
-                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded-md bg-white text-light-text-primary border border-light-border hover:bg-light-bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded-md bg-white dark:bg-gray-700 text-light-text-primary dark:text-white border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 onClick={() => setPagination({ ...pagination, pageIndex: Math.max(0, pagination.pageIndex - 1) })}
                 disabled={pagination.pageIndex === 0}
               >
                 Previous
               </button>
-              <span className="mx-2 sm:mx-4 text-light-text-secondary text-xs sm:text-sm">
+              <span className="mx-2 sm:mx-4 text-light-text-secondary dark:text-gray-400 text-xs sm:text-sm">
                 Page {pagination.pageIndex + 1} of {pageCount}
               </span>
               <button
-                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded-md bg-white text-light-text-primary border border-light-border hover:bg-light-bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded-md bg-white dark:bg-gray-700 text-light-text-primary dark:text-white border border-light-border dark:border-gray-600 hover:bg-light-bg-secondary dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 onClick={() => setPagination({ ...pagination, pageIndex: Math.min(pageCount - 1, pagination.pageIndex + 1) })}
                 disabled={pagination.pageIndex >= pageCount - 1}
               >
