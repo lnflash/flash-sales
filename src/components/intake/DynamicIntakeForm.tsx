@@ -344,26 +344,44 @@ export default function DynamicIntakeForm() {
       // First, check if organization exists or create it
       let organizationId = null;
       if (formData.businessName) {
-        const { data: existingOrg } = await supabase.from("organizations").select("id").eq("name", formData.businessName).single();
-
-        if (existingOrg) {
-          organizationId = existingOrg.id;
-        } else {
-          // Create new organization
-          const { data: newOrg, error: orgError } = await supabase
+        try {
+          const { data: existingOrg, error: selectError } = await supabase
             .from("organizations")
-            .insert({
-              name: formData.businessName,
-              state_province: formData.territory || "",
-              country: formData.country || "",
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .select()
+            .select("id")
+            .eq("name", formData.businessName)
             .single();
 
-          if (orgError) throw orgError;
-          organizationId = newOrg.id;
+          if (selectError && selectError.code !== 'PGRST116') {
+            // PGRST116 is "not found", which is okay
+            console.error("Error checking organization:", selectError);
+          }
+
+          if (existingOrg) {
+            organizationId = existingOrg.id;
+          } else {
+            // Create new organization
+            const { data: newOrg, error: orgError } = await supabase
+              .from("organizations")
+              .insert({
+                name: formData.businessName,
+                state_province: formData.territory || "",
+                country: formData.country || "",
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .select()
+              .single();
+
+            if (orgError) {
+              console.error("Error creating organization:", orgError);
+              // Continue without organization ID
+            } else if (newOrg) {
+              organizationId = newOrg.id;
+            }
+          }
+        } catch (err) {
+          console.error("Organization handling error:", err);
+          // Continue without organization ID
         }
       }
 
