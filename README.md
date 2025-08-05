@@ -178,6 +178,6 @@ We welcome contributions from the community! Please read our [Contributing Guide
 
 ## 📄 License
 
-This project is proprietary and confidential. Unauthorized copying, transferring, or reproduction of the contents of this project, via any medium is strictly prohibited.
+MIT License
 
-**© 2024 Flash Bitcoin. All rights reserved.**
+**© 2021 Island Bitcoin LLC. All rights reserved.**
