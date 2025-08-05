@@ -42,12 +42,21 @@ export function useCreateDeal() {
 export function useUpdateDeal() {
   return useOptimisticMutation<Deal, Error, { id: string; updates: DealUpdate }>({
     mutationFn: async ({ id, updates }) => {
-      const { data, error } = await supabase
-        .from('deals')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      // Use RPC function to bypass CORS restrictions
+      const { data, error } = await supabase.rpc('update_deal', {
+        deal_id_param: id,
+        name_param: updates.name || null,
+        organization_id_param: updates.organization_id || null,
+        primary_contact_id_param: updates.primary_contact_id || null,
+        package_seen_param: updates.package_seen !== undefined ? updates.package_seen : null,
+        decision_makers_param: updates.decision_makers || null,
+        interest_level_param: updates.interest_level || null,
+        status_param: updates.status || null,
+        lead_status_param: updates.lead_status || null,
+        specific_needs_param: updates.specific_needs || null,
+        stage_param: updates.stage || null,
+        custom_fields_param: updates.custom_fields || null
+      });
       
       if (error) throw error;
       return data;
@@ -70,31 +79,30 @@ export function useUpdateDeal() {
 export function useUpdateDealStage() {
   return useOptimisticMutation<Deal, Error, { id: string; stage: string; probability?: number }>({
     mutationFn: async ({ id, stage, probability }) => {
-      const updates: DealUpdate = {
-        stage,
-        stage_changed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      
-      if (probability !== undefined) {
-        updates.probability = probability;
-      }
+      let status = null;
       
       // Update status based on stage
       if (stage === 'Closed Won') {
-        updates.status = 'won';
-        updates.closed_at = new Date().toISOString();
+        status = 'won';
       } else if (stage === 'Closed Lost') {
-        updates.status = 'lost';
-        updates.closed_at = new Date().toISOString();
+        status = 'lost';
       }
       
-      const { data, error } = await supabase
-        .from('deals')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      // Use RPC function to bypass CORS restrictions
+      const { data, error } = await supabase.rpc('update_deal', {
+        deal_id_param: id,
+        name_param: null,
+        organization_id_param: null,
+        primary_contact_id_param: null,
+        package_seen_param: null,
+        decision_makers_param: null,
+        interest_level_param: null,
+        status_param: status,
+        lead_status_param: null,
+        specific_needs_param: null,
+        stage_param: stage,
+        metadata_param: null
+      });
       
       if (error) throw error;
       return data;
@@ -108,14 +116,32 @@ export function useUpdateDealStage() {
 export function useBulkUpdateDeals() {
   return useOptimisticMutation<Deal[], Error, { ids: string[]; updates: DealUpdate }>({
     mutationFn: async ({ ids, updates }) => {
-      const { data, error } = await supabase
-        .from('deals')
-        .update(updates)
-        .in('id', ids)
-        .select();
+      // Use RPC function for each deal to bypass CORS restrictions
+      const updatePromises = ids.map(id => 
+        supabase.rpc('update_deal', {
+          deal_id_param: id,
+          name_param: updates.name || null,
+          organization_id_param: updates.organization_id || null,
+          primary_contact_id_param: updates.primary_contact_id || null,
+          package_seen_param: updates.package_seen !== undefined ? updates.package_seen : null,
+          decision_makers_param: updates.decision_makers || null,
+          interest_level_param: updates.interest_level || null,
+          status_param: updates.status || null,
+          lead_status_param: updates.lead_status || null,
+          specific_needs_param: updates.specific_needs || null,
+          stage_param: updates.stage || null,
+          custom_fields_param: updates.custom_fields || null
+        })
+      );
       
-      if (error) throw error;
-      return data;
+      const results = await Promise.all(updatePromises);
+      const errors = results.filter(r => r.error);
+      
+      if (errors.length > 0) {
+        throw new Error(`Failed to update ${errors.length} deals`);
+      }
+      
+      return results.map(r => r.data).filter(Boolean);
     },
     queryKey: ['supabase-submissions'],
     optimisticUpdate: ({ ids, updates }, currentData) => {
@@ -135,10 +161,10 @@ export function useBulkUpdateDeals() {
 export function useDeleteDeal() {
   return useOptimisticMutation<void, Error, string>({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('deals')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
+      // Use RPC function to bypass CORS restrictions
+      const { error } = await supabase.rpc('soft_delete_deal', {
+        deal_id_param: id
+      });
       
       if (error) throw error;
     },

@@ -511,95 +511,138 @@ export default function DynamicIntakeForm() {
 
       const supabase = getSupabase();
 
-      // First, check if organization exists or create it
+      // Handle organization
       let organizationId = null;
       if (formData.businessName) {
         try {
-          const { data: existingOrg, error: selectError } = await supabase
-            .from("organizations")
-            .select("id")
-            .eq("name", formData.businessName)
-            .single();
-
-          if (selectError && selectError.code !== 'PGRST116') {
-            // PGRST116 is "not found", which is okay
-            console.error("Error checking organization:", selectError);
+          if (isEditMode && id) {
+            // In edit mode, get the existing organization from the deal
+            const { data: existingDeal } = await supabase
+              .from("deals")
+              .select("organization_id")
+              .eq("id", id)
+              .single();
+            
+            if (existingDeal?.organization_id) {
+              organizationId = existingDeal.organization_id;
+              // Update the existing organization
+              await supabase.rpc('update_organization_safe', {
+                org_id_param: organizationId,
+                name_param: formData.businessName,
+                state_province_param: formData.territory || "",
+                country_param: formData.country || ""
+              });
+            }
           }
-
-          if (existingOrg) {
-            organizationId = existingOrg.id;
-          } else {
-            // Create new organization
-            const { data: newOrg, error: orgError } = await supabase
+          
+          // If not in edit mode or no existing org, check/create
+          if (!organizationId) {
+            const { data: existingOrg, error: selectError } = await supabase
               .from("organizations")
+              .select("id")
+              .eq("name", formData.businessName)
+              .single();
+
+            if (selectError && selectError.code !== 'PGRST116') {
+              console.error("Error checking organization:", selectError);
+            }
+
+            if (existingOrg) {
+              organizationId = existingOrg.id;
+            } else {
+              // Create new organization
+              const { data: newOrg, error: orgError } = await supabase
+                .from("organizations")
+                .insert({
+                  name: formData.businessName,
+                  state_province: formData.territory || "",
+                  country: formData.country || "",
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .select()
+                .single();
+
+              if (orgError) {
+                console.error("Error creating organization:", orgError);
+              } else if (newOrg) {
+                organizationId = newOrg.id;
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Organization handling error:", err);
+        }
+      }
+
+      // Handle contact
+      let contactId = null;
+      if (formData.phoneNumber && organizationId) {
+        try {
+          if (isEditMode && id) {
+            // In edit mode, get the existing contact from the deal
+            const { data: existingDeal } = await supabase
+              .from("deals")
+              .select("primary_contact_id")
+              .eq("id", id)
+              .single();
+            
+            if (existingDeal?.primary_contact_id) {
+              contactId = existingDeal.primary_contact_id;
+              // Update the existing contact
+              await supabase.rpc('update_contact_safe', {
+                contact_id_param: contactId,
+                phone_primary_param: formData.phoneNumber,
+                email_param: formData.email || null,
+                first_name_param: formData.ownerName.split(" ")[0] || "",
+                last_name_param: formData.ownerName.split(" ").slice(1).join(" ") || ""
+              });
+            }
+          }
+          
+          // If not in edit mode or no existing contact, create new
+          if (!contactId) {
+            const { data: newContact, error: contactError } = await supabase
+              .from("contacts")
               .insert({
-                name: formData.businessName,
-                state_province: formData.territory || "",
-                country: formData.country || "",
+                organization_id: organizationId,
+                phone_primary: formData.phoneNumber,
+                email: formData.email || null,
+                first_name: formData.ownerName.split(" ")[0] || "",
+                last_name: formData.ownerName.split(" ").slice(1).join(" ") || "",
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               })
               .select()
               .single();
 
-            if (orgError) {
-              console.error("Error creating organization:", orgError);
-              // Continue without organization ID
-            } else if (newOrg) {
-              organizationId = newOrg.id;
+            if (!contactError && newContact) {
+              contactId = newContact.id;
             }
           }
         } catch (err) {
-          console.error("Organization handling error:", err);
-          // Continue without organization ID
-        }
-      }
-
-      // Create contact if phone number is provided
-      let contactId = null;
-      if (formData.phoneNumber && organizationId) {
-        const { data: newContact, error: contactError } = await supabase
-          .from("contacts")
-          .insert({
-            organization_id: organizationId,
-            phone_primary: formData.phoneNumber,
-            email: formData.email || null,
-            first_name: formData.ownerName.split(" ")[0] || "",
-            last_name: formData.ownerName.split(" ").slice(1).join(" ") || "",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
-
-        if (!contactError && newContact) {
-          contactId = newContact.id;
+          console.error("Contact handling error:", err);
         }
       }
 
       let dealResult;
       
       if (isEditMode && id) {
-        // Update existing deal
-        const { data: updatedDeal, error: updateError } = await supabase
-          .from("deals")
-          .update({
-            name: formData.businessName || "Unnamed Business",
-            organization_id: organizationId,
-            primary_contact_id: contactId,
-            package_seen: formData.packageSeen || false,
-            decision_makers: formData.decisionMakers || "",
-            interest_level: formData.interestLevel || 3,
-            status: formData.signedUp ? "won" : "open",
-            lead_status: formData.signedUp ? "converted" : "contacted",
-            specific_needs: formData.specificNeeds || "",
-            stage: formData.signedUp ? "closed_won" : "initial_contact",
-            updated_at: new Date().toISOString(),
-            metadata: submissionData.metadata,
-          })
-          .eq("id", id)
-          .select()
-          .single();
+        // Update existing deal using RPC to bypass CORS
+        const { data: updatedDeal, error: updateError } = await supabase.rpc('update_deal', {
+          deal_id_param: id,
+          name_param: formData.businessName || "Unnamed Business",
+          organization_id_param: organizationId,
+          primary_contact_id_param: contactId,
+          package_seen_param: formData.packageSeen || false,
+          decision_makers_param: formData.decisionMakers || "",
+          interest_level_param: formData.interestLevel || 3,
+          status_param: formData.signedUp ? "won" : "open",
+          lead_status_param: formData.signedUp ? "converted" : "contacted",
+          specific_needs_param: formData.specificNeeds || "",
+          stage_param: formData.signedUp ? "closed_won" : "initial_contact",
+          custom_fields_param: submissionData.metadata,
+        });
 
         if (updateError) {
           console.error("Deal update error:", updateError);
@@ -644,7 +687,7 @@ export default function DynamicIntakeForm() {
             owner_id: ownerId, // Assign to logged-in user or null
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            metadata: submissionData.metadata,
+            custom_fields: submissionData.metadata,
           })
           .select()
           .single();

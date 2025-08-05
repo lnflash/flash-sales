@@ -384,6 +384,7 @@ export type Database = {
           expected_revenue: number | null
           id: string
           interest_level: number | null
+          lead_status: string | null
           lost_reason: string | null
           lost_reason_details: string | null
           name: string
@@ -417,6 +418,7 @@ export type Database = {
           expected_revenue?: number | null
           id?: string
           interest_level?: number | null
+          lead_status?: string | null
           lost_reason?: string | null
           lost_reason_details?: string | null
           name: string
@@ -450,6 +452,7 @@ export type Database = {
           expected_revenue?: number | null
           id?: string
           interest_level?: number | null
+          lead_status?: string | null
           lost_reason?: string | null
           lost_reason_details?: string | null
           name?: string
