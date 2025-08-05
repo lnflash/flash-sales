@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { PinAuthService } from '@/services/pin-auth';
 import { useAuth } from './useAuth';
+import { supabase } from '@/lib/supabase/client';
 
 export interface UsePinAuthResult {
   // PIN verification
@@ -32,25 +33,51 @@ export function usePinAuth(): UsePinAuthResult {
   const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
   const [lockedUntil, setLockedUntil] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
+
+  // Get the actual Supabase user ID based on username
+  const getSupabaseUserId = useCallback(async (username: string): Promise<string | null> => {
+    try {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', `${username}@flash.co`)
+        .single();
+      
+      return userData?.id || null;
+    } catch (error) {
+      console.error('Failed to get Supabase user ID:', error);
+      return null;
+    }
+  }, []);
+
+  // Initialize Supabase user ID when user is available
+  useEffect(() => {
+    if (user?.username) {
+      getSupabaseUserId(user.username).then(id => {
+        setSupabaseUserId(id);
+      });
+    }
+  }, [user?.username, getSupabaseUserId]);
 
   // Check if user has PIN setup
   const checkPinSetup = useCallback(async () => {
-    if (!user?.userId) return;
+    if (!supabaseUserId) return;
     
     setIsLoading(true);
     try {
-      const hasPin = await PinAuthService.hasPinSetup(user.userId);
+      const hasPin = await PinAuthService.hasPinSetup(supabaseUserId);
       setHasPinSetup(hasPin);
     } catch (error) {
       console.error('Failed to check PIN setup:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [user?.userId]);
+  }, [supabaseUserId]);
 
   // Verify PIN
   const verifyPin = useCallback(async (pin: string): Promise<boolean> => {
-    if (!user?.userId) {
+    if (!supabaseUserId) {
       setPinError('User not authenticated');
       return false;
     }
@@ -59,7 +86,7 @@ export function usePinAuth(): UsePinAuthResult {
     setPinError(null);
     
     try {
-      const result = await PinAuthService.verifyUserPin(user.userId, pin);
+      const result = await PinAuthService.verifyUserPin(supabaseUserId, pin);
       
       if (result.success) {
         setIsPinVerified(true);
@@ -83,11 +110,11 @@ export function usePinAuth(): UsePinAuthResult {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.userId]);
+  }, [supabaseUserId]);
 
   // Setup PIN
   const setupPin = useCallback(async (pin: string): Promise<boolean> => {
-    if (!user?.userId) {
+    if (!supabaseUserId) {
       setPinError('User not authenticated');
       return false;
     }
@@ -96,7 +123,7 @@ export function usePinAuth(): UsePinAuthResult {
     setPinError(null);
     
     try {
-      const result = await PinAuthService.setupPin(user.userId, pin);
+      const result = await PinAuthService.setupPin(supabaseUserId, pin);
       
       if (result.success) {
         setHasPinSetup(true);
@@ -117,11 +144,11 @@ export function usePinAuth(): UsePinAuthResult {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.userId]);
+  }, [supabaseUserId]);
 
   // Change PIN
   const changePin = useCallback(async (currentPin: string, newPin: string): Promise<boolean> => {
-    if (!user?.userId) {
+    if (!supabaseUserId) {
       setPinError('User not authenticated');
       return false;
     }
@@ -130,7 +157,7 @@ export function usePinAuth(): UsePinAuthResult {
     setPinError(null);
     
     try {
-      const result = await PinAuthService.changePin(user.userId, currentPin, newPin);
+      const result = await PinAuthService.changePin(supabaseUserId, currentPin, newPin);
       
       if (result.success) {
         return true;
@@ -144,7 +171,7 @@ export function usePinAuth(): UsePinAuthResult {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.userId]);
+  }, [supabaseUserId]);
 
   // Request PIN reset
   const requestPinReset = useCallback(async (email: string): Promise<boolean> => {

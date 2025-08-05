@@ -1,11 +1,26 @@
+"use client";
+
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useSupabaseProfile } from "@/hooks/useSupabaseProfile";
 import { JamaicaParish, JAMAICA_PARISHES } from "@/types/lead-routing";
 import { formatDate } from "@/utils/date-formatter";
 import { getUserFromStorage } from "@/lib/auth";
 import { useRouter } from "next/router";
-import PinManagement from "@/components/profile/PinManagement";
+
+// Dynamically import PinManagement to avoid SSR issues
+const PinManagement = dynamic(() => import("@/components/profile/PinManagement"), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-light-border dark:border-gray-700">
+      <div className="animate-pulse">
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+      </div>
+    </div>
+  ),
+});
 import {
   UserIcon,
   PhoneIcon,
@@ -99,19 +114,19 @@ export default function ProfilePage() {
     return (
       <DashboardLayout title="Profile">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm p-8 border border-light-border animate-pulse">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-light-border dark:border-gray-700 animate-pulse">
             <div className="flex items-center mb-8">
-              <div className="w-24 h-24 bg-light-bg-tertiary rounded-full"></div>
+              <div className="w-24 h-24 bg-light-bg-tertiary dark:bg-gray-700 rounded-full"></div>
               <div className="ml-6">
-                <div className="h-8 bg-light-bg-tertiary rounded w-48 mb-2"></div>
-                <div className="h-4 bg-light-bg-tertiary rounded w-32"></div>
+                <div className="h-8 bg-light-bg-tertiary dark:bg-gray-700 rounded w-48 mb-2"></div>
+                <div className="h-4 bg-light-bg-tertiary dark:bg-gray-700 rounded w-32"></div>
               </div>
             </div>
             <div className="space-y-6">
               {[...Array(4)].map((_, i) => (
                 <div key={i}>
-                  <div className="h-4 bg-light-bg-tertiary rounded w-24 mb-2"></div>
-                  <div className="h-6 bg-light-bg-tertiary rounded w-full"></div>
+                  <div className="h-4 bg-light-bg-tertiary dark:bg-gray-700 rounded w-24 mb-2"></div>
+                  <div className="h-6 bg-light-bg-tertiary dark:bg-gray-700 rounded w-full"></div>
                 </div>
               ))}
             </div>
@@ -141,15 +156,15 @@ export default function ProfilePage() {
     <DashboardLayout title="Profile">
       <div className="max-w-4xl mx-auto">
         {/* Profile Header */}
-        <div className="bg-white rounded-lg shadow-sm p-8 border border-light-border mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-light-border dark:border-gray-700 mb-6">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center">
               <div className="w-24 h-24 bg-flash-green/10 rounded-full flex items-center justify-center">
                 <UserIcon className="w-12 h-12 text-flash-green" />
               </div>
               <div className="ml-6">
-                <h1 className="text-2xl font-bold text-light-text-primary">{profile?.full_name || profile?.username || "Unknown User"}</h1>
-                <p className="text-light-text-secondary">{profile?.email || `${user.username}@getflash.io`}</p>
+                <h1 className="text-2xl font-bold text-light-text-primary dark:text-white">{profile?.full_name || profile?.username || "Unknown User"}</h1>
+                <p className="text-light-text-secondary dark:text-gray-400">{profile?.email || `${user.username}@getflash.io`}</p>
               </div>
             </div>
 
@@ -184,7 +199,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* First Name */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
+              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
                 <UserIcon className="w-4 h-4 mr-1" />
                 First Name
               </label>
@@ -194,16 +209,16 @@ export default function ProfilePage() {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary">{profile?.first_name || "Not set"}</p>
+                <p className="text-light-text-primary dark:text-white">{profile?.first_name || "Not set"}</p>
               )}
             </div>
 
             {/* Last Name */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
+              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
                 <UserIcon className="w-4 h-4 mr-1" />
                 Last Name
               </label>
@@ -213,16 +228,16 @@ export default function ProfilePage() {
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary">{profile?.last_name || "Not set"}</p>
+                <p className="text-light-text-primary dark:text-white">{profile?.last_name || "Not set"}</p>
               )}
             </div>
 
             {/* Username */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
+              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
                 <IdentificationIcon className="w-4 h-4 mr-1" />
                 Username
               </label>
@@ -231,7 +246,7 @@ export default function ProfilePage() {
 
             {/* Email */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
+              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
                 <EnvelopeIcon className="w-4 h-4 mr-1" />
                 Email
               </label>
@@ -240,7 +255,7 @@ export default function ProfilePage() {
 
             {/* Phone */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
+              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
                 <PhoneIcon className="w-4 h-4 mr-1" />
                 Phone
               </label>
@@ -251,16 +266,16 @@ export default function ProfilePage() {
                   value={formData.phone}
                   onChange={handleInputChange}
                   placeholder="+1 (876) 555-0123"
-                  className="w-full px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary">{profile?.phone || "Not provided"}</p>
+                <p className="text-light-text-primary dark:text-white">{profile?.phone || "Not provided"}</p>
               )}
             </div>
 
             {/* Timezone */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
+              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
                 <GlobeAltIcon className="w-4 h-4 mr-1" />
                 Timezone
               </label>
@@ -269,7 +284,7 @@ export default function ProfilePage() {
                   name="timezone"
                   value={formData.timezone}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 >
                   <option value="America/New_York">Eastern Time (ET)</option>
                   <option value="America/Chicago">Central Time (CT)</option>
@@ -278,13 +293,13 @@ export default function ProfilePage() {
                   <option value="America/Jamaica">Jamaica Time (JMT)</option>
                 </select>
               ) : (
-                <p className="text-light-text-primary">{profile?.timezone || "America/New_York"}</p>
+                <p className="text-light-text-primary dark:text-white">{profile?.timezone || "America/New_York"}</p>
               )}
             </div>
 
             {/* Member Since */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
+              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
                 <CalendarIcon className="w-4 h-4 mr-1" />
                 Member Since
               </label>
@@ -293,7 +308,7 @@ export default function ProfilePage() {
 
             {/* Role */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary mb-1">
+              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
                 <IdentificationIcon className="w-4 h-4 mr-1" />
                 Role
               </label>
@@ -329,14 +344,14 @@ export default function ProfilePage() {
         </div>
 
         {/* Territory Settings */}
-        <div className="bg-white rounded-lg shadow-sm p-8 border border-light-border">
-          <h2 className="text-xl font-semibold text-light-text-primary mb-6 flex items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-light-border dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-light-text-primary dark:text-white mb-6 flex items-center">
             <MapPinIcon className="w-6 h-6 mr-2 text-flash-green" />
             Territory Settings
           </h2>
 
           <div className="max-w-md">
-            <label htmlFor="defaultTerritory" className="block text-sm font-medium text-light-text-secondary mb-2">
+            <label htmlFor="defaultTerritory" className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">
               Default Territory
             </label>
             <div className="flex gap-3">
@@ -345,7 +360,7 @@ export default function ProfilePage() {
                 value={formData.default_territory}
                 onChange={(e) => setFormData((prev) => ({ ...prev, default_territory: e.target.value }))}
                 disabled={!isEditing}
-                className={`flex-1 px-3 py-2 bg-white border border-light-border rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green ${
+                className={`flex-1 px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green ${
                   !isEditing ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
@@ -378,7 +393,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <p className="mt-3 text-sm text-light-text-secondary">This territory will be automatically selected when creating new submissions.</p>
+            <p className="mt-3 text-sm text-light-text-secondary dark:text-gray-400">This territory will be automatically selected when creating new submissions.</p>
           </div>
         </div>
       </div>
