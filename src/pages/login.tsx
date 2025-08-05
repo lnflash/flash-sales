@@ -1,15 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import LoginV2 from './login-v2';
 
-export default function LoginPage() {
-  const router = useRouter();
-  
-  useEffect(() => {
-    // Redirect to new PIN-enabled login page
-    router.replace('/login-v2');
-  }, [router]);
-  
-  return null;
-}
+// Re-export the new login page as the default login
+export default LoginV2;
