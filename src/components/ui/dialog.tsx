@@ -93,6 +93,14 @@ interface DialogTriggerProps {
   onClick?: () => void;
 }
 
+export const DialogDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => {
+  return (
+    <p className={cn("text-sm text-light-text-secondary dark:text-dark-text-secondary", className)}>
+      {children}
+    </p>
+  );
+};
+
 export const DialogTrigger: React.FC<DialogTriggerProps> = ({ children, asChild, onClick }) => {
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<any>, {

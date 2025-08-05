@@ -10,7 +10,7 @@ import { usePinAuth } from '@/hooks/usePinAuth';
 import { cn } from '@/lib/utils';
 
 export default function PinManagement() {
-  const { changePin, hasPinSetup, pinError } = usePinAuth();
+  const { changePin, hasPinSetup, pinError, checkPinSetup } = usePinAuth();
   const [isChangingPin, setIsChangingPin] = useState(false);
   const [currentPin, setCurrentPin] = useState(['', '', '', '']);
   const [newPin, setNewPin] = useState(['', '', '', '']);
@@ -19,6 +19,25 @@ export default function PinManagement() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingPinStatus, setIsCheckingPinStatus] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component only renders on client to avoid hydration errors
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Check PIN setup status on mount
+  React.useEffect(() => {
+    if (!isMounted) return;
+    
+    const checkStatus = async () => {
+      setIsCheckingPinStatus(true);
+      await checkPinSetup();
+      setIsCheckingPinStatus(false);
+    };
+    checkStatus();
+  }, [checkPinSetup, isMounted]);
 
   const resetForm = () => {
     setCurrentPin(['', '', '', '']);
@@ -126,6 +145,28 @@ export default function PinManagement() {
     }
   };
 
+  // Don't render until client-side to avoid hydration errors
+  if (!isMounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            PIN Security
+          </CardTitle>
+          <CardDescription>
+            Loading...
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-flash-green" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const renderPinInputs = (
     pinArray: string[],
     setPinArray: React.Dispatch<React.SetStateAction<string[]>>,
@@ -168,34 +209,40 @@ export default function PinManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">PIN Protection</p>
-              <p className="text-sm text-muted-foreground">
-                {hasPinSetup ? 'Your account is protected with a PIN' : 'No PIN set up yet'}
-              </p>
+          {isCheckingPinStatus ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-flash-green" />
             </div>
-            <Button
-              variant={hasPinSetup ? "outline" : "default"}
-              onClick={() => setIsChangingPin(true)}
-            >
-              {hasPinSetup ? 'Change PIN' : 'Set up PIN'}
-            </Button>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium dark:text-white">PIN Protection</p>
+                <p className="text-sm text-muted-foreground dark:text-gray-400">
+                  {hasPinSetup ? 'Your account is protected with a PIN' : 'No PIN set up yet'}
+                </p>
+              </div>
+              <Button
+                variant={hasPinSetup ? "outline" : "default"}
+                onClick={() => setIsChangingPin(true)}
+              >
+                {hasPinSetup ? 'Change PIN' : 'Set up PIN'}
+              </Button>
+            </div>
+          )}
 
           {hasPinSetup && (
             <div className="rounded-lg bg-muted p-4 space-y-2">
               <div className="flex items-start gap-2">
                 <Check className="h-4 w-4 text-green-600 mt-0.5" />
-                <p className="text-sm">PIN required for login</p>
+                <p className="text-sm dark:text-gray-300">PIN required for login</p>
               </div>
               <div className="flex items-start gap-2">
                 <Check className="h-4 w-4 text-green-600 mt-0.5" />
-                <p className="text-sm">3 attempts before lockout</p>
+                <p className="text-sm dark:text-gray-300">3 attempts before lockout</p>
               </div>
               <div className="flex items-start gap-2">
                 <Check className="h-4 w-4 text-green-600 mt-0.5" />
-                <p className="text-sm">15-minute lockout period</p>
+                <p className="text-sm dark:text-gray-300">15-minute lockout period</p>
               </div>
             </div>
           )}
