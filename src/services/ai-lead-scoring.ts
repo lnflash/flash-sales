@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase/client';
-import { calculateLeadScore as calculateBasicScore } from '@/utils/lead-scoring';
+import { supabase } from "@/lib/supabase/client";
+import { calculateLeadScore as calculateBasicScore } from "@/utils/lead-scoring";
+import { geminiAIService, type GeminiAnalysisResult } from "./gemini-ai";
 
 interface AILeadScoringResult {
   score: number;
@@ -20,6 +21,7 @@ interface AILeadScoringResult {
     averageConversionRate: number;
     averageTimeToClose: number;
   };
+  aiAnalysis?: GeminiAnalysisResult; // Enhanced with Gemini AI insights
 }
 
 interface LeadData {
@@ -43,17 +45,17 @@ export class AILeadScoringService {
   async calculateScore(leadData: LeadData): Promise<AILeadScoringResult> {
     // Start with basic score
     const basicScore = calculateBasicScore({
-      monthlyRevenue: leadData.monthlyRevenue || '',
-      numberOfEmployees: leadData.numberOfEmployees || '',
+      monthlyRevenue: leadData.monthlyRevenue || "",
+      numberOfEmployees: leadData.numberOfEmployees || "",
       yearEstablished: new Date().getFullYear().toString(),
-      monthlyTransactions: '100',
-      averageTicketSize: '50',
+      monthlyTransactions: "100",
+      averageTicketSize: "50",
       interestLevel: leadData.interestLevel,
       painPoints: leadData.painPoints || [],
       packageSeen: false,
       signedUp: false,
-      currentProcessor: '',
-      businessType: leadData.businessType || '',
+      currentProcessor: "",
+      businessType: leadData.businessType || "",
     });
 
     // Enhance with AI features
@@ -65,13 +67,36 @@ export class AILeadScoringService {
     // Calculate confidence based on data completeness
     const confidence = this.calculateConfidence(leadData);
 
+    // Get Gemini AI enhanced analysis if available
+    let aiAnalysis: GeminiAnalysisResult | undefined;
+    try {
+      aiAnalysis =
+        (await geminiAIService.enhanceLeadAnalysis({
+          leadData,
+          currentScore: Math.round(basicScore * prediction.scoreMultiplier),
+          historicalData,
+        })) || undefined;
+    } catch (error) {
+      console.warn("Gemini AI analysis unavailable:", error);
+    }
+
+    // Merge AI recommendations with existing ones
+    let finalRecommendations = recommendations;
+    if (aiAnalysis?.recommendations) {
+      finalRecommendations = [
+        ...aiAnalysis.recommendations.slice(0, 3), // Top 3 AI recommendations
+        ...recommendations.slice(0, 2), // Top 2 rule-based recommendations
+      ];
+    }
+
     return {
       score: Math.round(basicScore * prediction.scoreMultiplier),
-      confidence,
+      confidence: aiAnalysis?.confidence || confidence,
       factors,
       predictedOutcome: prediction,
-      recommendations,
+      recommendations: finalRecommendations,
       historicalComparison: historicalData,
+      aiAnalysis,
     };
   }
 
@@ -81,7 +106,7 @@ export class AILeadScoringService {
 
     // Interest level factor
     factors.push({
-      name: 'Interest Level',
+      name: "Interest Level",
       impact: leadData.interestLevel >= 4 ? 0.8 : 0.4,
       value: `${leadData.interestLevel}/5`,
     });
@@ -90,7 +115,7 @@ export class AILeadScoringService {
     if (leadData.numberOfEmployees) {
       const employeeScore = this.getEmployeeScore(leadData.numberOfEmployees);
       factors.push({
-        name: 'Business Size',
+        name: "Business Size",
         impact: employeeScore / 100,
         value: leadData.numberOfEmployees,
       });
@@ -100,7 +125,7 @@ export class AILeadScoringService {
     if (leadData.monthlyRevenue) {
       const revenueScore = this.getRevenueScore(leadData.monthlyRevenue);
       factors.push({
-        name: 'Monthly Revenue',
+        name: "Monthly Revenue",
         impact: revenueScore / 100,
         value: leadData.monthlyRevenue,
       });
@@ -110,7 +135,7 @@ export class AILeadScoringService {
     if (leadData.interactions && leadData.interactions.length > 0) {
       const engagementScore = Math.min(leadData.interactions.length * 10, 100);
       factors.push({
-        name: 'Engagement Level',
+        name: "Engagement Level",
         impact: engagementScore / 100,
         value: `${leadData.interactions.length} interactions`,
       });
@@ -120,7 +145,7 @@ export class AILeadScoringService {
     if (leadData.territory) {
       const territoryScore = await this.getTerritoryScore(leadData.territory);
       factors.push({
-        name: 'Territory Performance',
+        name: "Territory Performance",
         impact: territoryScore / 100,
         value: leadData.territory,
       });
@@ -134,10 +159,10 @@ export class AILeadScoringService {
     try {
       // Query similar leads based on interest level
       const { data: similarLeads } = await supabase
-        .from('deals')
-        .select('id, status, created_at, closed_at, interest_level')
-        .gte('interest_level', leadData.interestLevel - 1)
-        .lte('interest_level', leadData.interestLevel + 1)
+        .from("deals")
+        .select("id, status, created_at, closed_at, interest_level")
+        .gte("interest_level", leadData.interestLevel - 1)
+        .lte("interest_level", leadData.interestLevel + 1)
         .limit(100);
 
       if (!similarLeads || similarLeads.length === 0) {
@@ -148,7 +173,7 @@ export class AILeadScoringService {
         };
       }
 
-      const wonLeads = similarLeads.filter((lead: any) => lead.status === 'won');
+      const wonLeads = similarLeads.filter((lead: any) => lead.status === "won");
       const conversionRate = (wonLeads.length / similarLeads.length) * 100;
 
       // Calculate average time to close
@@ -160,9 +185,7 @@ export class AILeadScoringService {
           return (closed.getTime() - created.getTime()) / (1000 * 60 * 60 * 24); // days
         });
 
-      const averageTimeToClose = timesToClose.length > 0
-        ? timesToClose.reduce((a: number, b: number) => a + b, 0) / timesToClose.length
-        : 30; // default to 30 days
+      const averageTimeToClose = timesToClose.length > 0 ? timesToClose.reduce((a: number, b: number) => a + b, 0) / timesToClose.length : 30; // default to 30 days
 
       return {
         similarLeadsCount: similarLeads.length,
@@ -180,14 +203,10 @@ export class AILeadScoringService {
   }
 
   // Predict outcome using historical patterns
-  private async predictOutcome(
-    leadData: LeadData, 
-    baseScore: number, 
-    historicalData: any
-  ) {
+  private async predictOutcome(leadData: LeadData, baseScore: number, historicalData: any) {
     // Base probability on score and historical conversion rate
     let probability = (baseScore / 100) * 0.6; // Base score contributes 60%
-    
+
     if (historicalData.averageConversionRate > 0) {
       probability += (historicalData.averageConversionRate / 100) * 0.4; // Historical rate contributes 40%
     }
@@ -205,7 +224,7 @@ export class AILeadScoringService {
     const expectedValue = 0; // Transaction-based model
 
     // Score multiplier based on prediction confidence
-    const scoreMultiplier = 0.8 + (probability * 0.4); // Range: 0.8 to 1.2
+    const scoreMultiplier = 0.8 + probability * 0.4; // Range: 0.8 to 1.2
 
     return {
       probability: Math.round(probability * 100) / 100,
@@ -221,22 +240,22 @@ export class AILeadScoringService {
 
     // High probability recommendations
     if (prediction.probability > 0.7) {
-      recommendations.push('🔥 High-priority lead - assign to senior sales rep immediately');
+      recommendations.push("🔥 High-priority lead - assign to senior sales rep immediately");
       recommendations.push(`📞 Call within next 2 hours for ${Math.round(prediction.probability * 100)}% close probability`);
-      
+
       if (leadData.specificNeeds) {
-        recommendations.push('📋 Prepare custom proposal addressing specific needs mentioned');
+        recommendations.push("📋 Prepare custom proposal addressing specific needs mentioned");
       }
     } else if (prediction.probability > 0.4) {
-      recommendations.push('📧 Send personalized email within 24 hours');
-      recommendations.push('📅 Schedule follow-up call for this week');
-      
+      recommendations.push("📧 Send personalized email within 24 hours");
+      recommendations.push("📅 Schedule follow-up call for this week");
+
       if (leadData.painPoints && leadData.painPoints.length > 0) {
-        recommendations.push(`🎯 Focus on pain points: ${leadData.painPoints.slice(0, 2).join(', ')}`);
+        recommendations.push(`🎯 Focus on pain points: ${leadData.painPoints.slice(0, 2).join(", ")}`);
       }
     } else {
-      recommendations.push('🌱 Add to nurture campaign');
-      recommendations.push('📊 Gather more information before active pursuit');
+      recommendations.push("🌱 Add to nurture campaign");
+      recommendations.push("📊 Gather more information before active pursuit");
     }
 
     // Territory-specific recommendations
@@ -250,9 +269,9 @@ export class AILeadScoringService {
     // Time-based recommendations
     const currentHour = new Date().getHours();
     if (currentHour >= 9 && currentHour <= 17) {
-      recommendations.push('⏰ Optimal calling hours - attempt contact now');
+      recommendations.push("⏰ Optimal calling hours - attempt contact now");
     } else {
-      recommendations.push('📧 After hours - send email and schedule call for tomorrow');
+      recommendations.push("📧 After hours - send email and schedule call for tomorrow");
     }
 
     return recommendations;
@@ -279,22 +298,22 @@ export class AILeadScoringService {
 
   private getEmployeeScore(employees: string): number {
     const ranges: Record<string, number> = {
-      '1-5': 20,
-      '6-20': 40,
-      '21-50': 60,
-      '51-100': 80,
-      '100+': 100,
+      "1-5": 20,
+      "6-20": 40,
+      "21-50": 60,
+      "51-100": 80,
+      "100+": 100,
     };
     return ranges[employees] || 0;
   }
 
   private getRevenueScore(revenue: string): number {
     const ranges: Record<string, number> = {
-      '0-10k': 20,
-      '10k-50k': 40,
-      '50k-100k': 60,
-      '100k-250k': 80,
-      '250k+': 100,
+      "0-10k": 20,
+      "10k-50k": 40,
+      "50k-100k": 60,
+      "100k-250k": 80,
+      "250k+": 100,
     };
     return ranges[revenue] || 0;
   }
@@ -304,7 +323,7 @@ export class AILeadScoringService {
       // Note: Territory field doesn't exist on deals table
       // Return default score for now to avoid console errors
       return 50; // Default middle score
-      
+
       // TODO: When deals table is updated with territory field, uncomment:
       /*
       const { data: territoryData } = await supabase

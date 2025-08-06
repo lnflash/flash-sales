@@ -3,29 +3,29 @@
 @tailwind utilities;
 
 /* Import accessibility styles */
-@import './accessibility.css';
+@import "./accessibility.css";
 
 /* Import dashboard grid styles */
-@import './dashboard-grid.css';
+@import "./dashboard-grid.css";
 
 :root {
   /* Brand colors - keeping Flash green as accent */
-  --flash-green: #00A86B;
-  --flash-green-light: #00C17D;
-  --flash-green-dark: #008F5A;
-  --flash-yellow: #FFD700;
-  --flash-yellow-light: #FFDF33;
-  --flash-yellow-dark: #E6C200;
-  
+  --flash-green: #00a86b;
+  --flash-green-light: #00c17d;
+  --flash-green-dark: #008f5a;
+  --flash-yellow: #ffd700;
+  --flash-yellow-light: #ffdf33;
+  --flash-yellow-dark: #e6c200;
+
   /* Light theme colors (improved contrast for WCAG AA) */
-  --light-bg-primary: #FFFFFF;
-  --light-bg-secondary: #F9FAFB;
-  --light-bg-tertiary: #F3F4F6;
-  --light-border: #D1D5DB;
+  --light-bg-primary: #ffffff;
+  --light-bg-secondary: #f9fafb;
+  --light-bg-tertiary: #f3f4f6;
+  --light-border: #d1d5db;
   --light-text-primary: #111827;
-  --light-text-secondary: #4B5563;
-  --light-text-tertiary: #6B7280;
-  
+  --light-text-secondary: #4b5563;
+  --light-text-tertiary: #6b7280;
+
   /* Component system colors - Light theme */
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -61,7 +61,7 @@
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
   --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
+  --muted-foreground: 210 40% 90%;
   --accent: 217.2 32.6% 17.5%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
@@ -71,24 +71,114 @@
   --ring: 142 70% 45%;
 }
 
+/* Dashboard specific dark mode text overrides */
+.dark {
+  /* Ensure all text elements are white in dark mode */
+  color: rgb(248 250 252);
+}
+
+.dark .text-foreground {
+  color: rgb(248 250 252) !important;
+}
+
+.dark .text-muted-foreground {
+  color: rgb(226 232 240) !important;
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: rgb(248 250 252) !important;
+}
+
+.dark p,
+.dark span,
+.dark div,
+.dark label {
+  color: rgb(248 250 252);
+}
+
+.dark .text-2xl,
+.dark .text-xl,
+.dark .text-lg,
+.dark .text-base,
+.dark .text-sm,
+.dark .text-xs {
+  color: rgb(248 250 252) !important;
+}
+
+/* Ensure numbers and stats are white in dark mode */
+.dark .font-bold,
+.dark .font-semibold,
+.dark .font-medium {
+  color: rgb(248 250 252) !important;
+}
+
+/* Force primary text colors to be white in dark mode */
+.dark .text-light-text-primary {
+  color: rgb(248 250 252) !important;
+}
+
+.dark .text-light-text-secondary {
+  color: rgb(226 232 240) !important;
+}
+
+.dark .text-light-text-tertiary {
+  color: rgb(203 213 225) !important;
+}
+
+/* Override any black or dark text in dark mode */
+.dark .text-black,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-slate-900,
+.dark .text-slate-800 {
+  color: rgb(248 250 252) !important;
+}
+
+/* Preserve semantic colors but make them lighter for dark mode */
+.dark .text-green-600 {
+  color: rgb(34 197 94) !important;
+}
+
+.dark .text-red-600 {
+  color: rgb(239 68 68) !important;
+}
+
+.dark .text-blue-600 {
+  color: rgb(59 130 246) !important;
+}
+
+.dark .text-yellow-600 {
+  color: rgb(234 179 8) !important;
+}
+
+.dark .text-purple-600 {
+  color: rgb(147 51 234) !important;
+}
+
 @layer base {
   body {
     @apply bg-background text-foreground antialiased;
   }
-  
+
   /* Custom scrollbar for webkit browsers */
   ::-webkit-scrollbar {
     @apply w-2;
   }
-  
+
   ::-webkit-scrollbar-track {
     @apply bg-muted;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     @apply bg-border rounded-full;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground;
   }
@@ -101,50 +191,50 @@
   .form-select {
     @apply w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all;
   }
-  
+
   .form-label {
     @apply block text-sm font-medium text-muted-foreground mb-2;
   }
-  
+
   .form-button {
     @apply px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-sm;
   }
-  
+
   .form-button-secondary {
     @apply px-4 py-2 bg-background border border-border text-foreground rounded-lg hover:bg-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-sm;
   }
-  
+
   /* Custom checkbox */
   .form-checkbox {
     @apply h-4 w-4 text-primary rounded focus:ring-primary bg-background border-border;
   }
-  
+
   /* Custom radio */
   .form-radio {
     @apply h-4 w-4 text-primary focus:ring-primary bg-background border-border;
   }
-  
+
   /* Custom toggle switch */
   .form-toggle {
     @apply relative inline-block w-10 h-5 cursor-pointer;
   }
-  
+
   .form-toggle-input {
     @apply opacity-0 w-0 h-0;
   }
-  
+
   .form-toggle-bg {
     @apply absolute top-0 left-0 right-0 bottom-0 bg-muted rounded-full transition-colors duration-200;
   }
-  
+
   .form-toggle-bg-active {
     @apply bg-primary;
   }
-  
+
   .form-toggle-circle {
     @apply absolute left-0.5 bottom-0.5 bg-background rounded-full w-4 h-4 transition-transform duration-200 shadow-sm;
   }
-  
+
   .form-toggle-circle-active {
     @apply translate-x-5;
   }

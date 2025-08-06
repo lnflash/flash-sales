@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { useAuthStore } from '@/stores/useAuthStore';
-import { isFeatureEnabled } from '@/config/features';
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { isFeatureEnabled } from "@/config/features";
 
 interface PresenceState {
   user_id: string;
@@ -23,20 +23,20 @@ export function useRealtimePresence(options?: UsePresenceOptions) {
 
   // Track who's viewing the same submission
   useEffect(() => {
-    if (!isFeatureEnabled('realtime.presence')) return;
+    if (!isFeatureEnabled("realtime.presence")) return;
     if (!user || !options?.viewingSubmission) return;
 
     const channel = supabase.channel(`submission:${options.viewingSubmission}:presence`);
 
     // Track presence
     channel
-      .on('presence', { event: 'sync' }, () => {
+      .on("presence", { event: "sync" }, () => {
         const state = channel.presenceState();
         const users = Object.values(state).flat() as PresenceState[];
-        setViewingUsers(users.filter(u => u.user_id !== user.userId));
+        setViewingUsers(users.filter((u) => u.user_id !== user.userId));
       })
       .subscribe(async (status: any) => {
-        if (status === 'SUBSCRIBED') {
+        if (status === "SUBSCRIBED") {
           await channel.track({
             user_id: user.userId,
             username: user.username,
@@ -54,29 +54,29 @@ export function useRealtimePresence(options?: UsePresenceOptions) {
 
   // Track global online presence
   useEffect(() => {
-    if (!isFeatureEnabled('realtime.presence')) return;
+    if (!isFeatureEnabled("realtime.presence")) return;
     if (!user) return;
 
-    const channel = supabase.channel('global:presence');
+    const channel = supabase.channel("global:presence");
 
     channel
-      .on('presence', { event: 'sync' }, () => {
+      .on("presence", { event: "sync" }, () => {
         const state = channel.presenceState();
         const users = Object.values(state).flat() as PresenceState[];
-        setOnlineUsers(users.filter(u => u.user_id !== user.userId));
+        setOnlineUsers(users.filter((u) => u.user_id !== user.userId));
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }: any) => {
-        console.log('User joined:', key, newPresences);
+      .on("presence", { event: "join" }, ({ key, newPresences }: any) => {
+        console.log("User joined:", key, newPresences);
       })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }: any) => {
-        console.log('User left:', key, leftPresences);
+      .on("presence", { event: "leave" }, ({ key, leftPresences }: any) => {
+        console.log("User left:", key, leftPresences);
       })
       .subscribe(async (status: any) => {
-        if (status === 'SUBSCRIBED') {
+        if (status === "SUBSCRIBED") {
           await channel.track({
             user_id: user.userId,
             username: user.username,
-            current_page: options?.currentPage || 'unknown',
+            current_page: options?.currentPage || "unknown",
             last_seen: new Date().toISOString(),
           });
         }
@@ -101,10 +101,8 @@ export function useRealtimePresence(options?: UsePresenceOptions) {
   return {
     onlineUsers,
     viewingUsers,
-    isUserOnline: (userId: string) => 
-      onlineUsers.some(u => u.user_id === userId),
-    getUsersOnPage: (page: string) => 
-      onlineUsers.filter(u => u.current_page === page),
+    isUserOnline: (userId: string) => onlineUsers.some((u) => u.user_id === userId),
+    getUsersOnPage: (page: string) => onlineUsers.filter((u) => u.current_page === page),
   };
 }
 
@@ -116,9 +114,7 @@ export function PresenceAvatars({ submissionId }: { submissionId?: string }) {
 
   return (
     <div className="flex items-center space-x-1">
-      <span className="text-xs text-light-text-secondary mr-2">
-        Also viewing:
-      </span>
+      <span className="text-xs text-gray-600 dark:text-gray-300 mr-2">Also viewing:</span>
       <div className="flex -space-x-2">
         {viewingUsers.slice(0, 3).map((user) => (
           <div
@@ -143,19 +139,22 @@ export function PresenceAvatars({ submissionId }: { submissionId?: string }) {
 export function useRealtimeBroadcast(channel: string) {
   const [messages, setMessages] = useState<any[]>([]);
 
-  const broadcast = useCallback((event: string, payload: any) => {
-    const channelInstance = supabase.channel(channel);
-    channelInstance.send({
-      type: 'broadcast',
-      event,
-      payload,
-    });
-  }, [channel]);
+  const broadcast = useCallback(
+    (event: string, payload: any) => {
+      const channelInstance = supabase.channel(channel);
+      channelInstance.send({
+        type: "broadcast",
+        event,
+        payload,
+      });
+    },
+    [channel]
+  );
 
   useEffect(() => {
     const channelInstance = supabase
       .channel(channel)
-      .on('broadcast', { event: '*' }, (payload: any) => {
+      .on("broadcast", { event: "*" }, (payload: any) => {
         setMessages((prev) => [...prev, payload]);
       })
       .subscribe();

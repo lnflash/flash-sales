@@ -25,7 +25,7 @@ export default function SubmissionSearch({ onSelect, onClear, currentSubmissionI
 
   // Get current user for filtering
   const user = getUserFromStorage();
-  const canViewAllSubmissions = user?.role && hasPermission(user.role, 'canViewAllReps');
+  const canViewAllSubmissions = user?.role && hasPermission(user.role, "canViewAllReps");
 
   useEffect(() => {
     const performSearch = async () => {
@@ -38,22 +38,17 @@ export default function SubmissionSearch({ onSelect, onClear, currentSubmissionI
       try {
         // Build filters based on user permissions
         const filters: any = { search: debouncedSearch };
-        
+
         // If user can't view all submissions, filter by their username
         if (!canViewAllSubmissions && user?.username) {
           filters.username = user.username;
         }
 
-        const response = await getSubmissions(
-          filters,
-          { pageIndex: 0, pageSize: 10 }
-        );
-        
+        const response = await getSubmissions(filters, { pageIndex: 0, pageSize: 10 });
+
         // Filter out the current submission if in edit mode
-        const filteredResults = currentSubmissionId 
-          ? response.data.filter(s => s.id !== currentSubmissionId)
-          : response.data;
-          
+        const filteredResults = currentSubmissionId ? response.data.filter((s) => s.id !== currentSubmissionId) : response.data;
+
         setSearchResults(filteredResults);
         setShowResults(true);
       } catch (error) {
@@ -94,13 +89,11 @@ export default function SubmissionSearch({ onSelect, onClear, currentSubmissionI
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < searchResults.length - 1 ? prev + 1 : prev
-        );
+        setSelectedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : prev));
         break;
       case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         break;
       case "Enter":
         e.preventDefault();
@@ -127,7 +120,7 @@ export default function SubmissionSearch({ onSelect, onClear, currentSubmissionI
     <div ref={searchRef} className="relative">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary" />
+          <MagnifyingGlassIcon className="h-5 w-5 text-light-text-tertiary dark:text-gray-400" />
         </div>
         <input
           type="text"
@@ -136,24 +129,20 @@ export default function SubmissionSearch({ onSelect, onClear, currentSubmissionI
           onKeyDown={handleKeyDown}
           onFocus={() => searchResults.length > 0 && setShowResults(true)}
           placeholder="Search existing submissions..."
-          className="w-full pl-10 pr-10 py-2 bg-white text-light-text-primary rounded-md border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+          className="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 text-light-text-primary dark:text-white placeholder-light-text-tertiary dark:placeholder-gray-400 rounded-md border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
         />
         {searchQuery && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-          >
-            <XMarkIcon className="h-5 w-5 text-light-text-tertiary hover:text-light-text-secondary" />
+          <button type="button" onClick={handleClear} className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <XMarkIcon className="h-5 w-5 text-light-text-tertiary dark:text-gray-400 hover:text-light-text-secondary dark:hover:text-gray-300" />
           </button>
         )}
       </div>
 
       {/* Search Results Dropdown */}
       {showResults && (
-        <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg border border-light-border max-h-60 overflow-auto">
+        <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 rounded-md shadow-lg border border-light-border dark:border-gray-600 max-h-60 overflow-auto">
           {isSearching ? (
-            <div className="p-4 text-center text-light-text-secondary">
+            <div className="p-4 text-center text-light-text-secondary dark:text-gray-400">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-flash-green"></div>
               <p className="mt-2 text-sm">Searching...</p>
             </div>
@@ -166,30 +155,28 @@ export default function SubmissionSearch({ onSelect, onClear, currentSubmissionI
                   onMouseEnter={() => setSelectedIndex(index)}
                   className={`px-4 py-3 cursor-pointer transition-colors ${
                     index === selectedIndex
-                      ? "bg-flash-green bg-opacity-10"
-                      : "hover:bg-light-bg-secondary"
+                      ? "bg-flash-green bg-opacity-10 dark:bg-flash-green dark:bg-opacity-20"
+                      : "hover:bg-light-bg-secondary dark:hover:bg-gray-700"
                   }`}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <p className="font-medium text-light-text-primary">
-                        {submission.ownerName}
-                      </p>
-                      <p className="text-sm text-light-text-secondary">
+                      <p className="font-medium text-light-text-primary dark:text-white">{submission.ownerName}</p>
+                      <p className="text-sm text-light-text-secondary dark:text-gray-300">
                         {submission.phoneNumber || "No phone"} • {submission.territory || "No territory"}
                       </p>
-                      <p className="text-xs text-light-text-tertiary mt-1">
-                        Lead Status: {submission.leadStatus || "Not set"} • 
-                        Interest: {submission.interestLevel}/5 • 
-                        Rep: {submission.username}
+                      <p className="text-xs text-light-text-tertiary dark:text-gray-400 mt-1">
+                        Lead Status: {submission.leadStatus || "Not set"} • Interest: {submission.interestLevel}/5 • Rep: {submission.username}
                       </p>
                     </div>
                     <div className="ml-2">
-                      <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                        submission.signedUp 
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}>
+                      <span
+                        className={`inline-block px-2 py-1 text-xs rounded-full ${
+                          submission.signedUp
+                            ? "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
+                        }`}
+                      >
                         {submission.signedUp ? "Signed Up" : "Prospect"}
                       </span>
                     </div>
@@ -198,7 +185,7 @@ export default function SubmissionSearch({ onSelect, onClear, currentSubmissionI
               ))}
             </ul>
           ) : debouncedSearch.trim().length >= 2 ? (
-            <div className="p-4 text-center text-light-text-secondary">
+            <div className="p-4 text-center text-light-text-secondary dark:text-gray-400">
               <p className="text-sm">No submissions found</p>
               <p className="text-xs mt-1">Try a different search term</p>
             </div>

@@ -1,41 +1,16 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import { 
-  BeakerIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  ClockIcon,
-  CircleStackIcon,
-  ChartBarIcon
-} from '@heroicons/react/24/outline';
-import { PredictiveInsights } from '@/utils/advanced-analytics';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { useMemo, useEffect, useState } from "react";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from "chart.js";
+import { Line } from "react-chartjs-2";
+import { BeakerIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, ClockIcon, CircleStackIcon, ChartBarIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { PredictiveInsights } from "@/utils/advanced-analytics";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { geminiAIService } from "@/services/gemini-ai";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 interface PredictiveAnalyticsProps {
   predictions: PredictiveInsights;
@@ -44,6 +19,36 @@ interface PredictiveAnalyticsProps {
 }
 
 export default function PredictiveAnalytics({ predictions, historicalData, isLoading = false }: PredictiveAnalyticsProps) {
+  const [aiInsights, setAiInsights] = useState<string[]>([]);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+
+  // Load AI insights when data changes
+  useEffect(() => {
+    if (!historicalData || historicalData.length === 0 || !geminiAIService.isAvailable()) {
+      return;
+    }
+
+    const loadAIInsights = async () => {
+      setLoadingInsights(true);
+      try {
+        const insights = await geminiAIService.generateSalesInsights({
+          submissions: historicalData,
+          conversionRate: predictions.conversionProbability.overall / 100,
+          pipeline: historicalData.filter((sub) => !sub.signedUp),
+        });
+
+        if (insights) {
+          setAiInsights(insights);
+        }
+      } catch (error) {
+        console.warn("Failed to load AI insights:", error);
+      } finally {
+        setLoadingInsights(false);
+      }
+    };
+
+    loadAIInsights();
+  }, [historicalData, predictions.conversionProbability.overall]);
   const forecastData = useMemo(() => {
     if (!historicalData || historicalData.length === 0) return null;
 
@@ -51,54 +56,54 @@ export default function PredictiveAnalytics({ predictions, historicalData, isLoa
     const weeks: string[] = [];
     const historicalCounts: number[] = [];
     const now = new Date();
-    
+
     for (let i = 11; i >= 0; i--) {
       const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - (i * 7));
+      weekStart.setDate(now.getDate() - i * 7);
       const weekLabel = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
       weeks.push(weekLabel);
-      
+
       // Count conversions for this week
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
-      
-      const weekConversions = historicalData.filter(sub => {
+
+      const weekConversions = historicalData.filter((sub) => {
         const subDate = new Date(sub.timestamp);
         return sub.signedUp && subDate >= weekStart && subDate <= weekEnd;
       }).length;
-      
+
       historicalCounts.push(weekConversions);
     }
 
     // Add forecasted periods
-    const forecastWeeks = ['Next 7d', 'Next 30d', 'Next 90d'];
+    const forecastWeeks = ["Next 7d", "Next 30d", "Next 90d"];
     const forecastCounts = [
       predictions.forecastedConversions.next7Days,
       predictions.forecastedConversions.next30Days / 4, // Convert to weekly
-      predictions.forecastedConversions.next90Days / 12 // Convert to weekly
+      predictions.forecastedConversions.next90Days / 12, // Convert to weekly
     ];
 
     return {
       labels: [...weeks, ...forecastWeeks],
       datasets: [
         {
-          label: 'Historical Conversions',
+          label: "Historical Conversions",
           data: [...historicalCounts, null, null, null],
-          borderColor: '#00A86B',
-          backgroundColor: 'rgba(0, 168, 107, 0.1)',
+          borderColor: "#00A86B",
+          backgroundColor: "rgba(0, 168, 107, 0.1)",
           tension: 0.4,
           fill: true,
         },
         {
-          label: 'Predicted Conversions',
+          label: "Predicted Conversions",
           data: [...new Array(historicalCounts.length - 1).fill(null), historicalCounts[historicalCounts.length - 1], ...forecastCounts],
-          borderColor: '#3B82F6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: "#3B82F6",
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
           borderDash: [5, 5],
           tension: 0.4,
           fill: true,
-        }
-      ]
+        },
+      ],
     };
   }, [predictions, historicalData]);
 
@@ -107,18 +112,18 @@ export default function PredictiveAnalytics({ predictions, historicalData, isLoa
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: "top" as const,
         labels: {
-          color: '#6B7280',
+          color: "#6B7280",
           font: {
-            size: 12
+            size: 12,
           },
           usePointStyle: true,
-          pointStyle: 'circle'
-        }
+          pointStyle: "circle",
+        },
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
         padding: 12,
         cornerRadius: 8,
         titleFont: {
@@ -128,7 +133,7 @@ export default function PredictiveAnalytics({ predictions, historicalData, isLoa
         bodyFont: {
           size: 13,
         },
-      }
+      },
     },
     scales: {
       x: {
@@ -136,35 +141,35 @@ export default function PredictiveAnalytics({ predictions, historicalData, isLoa
           display: false,
         },
         ticks: {
-          color: '#6B7280',
+          color: "#6B7280",
           font: {
             size: 11,
-          }
-        }
+          },
+        },
       },
       y: {
         grid: {
-          color: '#F3F4F6',
+          color: "#F3F4F6",
         },
         ticks: {
-          color: '#6B7280',
+          color: "#6B7280",
           font: {
             size: 12,
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   };
 
   if (isLoading) {
     return (
-      <Card className="bg-white border-light-border">
+      <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-light-text-primary">Predictive Analytics</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Predictive Analytics</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse">
-            <div className="h-80 bg-light-bg-tertiary rounded"></div>
+            <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
         </CardContent>
       </Card>
@@ -172,17 +177,15 @@ export default function PredictiveAnalytics({ predictions, historicalData, isLoa
   }
 
   return (
-    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+    <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BeakerIcon className="h-5 w-5 text-flash-green" />
-            <CardTitle className="text-lg font-semibold text-light-text-primary">
-              Predictive Analytics
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Predictive Analytics</CardTitle>
           </div>
-          <Badge 
-            variant={predictions.trend === 'increasing' ? 'success' : predictions.trend === 'decreasing' ? 'destructive' : 'secondary'}
+          <Badge
+            variant={predictions.trend === "increasing" ? "success" : predictions.trend === "decreasing" ? "destructive" : "secondary"}
             className="text-xs"
           >
             <ArrowTrendingUpIcon className="h-3 w-3 mr-1" />
@@ -196,83 +199,100 @@ export default function PredictiveAnalytics({ predictions, historicalData, isLoa
             <Line data={forecastData} options={chartOptions} />
           </div>
         )}
-        
+
         {/* Predictions Summary */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-center p-3 bg-light-bg-secondary rounded-lg border border-light-border">
-            <p className="text-xs text-light-text-secondary mb-1">7-Day Forecast</p>
-            <p className="text-lg font-bold text-light-text-primary">
-              {predictions.forecastedConversions.next7Days}
-            </p>
-            <p className="text-xs text-light-text-tertiary">conversions</p>
+          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">7-Day Forecast</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{predictions.forecastedConversions.next7Days}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">conversions</p>
           </div>
-          <div className="text-center p-3 bg-light-bg-secondary rounded-lg border border-light-border">
-            <p className="text-xs text-light-text-secondary mb-1">30-Day Forecast</p>
-            <p className="text-lg font-bold text-light-text-primary">
-              {predictions.forecastedConversions.next30Days}
-            </p>
-            <p className="text-xs text-light-text-tertiary">conversions</p>
+          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">30-Day Forecast</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{predictions.forecastedConversions.next30Days}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">conversions</p>
           </div>
-          <div className="text-center p-3 bg-light-bg-secondary rounded-lg border border-light-border">
-            <p className="text-xs text-light-text-secondary mb-1">90-Day Forecast</p>
-            <p className="text-lg font-bold text-light-text-primary">
-              {predictions.forecastedConversions.next90Days}
-            </p>
-            <p className="text-xs text-light-text-tertiary">conversions</p>
+          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">90-Day Forecast</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{predictions.forecastedConversions.next90Days}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">conversions</p>
           </div>
         </div>
-        
+
         {/* Key Predictions */}
         <div className="space-y-3">
-          <div className="p-3 bg-light-bg-secondary rounded-lg border border-light-border">
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <ChartBarIcon className="h-4 w-4 text-flash-green" />
-                <p className="text-sm font-medium text-light-text-primary">Next Month Projections</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Next Month Projections</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-light-text-secondary">Expected Submissions</p>
-                <p className="font-semibold text-light-text-primary">
-                  {predictions.nextMonthProjections.expectedSubmissions}
-                </p>
+                <p className="text-gray-600 dark:text-gray-300">Expected Submissions</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{predictions.nextMonthProjections.expectedSubmissions}</p>
               </div>
               <div>
-                <p className="text-light-text-secondary">Expected Conversions</p>
-                <p className="font-semibold text-light-text-primary">
-                  {predictions.nextMonthProjections.expectedConversions}
-                </p>
+                <p className="text-gray-600 dark:text-gray-300">Expected Conversions</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{predictions.nextMonthProjections.expectedConversions}</p>
               </div>
             </div>
           </div>
-          
-          <div className="p-3 bg-light-bg-secondary rounded-lg border border-light-border">
+
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CircleStackIcon className="h-4 w-4 text-blue-600" />
-                <p className="text-sm font-medium text-light-text-primary">Conversion Probability</p>
+                <CircleStackIcon className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Conversion Probability</p>
               </div>
-              <span className="text-lg font-bold text-blue-600">
-                {predictions.conversionProbability.overall.toFixed(1)}%
-              </span>
+              <span className="text-lg font-bold text-blue-500 dark:text-blue-400">{predictions.conversionProbability.overall.toFixed(1)}%</span>
             </div>
           </div>
-          
-          <div className="p-3 bg-light-bg-secondary rounded-lg border border-light-border">
+
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ClockIcon className="h-4 w-4 text-purple-600" />
-                <p className="text-sm font-medium text-light-text-primary">Confidence Level</p>
+                <ClockIcon className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Confidence Level</p>
               </div>
-              <Badge 
-                variant={predictions.confidence > 80 ? 'success' : predictions.confidence > 60 ? 'warning' : 'secondary'}
-                className="text-xs"
-              >
+              <Badge variant={predictions.confidence > 80 ? "success" : predictions.confidence > 60 ? "warning" : "secondary"} className="text-xs">
                 {predictions.confidence}% confidence
               </Badge>
             </div>
           </div>
+
+          {/* AI Strategic Insights */}
+          {(aiInsights.length > 0 || geminiAIService.isAvailable()) && (
+            <div className="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <SparklesIcon className="h-4 w-4 text-yellow-500" />
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white">AI Strategic Insights</h4>
+                {loadingInsights && (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-500"></div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                {aiInsights.length > 0 ? (
+                  aiInsights.map((insight, index) => (
+                    <div
+                      key={index}
+                      className="text-xs text-gray-600 dark:text-gray-300 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800/30"
+                    >
+                      💡 {insight}
+                    </div>
+                  ))
+                ) : geminiAIService.isAvailable() && !loadingInsights ? (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 italic">AI insights will appear when sufficient data is available</div>
+                ) : !geminiAIService.isAvailable() ? (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 italic">Configure Gemini API for AI-powered insights</div>
+                ) : null}
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

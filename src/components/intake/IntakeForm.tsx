@@ -42,11 +42,11 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showSearch, setShowSearch] = useState(true);
-  
+
   // Validation states
   const [phoneValidation, setPhoneValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
   const [emailValidation, setEmailValidation] = useState<{ isValid: boolean; message?: string }>({ isValid: true });
-  
+
   // Enrichment states
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichmentData, setEnrichmentData] = useState<any>(null);
@@ -151,7 +151,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
     });
     setIsEditMode(false);
     // Clear URL parameters
-    router.push('/intake');
+    router.push("/intake");
   };
 
   const loadUserProfile = async (username: string) => {
@@ -181,62 +181,58 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
     } else if (name === "leadStatus") {
       // Sync signedUp field when leadStatus changes
       const isSignedUp = value === "converted";
-      setFormData((prev) => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         [name]: value as LeadStatus,
-        signedUp: isSignedUp 
+        signedUp: isSignedUp,
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
-      
+
       // Validate phone number
       if (name === "phoneNumber" && value) {
         const validation = validatePhoneNumber(value);
         setPhoneValidation({
           isValid: validation.isValid,
-          message: validation.isValid 
-            ? validation.formatted 
-            : validation.errors?.[0]
+          message: validation.isValid ? validation.formatted : validation.errors?.[0],
         });
-        
+
         // If valid, trigger enrichment
         if (validation.isValid && validation.formatted) {
-          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted || '' }));
+          setFormData((prev) => ({ ...prev, phoneNumber: validation.formatted || "" }));
           // Trigger phone enrichment in background
-          enrichPhoneNumber(validation.formatted).then(result => {
+          enrichPhoneNumber(validation.formatted).then((result) => {
             if (result.success) {
-              console.log('Phone enrichment:', result.data);
+              console.log("Phone enrichment:", result.data);
             }
           });
         }
       }
-      
+
       // Validate email
       if (name === "email" && value) {
         const validation = validateEmail(value);
         setEmailValidation({
           isValid: validation.isValid,
-          message: validation.isValid 
-            ? "Valid email" 
-            : validation.errors?.[0]
+          message: validation.isValid ? "Valid email" : validation.errors?.[0],
         });
       }
-      
+
       // Auto-enrich company data when business name is entered
       if (name === "ownerName" && value.length > 3) {
         // Debounce enrichment
         const timeoutId = setTimeout(async () => {
           setIsEnriching(true);
-          const result = await enrichCompany({ 
+          const result = await enrichCompany({
             name: value,
-            location: formData.territory || 'Jamaica'
+            location: formData.territory || "Jamaica",
           });
           if (result.success) {
             setEnrichmentData(result.data);
           }
           setIsEnriching(false);
         }, 1000);
-        
+
         // Cleanup timeout on component unmount or new input
         return () => clearTimeout(timeoutId);
       }
@@ -260,7 +256,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
         setIsSubmitting(false);
         return;
       }
-      
+
       if (!formData.leadStatus) {
         setError("Lead status is required");
         setIsSubmitting(false);
@@ -271,10 +267,10 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
         // Update existing submission
         await updateSubmission(submissionId, formData);
         setSuccess(true);
-        
+
         // Redirect to submissions page after success
         setTimeout(() => {
-          router.push('/dashboard/submissions');
+          router.push("/dashboard/submissions");
         }, 1500);
       } else {
         // Create new submission
@@ -283,7 +279,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
         // Redirect to submissions page after success
         setTimeout(() => {
-          router.push('/dashboard/submissions');
+          router.push("/dashboard/submissions");
         }, 1500);
       }
     } catch (err: any) {
@@ -299,9 +295,9 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-12 shadow-lg border border-light-border dark:border-gray-700 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-lg p-12 shadow-lg border border-light-border dark:border-gray-700 text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-flash-green"></div>
-          <p className="mt-4 text-light-text-secondary dark:text-dark-text-secondary">Loading submission data...</p>
+          <p className="mt-4 text-light-text-secondary dark:text-gray-300">Loading submission data...</p>
         </div>
       </div>
     );
@@ -314,9 +310,9 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
           <div className="relative">
             {/* Username display in top right */}
             {formData.username && (
-              <div className="absolute top-0 right-0 flex items-center text-xs sm:text-sm text-light-text-secondary dark:text-dark-text-secondary bg-light-bg-secondary dark:bg-dark-bg-secondary px-2 sm:px-3 py-1 rounded-full">
+              <div className="absolute top-0 right-0 flex items-center text-xs sm:text-sm text-light-text-secondary dark:text-gray-300 bg-light-bg-secondary dark:bg-gray-800 px-2 sm:px-3 py-1 rounded-full">
                 <UserIcon className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
-                <span className="font-medium text-light-text-primary dark:text-dark-text-primary">{formData.username}</span>
+                <span className="font-medium text-light-text-primary dark:text-white">{formData.username}</span>
               </div>
             )}
 
@@ -326,10 +322,10 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                   <span className="text-white text-xl sm:text-2xl font-bold">F</span>
                 </div>
               </div>
-              <CardTitle className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-light-text-primary dark:text-white">
                 {isEditMode ? "Edit Submission" : "Flash Sales Canvas Form"}
               </CardTitle>
-              <p className="text-light-text-secondary dark:text-dark-text-secondary mt-1 sm:mt-2 text-sm sm:text-base px-4 sm:px-0">
+              <p className="text-light-text-secondary dark:text-gray-300 mt-1 sm:mt-2 text-sm sm:text-base px-4 sm:px-0">
                 {isEditMode ? "Update existing lead information" : "Capture lead information quickly and efficiently"}
               </p>
             </div>
@@ -338,11 +334,11 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
         <CardContent className="p-4 sm:p-6">
           {success && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start">
-              <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
+            <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-start">
+              <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-green-800 font-medium">Success!</p>
-                <p className="text-green-600 text-sm">
+                <p className="text-green-800 dark:text-green-300 font-medium">Success!</p>
+                <p className="text-green-600 dark:text-green-400 text-sm">
                   {isEditMode ? "Submission updated successfully. Redirecting to submissions..." : "Form submitted successfully. Redirecting to submissions..."}
                 </p>
               </div>
@@ -350,49 +346,39 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
           )}
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
-              <ExclamationCircleIcon className="h-5 w-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start">
+              <ExclamationCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-2 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-red-800 font-medium">Error</p>
-                <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-red-800 dark:text-red-300 font-medium">Error</p>
+                <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
               </div>
             </div>
           )}
 
           {/* Search Section - Only show for new submissions */}
           {!isEditMode && !submissionId && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-light-bg-secondary rounded-lg border border-light-border">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-light-bg-secondary dark:bg-gray-800 rounded-lg border border-light-border dark:border-gray-700">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3">
                 <div>
-                  <label className="block text-sm font-medium text-light-text-primary">
-                    Search Existing Submissions
-                  </label>
-                  <p className="text-xs text-light-text-secondary mt-1">
-                    Start typing to find and update an existing lead
-                  </p>
+                  <label className="block text-sm font-medium text-light-text-primary dark:text-white">Search Existing Submissions</label>
+                  <p className="text-xs text-light-text-secondary dark:text-gray-300 mt-1">Start typing to find and update an existing lead</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowSearch(!showSearch)}
-                  className="text-xs sm:text-sm text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary flex items-center self-end sm:self-auto"
+                  className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-300 hover:text-light-text-primary dark:hover:text-white flex items-center self-end sm:self-auto"
                 >
                   {showSearch ? "Hide" : "Show"} Search
                 </button>
               </div>
-              {showSearch && (
-                <SubmissionSearch
-                  onSelect={handleSubmissionSelect}
-                  onClear={handleClearSearch}
-                  currentSubmissionId={submissionId}
-                />
-              )}
+              {showSearch && <SubmissionSearch onSelect={handleSubmissionSelect} onClear={handleClearSearch} currentSubmissionId={submissionId} />}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Business Name and Owner */}
             <div>
-              <label htmlFor="ownerName" className="block text-sm font-medium text-light-text-secondary mb-2">
+              <label htmlFor="ownerName" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
                 Business Name and Owner *
               </label>
               <Input
@@ -405,39 +391,38 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 placeholder="e.g., Flash Coffee - John Doe"
                 className="w-full"
               />
-              
+
               {/* Enrichment Data Display */}
               {isEnriching && (
-                <div className="mt-2 flex items-center text-xs text-light-text-secondary">
+                <div className="mt-2 flex items-center text-xs text-light-text-secondary dark:text-gray-300">
                   <ArrowPathIcon className="w-3 h-3 mr-1 animate-spin" />
                   Looking up company information...
                 </div>
               )}
-              
+
               {enrichmentData && !isEnriching && (
-                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                   <div className="flex items-start">
-                    <InformationCircleIcon className="w-4 h-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                    <InformationCircleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0 mt-0.5" />
                     <div className="text-xs">
-                      <p className="font-medium text-blue-800 mb-1">Company Information Found:</p>
-                      {enrichmentData.industry && (
-                        <p className="text-blue-700">Industry: {enrichmentData.industry}</p>
-                      )}
-                      {enrichmentData.location?.address && (
-                        <p className="text-blue-700">Address: {enrichmentData.location.address}</p>
-                      )}
-                      {enrichmentData.phone && (
-                        <p className="text-blue-700">Phone: {enrichmentData.phone}</p>
-                      )}
+                      <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">Company Information Found:</p>
+                      {enrichmentData.industry && <p className="text-blue-700 dark:text-blue-400">Industry: {enrichmentData.industry}</p>}
+                      {enrichmentData.location?.address && <p className="text-blue-700 dark:text-blue-400">Address: {enrichmentData.location.address}</p>}
+                      {enrichmentData.phone && <p className="text-blue-700 dark:text-blue-400">Phone: {enrichmentData.phone}</p>}
                       {enrichmentData.website && (
-                        <p className="text-blue-700">Website: <a href={enrichmentData.website} target="_blank" rel="noopener noreferrer" className="underline">{enrichmentData.website}</a></p>
+                        <p className="text-blue-700 dark:text-blue-400">
+                          Website:{" "}
+                          <a href={enrichmentData.website} target="_blank" rel="noopener noreferrer" className="underline">
+                            {enrichmentData.website}
+                          </a>
+                        </p>
                       )}
                       {enrichmentData.rating && (
-                        <p className="text-blue-700">Rating: {enrichmentData.rating} ⭐ ({enrichmentData.totalRatings} reviews)</p>
+                        <p className="text-blue-700 dark:text-blue-400">
+                          Rating: {enrichmentData.rating} ⭐ ({enrichmentData.totalRatings} reviews)
+                        </p>
                       )}
-                      {enrichmentData.businessStatus && (
-                        <p className="text-blue-700">Status: {enrichmentData.businessStatus}</p>
-                      )}
+                      {enrichmentData.businessStatus && <p className="text-blue-700 dark:text-blue-400">Status: {enrichmentData.businessStatus}</p>}
                     </div>
                   </div>
                 </div>
@@ -446,7 +431,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
             {/* Phone Number */}
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-light-text-secondary mb-2">
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
                 Phone Number
               </label>
               <div className="relative">
@@ -457,10 +442,10 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   placeholder="e.g., (876) 555-1234"
-                  className={`w-full ${!phoneValidation.isValid && formData.phoneNumber ? 'border-red-500' : ''}`}
+                  className={`w-full ${!phoneValidation.isValid && formData.phoneNumber ? "border-red-500" : ""}`}
                 />
                 {phoneValidation.message && formData.phoneNumber && (
-                  <div className={`mt-1 text-xs ${phoneValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`mt-1 text-xs ${phoneValidation.isValid ? "text-green-600" : "text-red-600"}`}>
                     {phoneValidation.isValid ? (
                       <span className="flex items-center">
                         <CheckCircleIcon className="w-3 h-3 mr-1" />
@@ -479,7 +464,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-light-text-secondary mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
                 Email Address
               </label>
               <div className="relative">
@@ -490,10 +475,10 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="e.g., owner@business.com"
-                  className={`w-full ${!emailValidation.isValid && formData.email ? 'border-red-500' : ''}`}
+                  className={`w-full ${!emailValidation.isValid && formData.email ? "border-red-500" : ""}`}
                 />
                 {emailValidation.message && formData.email && (
-                  <div className={`mt-1 text-xs ${emailValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`mt-1 text-xs ${emailValidation.isValid ? "text-green-600" : "text-red-600"}`}>
                     {emailValidation.isValid ? (
                       <span className="flex items-center">
                         <CheckCircleIcon className="w-3 h-3 mr-1" />
@@ -512,7 +497,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
             {/* Territory */}
             <div>
-              <label htmlFor="territory" className="block text-sm font-medium text-light-text-secondary mb-2">
+              <label htmlFor="territory" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
                 Territory
               </label>
               <select
@@ -520,7 +505,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 name="territory"
                 value={formData.territory}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 text-light-text-primary dark:text-white rounded-md border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               >
                 <option value="">Select Territory</option>
                 <option value="Kingston">Kingston</option>
@@ -542,7 +527,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
             {/* Package Seen */}
             <div>
-              <label className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">Package Seen by Owner?</label>
+              <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">Package Seen by Owner?</label>
               <div className="flex items-center space-x-4">
                 <label className="flex items-center cursor-pointer">
                   <input
@@ -550,16 +535,16 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                     name="packageSeen"
                     checked={formData.packageSeen}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-flash-green bg-white border-light-border rounded focus:ring-flash-green"
+                    className="h-4 w-4 text-flash-green bg-white dark:bg-gray-800 border-light-border dark:border-gray-600 rounded focus:ring-flash-green"
                   />
-                  <span className="ml-2 text-light-text-primary dark:text-dark-text-primary">Yes, owner has seen the package</span>
+                  <span className="ml-2 text-light-text-primary dark:text-white">Yes, owner has seen the package</span>
                 </label>
               </div>
             </div>
 
             {/* Decision Makers */}
             <div>
-              <label htmlFor="decisionMakers" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
+              <label htmlFor="decisionMakers" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
                 Other Key Decision-Makers
               </label>
               <textarea
@@ -569,13 +554,13 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 value={formData.decisionMakers}
                 onChange={handleInputChange}
                 placeholder="List other people involved in the decision..."
-                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 text-light-text-primary dark:text-white rounded-md border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               />
             </div>
 
             {/* Interest Level */}
             <div>
-              <label className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">Level of Interest</label>
+              <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">Level of Interest</label>
               <div className="space-y-2">
                 <div className="relative">
                   <input
@@ -590,22 +575,22 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                   <div className="absolute w-full flex justify-between px-2 -bottom-1">
                     {[1, 2, 3, 4, 5].map((num) => (
                       <div key={num} className="flex flex-col items-center">
-                        <div className="w-0.5 h-2 bg-gray-400"></div>
+                        <div className="w-0.5 h-2 bg-gray-400 dark:bg-gray-500"></div>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="flex justify-between text-xs text-light-text-secondary dark:text-dark-text-secondary mt-3">
+                <div className="flex justify-between text-xs text-light-text-secondary dark:text-gray-300 mt-3">
                   {[1, 2, 3, 4, 5].map((num) => (
                     <span key={num} className="font-medium">
                       {num}
                     </span>
                   ))}
                 </div>
-                <div className="flex justify-between text-xs text-light-text-tertiary dark:text-dark-text-tertiary mt-1">
-                  <span className="dark:text-dark-text-tertiary">Not Interested</span>
-                  <span className="text-center dark:text-dark-text-tertiary">Moderate</span>
-                  <span className="dark:text-dark-text-tertiary">Very Interested</span>
+                <div className="flex justify-between text-xs text-light-text-tertiary dark:text-gray-400 mt-1">
+                  <span className="dark:text-gray-400">Not Interested</span>
+                  <span className="text-center dark:text-gray-400">Moderate</span>
+                  <span className="dark:text-gray-400">Very Interested</span>
                 </div>
                 <div className="text-center mt-3">
                   <Badge
@@ -620,7 +605,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
 
             {/* Lead Status */}
             <div>
-              <label htmlFor="leadStatus" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
+              <label htmlFor="leadStatus" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
                 Lead Status *
               </label>
               <select
@@ -629,7 +614,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 value={formData.leadStatus || ""}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 text-light-text-primary dark:text-white rounded-md border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               >
                 <option value="">Select Status</option>
                 <option value="new">New</option>
@@ -637,14 +622,12 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 <option value="qualified">Qualified</option>
                 <option value="converted">Converted</option>
               </select>
-              <p className="mt-1 text-xs text-light-text-tertiary dark:text-dark-text-tertiary">
-                Select the current status of this lead
-              </p>
+              <p className="mt-1 text-xs text-light-text-tertiary dark:text-gray-400">Select the current status of this lead</p>
             </div>
 
             {/* Specific Needs */}
             <div>
-              <label htmlFor="specificNeeds" className="block text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
+              <label htmlFor="specificNeeds" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
                 Specific Needs
               </label>
               <textarea
@@ -654,27 +637,18 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 value={formData.specificNeeds}
                 onChange={handleInputChange}
                 placeholder="Note any specific requirements or needs mentioned..."
-                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 text-light-text-primary dark:text-white rounded-md border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               />
             </div>
 
             {/* Submit Button */}
             <div className="pt-6">
               <div className="flex space-x-4">
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting} 
-                  className="flex-1 bg-flash-green text-white hover:bg-flash-green-dark disabled:opacity-50"
-                >
-                  {isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update Submission" : "Submit Form")}
+                <Button type="submit" disabled={isSubmitting} className="flex-1 bg-flash-green text-white hover:bg-flash-green-dark disabled:opacity-50">
+                  {isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : isEditMode ? "Update Submission" : "Submit Form"}
                 </Button>
                 {isEditMode && (
-                  <Button
-                    type="button"
-                    onClick={handleClearSearch}
-                    variant="outline"
-                    className="px-6"
-                  >
+                  <Button type="button" onClick={handleClearSearch} variant="outline" className="px-6">
                     Create New
                   </Button>
                 )}
