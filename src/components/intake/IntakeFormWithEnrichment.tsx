@@ -427,30 +427,30 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-3 sm:p-6">
       <Card className="bg-white dark:bg-gray-900 shadow-lg border-light-border dark:border-gray-700">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+        <CardHeader className="pb-4 px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div className="flex items-center gap-2">
-              <UserIcon className="h-6 w-6 text-flash-green" />
-              <CardTitle className="text-2xl font-bold text-light-text-primary dark:text-white">
+              <UserIcon className="h-5 sm:h-6 w-5 sm:w-6 text-flash-green flex-shrink-0" />
+              <CardTitle className="text-lg sm:text-2xl font-bold text-light-text-primary dark:text-white">
                 Flash Sales Canvas Form
               </CardTitle>
             </div>
             {isEditMode && (
-              <Badge variant="secondary" className="bg-flash-green/10 text-flash-green border-flash-green">
+              <Badge variant="secondary" className="bg-flash-green/10 text-flash-green border-flash-green text-xs sm:text-sm self-start sm:self-auto">
                 Edit Mode
               </Badge>
             )}
           </div>
-          <p className="text-sm text-light-text-secondary dark:text-gray-400 mt-2">
+          <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 mt-2">
             Capture lead information quickly and efficiently
           </p>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           {showSearch && !submissionId && (
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <SubmissionSearch 
                 onSelect={handleSubmissionSelect} 
                 onClear={handleClearSearch}
@@ -507,78 +507,101 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
                 required
               />
               
-              {/* Loading indicator */}
+              {/* Loading indicator - Mobile Responsive */}
               {isEnriching && (
-                <div className="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
-                  <ArrowPathIcon className="h-4 w-4 animate-spin mr-2" />
-                  Loading company information...
+                <div className="mt-2 flex items-center text-xs sm:text-sm text-blue-600 dark:text-blue-400">
+                  <ArrowPathIcon className="h-4 w-4 animate-spin mr-2 flex-shrink-0" />
+                  <span>Loading company information...</span>
                 </div>
               )}
 
-              {/* Enrichment Results */}
+              {/* Enrichment Results - Mobile First Design */}
               {enrichmentData && !isEnriching && (
-                <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <div className="flex items-start space-x-3">
-                    <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div className="mt-3 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-3">
+                    <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mb-2 sm:mb-0 sm:mt-0.5 flex-shrink-0" />
                     <div className="flex-1 space-y-2">
-                      <p className="font-medium text-blue-900 dark:text-blue-300">
+                      <p className="font-medium text-sm sm:text-base text-blue-900 dark:text-blue-300">
                         Company Information Found
                       </p>
                       
                       {enrichmentData.additionalInfo?.noResultsFound ? (
-                        <p className="text-sm text-blue-700 dark:text-blue-400">
+                        <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-400">
                           No results found for this business name
                         </p>
                       ) : (
-                        <div className="space-y-1 text-sm text-blue-700 dark:text-blue-400">
+                        <div className="space-y-2 text-xs sm:text-sm text-blue-700 dark:text-blue-400">
                           {enrichmentData.industry && (
-                            <p>Industry: {enrichmentData.industry}</p>
+                            <p className="break-words">
+                              <span className="font-semibold">Industry:</span> {enrichmentData.industry}
+                            </p>
                           )}
                           
                           {enrichmentData.location?.address && (
-                            <p>Address: {enrichmentData.location.address}</p>
+                            <p className="break-words">
+                              <span className="font-semibold">Address:</span> {enrichmentData.location.address}
+                            </p>
                           )}
                           
                           {enrichmentData.contact?.phone && (
-                            <div className="flex items-center space-x-2">
-                              <PhoneIcon className="h-4 w-4" />
-                              <span>{enrichmentData.contact.phone}</span>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2">
+                              <div className="flex items-center gap-2">
+                                <PhoneIcon className="h-4 w-4 flex-shrink-0" />
+                                <span className="break-all">{enrichmentData.contact.phone}</span>
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => setFormData(prev => ({ ...prev, phoneNumber: enrichmentData.contact?.phone || "" }))}
-                                className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-700"
+                                className="self-start sm:self-auto text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                               >
-                                Use
+                                Use Phone
                               </button>
                             </div>
                           )}
                           
                           {enrichmentData.contact?.website && (
-                            <div className="flex items-center space-x-2">
-                              <GlobeAltIcon className="h-4 w-4" />
+                            <div className="flex items-start sm:items-center gap-2">
+                              <GlobeAltIcon className="h-4 w-4 flex-shrink-0 mt-0.5 sm:mt-0" />
                               <a 
                                 href={enrichmentData.contact.website} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="underline hover:text-blue-800"
+                                className="underline hover:text-blue-800 break-all text-xs sm:text-sm"
                               >
-                                {enrichmentData.contact.website}
+                                {enrichmentData.contact.website.replace(/^https?:\/\//, '')}
                               </a>
                             </div>
                           )}
                           
                           {enrichmentData.additionalInfo?.rating && (
-                            <div className="flex items-center space-x-2">
-                              <StarIcon className="h-4 w-4" />
-                              <span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <StarIcon className="h-4 w-4 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm">
                                 {enrichmentData.additionalInfo.rating} ⭐ 
-                                ({enrichmentData.additionalInfo.totalRatings} reviews)
+                                <span className="ml-1 text-blue-600 dark:text-blue-400">
+                                  ({enrichmentData.additionalInfo.totalRatings} reviews)
+                                </span>
                               </span>
                             </div>
                           )}
                           
                           {enrichmentData.additionalInfo?.businessStatus && (
-                            <p>Status: {enrichmentData.additionalInfo.businessStatus}</p>
+                            <p className="text-xs sm:text-sm">
+                              <span className="font-semibold">Status:</span> {enrichmentData.additionalInfo.businessStatus}
+                            </p>
+                          )}
+                          
+                          {enrichmentData.additionalInfo?.openingHours && enrichmentData.additionalInfo.openingHours.length > 0 && (
+                            <details className="cursor-pointer">
+                              <summary className="font-semibold text-xs sm:text-sm hover:text-blue-800">
+                                View Hours
+                              </summary>
+                              <div className="mt-1 pl-4 space-y-0.5">
+                                {enrichmentData.additionalInfo.openingHours.map((hours, idx) => (
+                                  <p key={idx} className="text-xs">{hours}</p>
+                                ))}
+                              </div>
+                            </details>
                           )}
                         </div>
                       )}
@@ -587,10 +610,10 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
                 </div>
               )}
 
-              {/* Enrichment Error */}
+              {/* Enrichment Error - Mobile Responsive */}
               {enrichmentError && (
-                <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                  <p className="text-sm text-red-700 dark:text-red-400">
+                <div className="mt-2 p-2 sm:p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                  <p className="text-xs sm:text-sm text-red-700 dark:text-red-400 break-words">
                     {enrichmentError}
                   </p>
                 </div>
