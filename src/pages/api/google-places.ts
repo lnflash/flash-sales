@@ -9,10 +9,12 @@ export default async function handler(
   }
 
   const { action, ...params } = req.body;
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  // Try both environment variable names
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'Google Places API key not configured' });
+    console.error('Google Places API key not found in environment variables');
+    return res.status(500).json({ error: 'Google Places API key not configured. Please set GOOGLE_PLACES_API_KEY or NEXT_PUBLIC_GOOGLE_PLACES_API_KEY in your environment variables.' });
   }
 
   try {
@@ -35,8 +37,16 @@ export default async function handler(
         return res.status(400).json({ error: 'Invalid action' });
     }
 
+    console.log(`Google Places API ${action} request:`, url.replace(apiKey, '***'));
+    
     const response = await fetch(url);
     const data = await response.json();
+    
+    console.log(`Google Places API ${action} response:`, {
+      status: data.status,
+      resultsCount: data.results?.length || 0,
+      error: data.error_message
+    });
 
     res.status(200).json(data);
   } catch (error) {

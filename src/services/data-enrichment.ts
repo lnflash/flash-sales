@@ -133,6 +133,13 @@ class DataEnrichmentService {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'search', query: searchQuery })
         });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Google Places API error:', errorData);
+          throw new Error(errorData.error || 'Failed to search Google Places');
+        }
+        
         searchData = await response.json();
       } else {
         const searchUrl = `${this.googlePlacesBaseUrl}/textsearch/json?query=${encodeURIComponent(searchQuery)}&key=${apiKey}`;
@@ -140,9 +147,46 @@ class DataEnrichmentService {
         searchData = await searchResponse.json();
       }
       
+      console.log('Google Places search results:', {
+        query: searchQuery,
+        status: searchData.status,
+        resultsCount: searchData.results?.length || 0
+      });
 
-      if (searchData.status !== 'OK' || !searchData.results?.length) {
-        throw new Error(`No results found for ${query.name}`);
+      if (searchData.status === 'ZERO_RESULTS' || !searchData.results?.length) {
+        // Return empty result instead of throwing error
+        return {
+          success: true,
+          data: {
+            name: query.name,
+            domain: null,
+            industry: null,
+            location: {
+              address: query.location || 'Jamaica',
+              city: null,
+              state: null,
+              country: 'JM',
+              coordinates: null
+            },
+            contact: {
+              phone: null,
+              email: null,
+              website: null
+            },
+            socialProfiles: {},
+            additionalInfo: {
+              noResultsFound: true,
+              searchQuery
+            }
+          },
+          source: 'google_places',
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+      if (searchData.status !== 'OK') {
+        console.error('Google Places API error status:', searchData.status, searchData.error_message);
+        throw new Error(`Google Places API error: ${searchData.status} - ${searchData.error_message || 'Unknown error'}`);
       }
 
       // Get the first result's place_id for detailed information

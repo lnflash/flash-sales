@@ -406,23 +406,29 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                     <InformationCircleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0 mt-0.5" />
                     <div className="text-xs">
                       <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">Company Information Found:</p>
-                      {enrichmentData.industry && <p className="text-blue-700 dark:text-blue-400">Industry: {enrichmentData.industry}</p>}
-                      {enrichmentData.location?.address && <p className="text-blue-700 dark:text-blue-400">Address: {enrichmentData.location.address}</p>}
-                      {enrichmentData.phone && <p className="text-blue-700 dark:text-blue-400">Phone: {enrichmentData.phone}</p>}
-                      {enrichmentData.website && (
-                        <p className="text-blue-700 dark:text-blue-400">
-                          Website:{" "}
-                          <a href={enrichmentData.website} target="_blank" rel="noopener noreferrer" className="underline">
-                            {enrichmentData.website}
-                          </a>
-                        </p>
+                      {enrichmentData.additionalInfo?.noResultsFound ? (
+                        <p className="text-blue-700 dark:text-blue-400">No results found for this business name</p>
+                      ) : (
+                        <>
+                          {enrichmentData.industry && <p className="text-blue-700 dark:text-blue-400">Industry: {enrichmentData.industry}</p>}
+                          {enrichmentData.location?.address && <p className="text-blue-700 dark:text-blue-400">Address: {enrichmentData.location.address}</p>}
+                          {enrichmentData.contact?.phone && <p className="text-blue-700 dark:text-blue-400">Phone: {enrichmentData.contact.phone}</p>}
+                          {enrichmentData.contact?.website && (
+                            <p className="text-blue-700 dark:text-blue-400">
+                              Website:{" "}
+                              <a href={enrichmentData.contact.website} target="_blank" rel="noopener noreferrer" className="underline">
+                                {enrichmentData.contact.website}
+                              </a>
+                            </p>
+                          )}
+                          {enrichmentData.additionalInfo?.rating && (
+                            <p className="text-blue-700 dark:text-blue-400">
+                              Rating: {enrichmentData.additionalInfo.rating} ⭐ ({enrichmentData.additionalInfo.totalRatings} reviews)
+                            </p>
+                          )}
+                          {enrichmentData.additionalInfo?.businessStatus && <p className="text-blue-700 dark:text-blue-400">Status: {enrichmentData.additionalInfo.businessStatus}</p>}
+                        </>
                       )}
-                      {enrichmentData.rating && (
-                        <p className="text-blue-700 dark:text-blue-400">
-                          Rating: {enrichmentData.rating} ⭐ ({enrichmentData.totalRatings} reviews)
-                        </p>
-                      )}
-                      {enrichmentData.businessStatus && <p className="text-blue-700 dark:text-blue-400">Status: {enrichmentData.businessStatus}</p>}
                     </div>
                   </div>
                 </div>
