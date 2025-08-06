@@ -119,16 +119,13 @@ describe('Lead Status Form', () => {
 describe('Lead Status Display', () => {
   it('should format lead status for display', () => {
     const formatLeadStatus = (status: LeadStatus): string => {
-      return status.split('_').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join(' ');
+      return status.charAt(0).toUpperCase() + status.slice(1);
     };
 
-    expect(formatLeadStatus('new')).toBe('Canvas');
+    expect(formatLeadStatus('new')).toBe('New');
     expect(formatLeadStatus('contacted')).toBe('Contacted');
-    expect(formatLeadStatus('qualified')).toBe('Prospect');
-    expect(formatLeadStatus('qualified')).toBe('Opportunity');
-    expect(formatLeadStatus('converted')).toBe('Signed Up');
+    expect(formatLeadStatus('qualified')).toBe('Qualified');
+    expect(formatLeadStatus('converted')).toBe('Converted');
   });
 
   it('should apply correct styling based on lead status', () => {
@@ -138,8 +135,6 @@ describe('Lead Status Display', () => {
           return 'bg-flash-green/10 text-flash-green border border-flash-green/20';
         case 'qualified':
           return 'bg-purple-100 text-purple-800 border border-purple-300';
-        case 'qualified':
-          return 'bg-blue-100 text-blue-800 border border-blue-300';
         case 'contacted':
           return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
         case 'new':
@@ -150,7 +145,6 @@ describe('Lead Status Display', () => {
 
     expect(getStatusClasses('converted')).toContain('flash-green');
     expect(getStatusClasses('qualified')).toContain('purple');
-    expect(getStatusClasses('qualified')).toContain('blue');
     expect(getStatusClasses('contacted')).toContain('yellow');
     expect(getStatusClasses('new')).toContain('gray');
   });

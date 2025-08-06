@@ -130,10 +130,10 @@ describe('Supabase API - Lead Status', () => {
 
   describe('Lead Status Validation', () => {
     it('should accept all valid lead status values', () => {
-      const validStatuses: LeadStatus[] = ['new', 'contacted', 'qualified', 'qualified', 'converted'];
+      const validStatuses: LeadStatus[] = ['new', 'contacted', 'qualified', 'converted'];
       
       validStatuses.forEach(status => {
-        expect(status).toMatch(/^(canvas|contacted|prospect|opportunity|signed_up)$/);
+        expect(status).toMatch(/^(new|contacted|qualified|converted)$/);
       });
     });
 

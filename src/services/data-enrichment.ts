@@ -83,16 +83,11 @@ interface GooglePlaceResult {
 }
 
 class DataEnrichmentService {
-  private googleApiKey: string;
   private googlePlacesBaseUrl = GOOGLE_PLACES_CONFIG.baseUrl;
 
-  constructor() {
-    // Get API key from configuration
-    this.googleApiKey = getGooglePlacesApiKey();
-    
-    if (!this.googleApiKey && typeof window !== 'undefined') {
-      console.warn('Google Places API key not found in environment variables');
-    }
+  // Lazy load API key to ensure environment variables are available
+  private getApiKey(): string {
+    return getGooglePlacesApiKey();
   }
 
   // Enrich company data using Google Places API
@@ -114,24 +109,37 @@ class DataEnrichmentService {
         };
       }
 
-      // If no API key, fall back to mock data
-      if (!this.googleApiKey) {
-        console.log('No Google API key found, using mock data');
-        return this.getMockCompanyData(query);
+      // Get API key
+      const apiKey = this.getApiKey();
+      
+      // If no API key, return error
+      if (!apiKey) {
+        return {
+          success: false,
+          error: 'Google Places API key not configured. Please add NEXT_PUBLIC_GOOGLE_PLACES_API_KEY to your environment variables.',
+          timestamp: new Date().toISOString()
+        };
       }
       
-      console.log('Google API key found:', this.googleApiKey.substring(0, 10) + '...');
-
       // Search for the place using Google Places Text Search
       const searchQuery = `${query.name} ${query.location || 'Jamaica'}`;
-      const searchUrl = `${this.googlePlacesBaseUrl}/textsearch/json?query=${encodeURIComponent(searchQuery)}&key=${this.googleApiKey}`;
       
-      console.log('Searching Google Places for:', searchQuery);
+      let searchData: any;
       
-      const searchResponse = await fetch(searchUrl);
-      const searchData = await searchResponse.json();
+      // Use API route in browser, direct API call in Node.js
+      if (typeof window !== 'undefined') {
+        const response = await fetch('/api/google-places', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'search', query: searchQuery })
+        });
+        searchData = await response.json();
+      } else {
+        const searchUrl = `${this.googlePlacesBaseUrl}/textsearch/json?query=${encodeURIComponent(searchQuery)}&key=${apiKey}`;
+        const searchResponse = await fetch(searchUrl);
+        searchData = await searchResponse.json();
+      }
       
-      console.log('Google Places API response status:', searchData.status);
 
       if (searchData.status !== 'OK' || !searchData.results?.length) {
         throw new Error(`No results found for ${query.name}`);
@@ -141,10 +149,24 @@ class DataEnrichmentService {
       const placeId = searchData.results[0].place_id;
       
       // Get detailed place information
-      const detailsUrl = `${this.googlePlacesBaseUrl}/details/json?place_id=${placeId}&fields=name,formatted_address,formatted_phone_number,international_phone_number,website,rating,user_ratings_total,business_status,types,opening_hours,geometry,address_components&key=${this.googleApiKey}`;
+      let detailsData: any;
       
-      const detailsResponse = await fetch(detailsUrl);
-      const detailsData = await detailsResponse.json();
+      if (typeof window !== 'undefined') {
+        const response = await fetch('/api/google-places', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'details', 
+            placeId,
+            fields: 'name,formatted_address,formatted_phone_number,international_phone_number,website,rating,user_ratings_total,business_status,types,opening_hours,geometry,address_components'
+          })
+        });
+        detailsData = await response.json();
+      } else {
+        const detailsUrl = `${this.googlePlacesBaseUrl}/details/json?place_id=${placeId}&fields=name,formatted_address,formatted_phone_number,international_phone_number,website,rating,user_ratings_total,business_status,types,opening_hours,geometry,address_components&key=${apiKey}`;
+        const detailsResponse = await fetch(detailsUrl);
+        detailsData = await detailsResponse.json();
+      }
 
       if (detailsData.status !== 'OK' || !detailsData.result) {
         throw new Error('Failed to get place details');
@@ -166,11 +188,6 @@ class DataEnrichmentService {
       };
     } catch (error) {
       console.error('Company enrichment error:', error);
-      
-      // Fall back to mock data on error
-      if (query.name) {
-        return this.getMockCompanyData(query);
-      }
       
       return {
         success: false,
@@ -278,29 +295,11 @@ class DataEnrichmentService {
     return 'Other';
   }
 
-  // Fallback to mock data when API is not available
+  // No longer use mock data - return error instead
   private getMockCompanyData(query: { domain?: string; name?: string; location?: string }): EnrichmentResult {
-    const industries = ['Retail', 'Food & Beverage', 'Services', 'Healthcare', 'Finance', 'Technology'];
-    const mockData: CompanyEnrichment = {
-      name: query.name || 'Unknown Business',
-      domain: query.domain,
-      industry: industries[Math.floor(Math.random() * industries.length)],
-      location: {
-        city: 'Kingston',
-        state: 'JM',
-        country: 'Jamaica',
-        address: '1 Main Street, Kingston, Jamaica'
-      },
-      description: `Local business in ${query.location || 'Jamaica'}`,
-      phone: '(876) 555-' + Math.floor(Math.random() * 9000 + 1000),
-      rating: Math.round((3.5 + Math.random() * 1.5) * 10) / 10,
-      totalRatings: Math.floor(Math.random() * 500 + 10)
-    };
-
     return {
-      success: true,
-      data: mockData,
-      source: 'mock',
+      success: false,
+      error: 'Google Places API not available. Please check your API configuration.',
       timestamp: new Date().toISOString()
     };
   }
@@ -319,22 +318,16 @@ class DataEnrichmentService {
         };
       }
 
-      // For person enrichment, we'll continue using mock data
+      // Person enrichment is not available without external API
       // In production, you could integrate with services like:
       // - Clearbit Person API
       // - Hunter.io
       // - Apollo.io
       // - LinkedIn API (with proper authentication)
       
-      const mockData = this.generateMockPersonData(email);
-      
-      // Cache result
-      await this.cacheEnrichmentResult('person', email, mockData);
-
       return {
-        success: true,
-        data: mockData,
-        source: 'mock',
+        success: false,
+        error: 'Person enrichment API not configured',
         timestamp: new Date().toISOString()
       };
     } catch (error) {
@@ -350,27 +343,15 @@ class DataEnrichmentService {
   // Validate and enrich phone number with carrier info
   async enrichPhoneNumber(phone: string): Promise<EnrichmentResult> {
     try {
-      // For phone enrichment, we'll continue using mock data
+      // Phone enrichment is not available without external API
       // In production, use services like:
       // - Twilio Lookup API
       // - Numverify
       // - Nexmo Number Insight
       
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      const mockData = {
-        number: phone,
-        type: phone.startsWith('(876) 3') || phone.startsWith('(876) 4') || phone.startsWith('(876) 5') ? 'mobile' : 'landline',
-        carrier: this.generateJamaicanCarrier(),
-        location: 'Jamaica',
-        valid: true,
-        formatted: phone
-      };
-
       return {
-        success: true,
-        data: mockData,
-        source: 'mock',
+        success: false,
+        error: 'Phone enrichment API not configured',
         timestamp: new Date().toISOString()
       };
     } catch (error) {
@@ -395,17 +376,36 @@ class DataEnrichmentService {
       // Format address for geocoding
       const fullAddress = `${address.street}, ${address.city}, ${address.state}${address.zip ? ' ' + address.zip : ''}, ${address.country || 'Jamaica'}`;
       
-      if (!this.googleApiKey) {
-        return this.getMockAddressData(address);
+      const apiKey = this.getApiKey();
+      if (!apiKey) {
+        return {
+          success: false,
+          error: 'Google Geocoding API key not configured',
+          timestamp: new Date().toISOString()
+        };
       }
 
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${this.googleApiKey}`;
+      let data: any;
       
-      const response = await fetch(geocodeUrl);
-      const data = await response.json();
+      if (typeof window !== 'undefined') {
+        const response = await fetch('/api/google-places', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'geocode', address: fullAddress })
+        });
+        data = await response.json();
+      } else {
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${apiKey}`;
+        const response = await fetch(geocodeUrl);
+        data = await response.json();
+      }
 
       if (data.status !== 'OK' || !data.results?.length) {
-        return this.getMockAddressData(address);
+        return {
+          success: false,
+          error: `Geocoding failed: ${data.status}`,
+          timestamp: new Date().toISOString()
+        };
       }
 
       const result = data.results[0];
@@ -419,7 +419,11 @@ class DataEnrichmentService {
       };
     } catch (error) {
       console.error('Address enrichment error:', error);
-      return this.getMockAddressData(address);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      };
     }
   }
 
@@ -471,52 +475,13 @@ class DataEnrichmentService {
   }
 
   private getMockAddressData(address: any): EnrichmentResult {
-    const mockData = {
-      standardized: {
-        street: this.standardizeStreet(address.street),
-        city: this.properCase(address.city),
-        state: address.state.toUpperCase(),
-        zip: address.zip || '',
-        country: address.country || 'JM',
-        formatted: `${address.street}, ${address.city}, ${address.state}${address.zip ? ' ' + address.zip : ''}, ${address.country || 'Jamaica'}`
-      },
-      coordinates: {
-        // Kingston, Jamaica coordinates with some randomization
-        lat: 18.0179 + (Math.random() - 0.5) * 0.1,
-        lng: -76.8099 + (Math.random() - 0.5) * 0.1
-      }
-    };
-
     return {
-      success: true,
-      data: mockData,
-      source: 'mock',
+      success: false,
+      error: 'Google Geocoding API not available',
       timestamp: new Date().toISOString()
     };
   }
 
-  // Private helper methods
-  private generateMockPersonData(email: string): PersonEnrichment {
-    const [localPart, domain] = email.split('@');
-    const titles = ['Owner', 'Manager', 'Director', 'CEO', 'Sales Manager', 'Operations Manager'];
-    
-    return {
-      name: this.emailToName(localPart),
-      email: email,
-      title: titles[Math.floor(Math.random() * titles.length)],
-      company: this.domainToCompanyName(domain),
-      location: 'Kingston, Jamaica',
-      socialProfiles: {
-        linkedin: `https://linkedin.com/in/${localPart}`,
-        twitter: `https://twitter.com/${localPart}`
-      }
-    };
-  }
-
-  private generateJamaicanCarrier(): string {
-    const carriers = ['Digicel', 'Flow', 'Digicel', 'Flow']; // Digicel and Flow are the main carriers
-    return carriers[Math.floor(Math.random() * carriers.length)];
-  }
 
   private domainToCompanyName(domain: string): string {
     return domain
