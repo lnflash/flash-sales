@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { getUserFromStorage } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
     decisionMakers: "",
     interestLevel: 3,
     signedUp: false,
-    leadStatus: undefined,
+    leadStatus: "new",
     specificNeeds: "",
     username: "",
     territory: "",
@@ -144,7 +144,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
       decisionMakers: "",
       interestLevel: 3,
       signedUp: false,
-      leadStatus: undefined,
+      leadStatus: "new",
       specificNeeds: "",
       username: user?.username || "",
       territory: defaultTerritory,
@@ -269,36 +269,19 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
         await updateSubmission(submissionId, formData);
         setSuccess(true);
         
-        // Redirect to submission detail page after success
+        // Redirect to submissions page after success
         setTimeout(() => {
-          router.push(`/dashboard/submissions/${submissionId}`);
+          router.push('/dashboard/submissions');
         }, 1500);
       } else {
         // Create new submission
         await createSubmission(formData);
         setSuccess(true);
 
-        // Reset form for new submission
-        const user = getUserFromStorage();
-        const defaultTerritory = localStorage.getItem(`defaultTerritory_${user?.username}`) || "";
-        setFormData({
-          ownerName: "",
-          phoneNumber: "",
-          email: "",
-          packageSeen: false,
-          decisionMakers: "",
-          interestLevel: 3,
-          signedUp: false,
-          leadStatus: undefined,
-          specificNeeds: "",
-          username: user?.username || "Flash Rep",
-          territory: defaultTerritory,
-        });
-
-        // Keep on the same page for continuous entry
+        // Redirect to submissions page after success
         setTimeout(() => {
-          setSuccess(false);
-        }, 3000);
+          router.push('/dashboard/submissions');
+        }, 1500);
       }
     } catch (err: any) {
       console.error("Error submitting form:", err);
@@ -357,7 +340,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
               <div>
                 <p className="text-green-800 font-medium">Success!</p>
                 <p className="text-green-600 text-sm">
-                  {isEditMode ? "Submission updated successfully. Redirecting..." : "Form submitted successfully!"}
+                  {isEditMode ? "Submission updated successfully. Redirecting to submissions..." : "Form submitted successfully. Redirecting to submissions..."}
                 </p>
               </div>
             </div>

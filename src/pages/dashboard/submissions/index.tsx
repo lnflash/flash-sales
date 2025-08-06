@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import SubmissionTable from '@/components/submissions/SubmissionTable';
 import SubmissionFiltersComponent from '@/components/submissions/SubmissionFilters';
@@ -8,6 +9,7 @@ import { Submission, SubmissionFilters, PaginationState } from '@/types/submissi
 import { deleteSubmission } from '@/lib/api';
 import { getUserFromStorage } from '@/lib/auth';
 import { hasPermission } from '@/types/roles';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 export default function SubmissionsPage() {
   const router = useRouter();
@@ -105,11 +107,22 @@ export default function SubmissionsPage() {
   return (
     <DashboardLayout title="Submissions">
       <div className="mb-8">
-        <SubmissionFiltersComponent
-          filters={filters}
-          onFilterChange={handleSetFilters}
-          onResetFilters={handleResetFilters}
-        />
+        <div className="flex justify-between items-start gap-4 mb-4">
+          <div className="flex-1">
+            <SubmissionFiltersComponent
+              filters={filters}
+              onFilterChange={handleSetFilters}
+              onResetFilters={handleResetFilters}
+            />
+          </div>
+          <Link
+            href="/intake"
+            className="inline-flex items-center px-4 py-2 bg-flash-green text-white rounded-md hover:bg-flash-green-dark transition-colors font-medium shadow-sm"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            New Canvas Form
+          </Link>
+        </div>
         
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4 flex justify-between items-center shadow-sm border border-light-border dark:border-gray-700">
           <div>
