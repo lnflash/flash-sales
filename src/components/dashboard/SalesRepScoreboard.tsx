@@ -61,26 +61,26 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
 
   // Get performance badge
   const getPerformanceBadge = (rate: number) => {
-    if (rate >= 80) return { label: 'Excellent', color: 'bg-green-100 text-green-800 border-green-200' };
-    if (rate >= 60) return { label: 'Good', color: 'bg-blue-100 text-blue-800 border-blue-200' };
-    if (rate >= 40) return { label: 'Average', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
-    return { label: 'Needs Improvement', color: 'bg-red-100 text-red-800 border-red-200' };
+    if (rate >= 80) return { label: 'Excellent', color: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700' };
+    if (rate >= 60) return { label: 'Good', color: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-700' };
+    if (rate >= 40) return { label: 'Average', color: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700' };
+    return { label: 'Needs Improvement', color: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-200 dark:border-red-700' };
   };
 
   if (isLoading) {
     return (
-      <Card className="bg-white border-light-border">
+      <Card className="bg-white dark:bg-gray-800 border-light-border dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-light-text-primary">Sales Rep Scoreboard</CardTitle>
+          <CardTitle className="text-lg font-semibold text-light-text-primary dark:text-white">Sales Rep Scoreboard</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
             {[...Array(3)].map((_, index) => (
               <div key={index} className="flex items-center space-x-4">
-                <div className="w-8 h-8 bg-light-bg-tertiary rounded-full"></div>
+                <div className="w-8 h-8 bg-light-bg-tertiary dark:bg-gray-700 rounded-full"></div>
                 <div className="flex-1">
-                  <div className="bg-light-bg-tertiary h-4 w-1/3 rounded mb-2"></div>
-                  <div className="bg-light-bg-tertiary h-3 w-1/2 rounded"></div>
+                  <div className="bg-light-bg-tertiary dark:bg-gray-700 h-4 w-1/3 rounded mb-2"></div>
+                  <div className="bg-light-bg-tertiary dark:bg-gray-700 h-3 w-1/2 rounded"></div>
                 </div>
               </div>
             ))}
@@ -91,14 +91,14 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
   }
 
   return (
-    <Card className="bg-white border-light-border hover:shadow-lg transition-shadow duration-200">
+    <Card className="bg-white dark:bg-gray-800 border-light-border dark:border-gray-700 hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-light-text-primary">Sales Rep Scoreboard</CardTitle>
+          <CardTitle className="text-lg font-semibold text-light-text-primary dark:text-white">Sales Rep Scoreboard</CardTitle>
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-light-text-secondary hover:text-flash-green hover:bg-light-bg-secondary"
+            className="text-light-text-secondary dark:text-gray-400 hover:text-flash-green hover:bg-light-bg-secondary dark:hover:bg-gray-700"
           >
             <ArrowPathIcon className="w-4 h-4 mr-1" />
             Refresh
@@ -109,11 +109,11 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-light-border">
+              <tr className="border-b border-light-border dark:border-gray-700">
                 <th className="pb-3 text-left">
                   <button
                     onClick={() => handleSort('username')}
-                    className="flex items-center text-xs font-medium text-light-text-secondary hover:text-light-text-primary transition-colors"
+                    className="flex items-center text-xs font-medium text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors"
                   >
                     Rep Name
                     {sortBy === 'username' && (
@@ -124,7 +124,7 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
                 <th className="pb-3 text-center">
                   <button
                     onClick={() => handleSort('totalSubmissions')}
-                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary hover:text-light-text-primary transition-colors mx-auto"
+                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors mx-auto"
                   >
                     Submissions
                     {sortBy === 'totalSubmissions' && (
@@ -135,7 +135,7 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
                 <th className="pb-3 text-center">
                   <button
                     onClick={() => handleSort('signedUp')}
-                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary hover:text-light-text-primary transition-colors mx-auto"
+                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors mx-auto"
                   >
                     Signed Up
                     {sortBy === 'signedUp' && (
@@ -146,7 +146,7 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
                 <th className="pb-3 text-center">
                   <button
                     onClick={() => handleSort('conversionRate')}
-                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary hover:text-light-text-primary transition-colors mx-auto"
+                    className="flex items-center justify-center text-xs font-medium text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors mx-auto"
                   >
                     Conversion
                     {sortBy === 'conversionRate' && (
