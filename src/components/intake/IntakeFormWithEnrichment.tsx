@@ -451,7 +451,10 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
         <CardContent>
           {showSearch && !submissionId && (
             <div className="mb-6">
-              <SubmissionSearch onSelect={handleSubmissionSelect} />
+              <SubmissionSearch 
+                onSelect={handleSubmissionSelect} 
+                onClear={handleClearSearch}
+              />
               <div className="mt-2 text-center">
                 <button
                   onClick={handleClearSearch}
