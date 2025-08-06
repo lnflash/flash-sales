@@ -160,7 +160,7 @@ export default function PinVerification({ onVerify, onForgotPin, onCancel, attem
                 ref={(el) => {
                   inputRefs.current[index] = el;
                 }}
-                type="text"
+                type="password"
                 inputMode="numeric"
                 maxLength={1}
                 value={digit}

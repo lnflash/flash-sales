@@ -174,7 +174,7 @@ export default function PinSetup({
               <Input
                 key={`${step}-${index}`}
                 ref={(el) => { refs.current[index] = el; }}
-                type="text"
+                type="password"
                 inputMode="numeric"
                 maxLength={1}
                 value={digit}

@@ -28,7 +28,7 @@ describe('SubmissionFilters Component', () => {
     it('should update search input and trigger filter change on submit', async () => {
       render(<SubmissionFilters {...defaultProps} />);
 
-      const searchInput = screen.getByPlaceholderText('Search by name, phone, email, territory, rep...');
+      const searchInput = screen.getByPlaceholderText('Search...');
       fireEvent.change(searchInput, { target: { value: 'test search' } });
 
       expect(searchInput).toHaveValue('test search');
@@ -47,7 +47,7 @@ describe('SubmissionFilters Component', () => {
     it('should clear search when X button is clicked', () => {
       render(<SubmissionFilters {...defaultProps} filters={{ search: 'existing' }} />);
 
-      const searchInput = screen.getByPlaceholderText('Search by name, phone, email, territory, rep...');
+      const searchInput = screen.getByPlaceholderText('Search...');
       fireEvent.change(searchInput, { target: { value: 'test' } });
 
       const clearButton = screen.getByRole('button', { name: '' });

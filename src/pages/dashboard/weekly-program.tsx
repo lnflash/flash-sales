@@ -8,7 +8,7 @@ import { useWeeklyProgramStore } from "@/stores/useWeeklyProgramStore";
 import { useAuth } from "@/hooks/useAuth";
 import { Activity } from "@/types/weekly-program";
 import { format, addWeeks, subWeeks, startOfWeek } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, PlusIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 export default function WeeklyProgramPage() {
   const { currentWeek, setCurrentWeek, getWeeklyMetrics } = useWeeklyProgramStore();
@@ -17,7 +17,6 @@ export default function WeeklyProgramPage() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [defaultDate, setDefaultDate] = useState<string | undefined>();
-  const [showAdvancedView, setShowAdvancedView] = useState(false);
 
   const metrics = getWeeklyMetrics();
   const weekStart = new Date(currentWeek);
@@ -74,16 +73,6 @@ export default function WeeklyProgramPage() {
           </div>
 
           <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Toggle for advanced view (placeholder for future feature) */}
-            <button
-              onClick={() => setShowAdvancedView(!showAdvancedView)}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
-              title={showAdvancedView ? "Switch to simple view" : "Switch to advanced view"}
-            >
-              <Cog6ToothIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">{showAdvancedView ? "Simple" : "Advanced"}</span>
-            </button>
-
             {/* Quick add button */}
             <button
               onClick={() => handleAddActivity()}

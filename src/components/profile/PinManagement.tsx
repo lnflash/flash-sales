@@ -177,7 +177,7 @@ export default function PinManagement() {
         <Input
           key={`${prefix}-${index}`}
           id={`pin-${prefix}-${index}`}
-          type="text"
+          type="password"
           inputMode="numeric"
           maxLength={1}
           value={digit}

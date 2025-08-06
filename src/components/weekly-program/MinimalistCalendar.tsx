@@ -314,6 +314,18 @@ export const MinimalistCalendar: React.FC<MinimalistCalendarProps> = ({ onActivi
                         Click to add
                       </div>
                     )}
+                    {dayActivities.length > 0 && dayActivities.length <= 3 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddActivity(dateStr);
+                        }}
+                        className="w-full mt-1 p-1 text-xs text-gray-400 dark:text-gray-500 hover:text-flash-green hover:bg-gray-50 dark:hover:bg-gray-700 rounded transition-colors flex items-center justify-center gap-1"
+                      >
+                        <PlusIcon className="h-3 w-3" />
+                        Add more
+                      </button>
+                    )}
                   </div>
                 </div>
               );
