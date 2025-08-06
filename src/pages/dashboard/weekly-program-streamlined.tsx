@@ -65,15 +65,15 @@ export default function WeeklyProgramPage() {
 
   return (
     <DashboardLayout title="Weekly Program">
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 max-w-6xl mx-auto">
         {/* Streamlined Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="min-w-0 flex-1">
+          <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Weekly Program</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Focus on what matters most this week</p>
           </div>
 
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3">
             {/* Toggle for advanced view (placeholder for future feature) */}
             <button
               onClick={() => setShowAdvancedView(!showAdvancedView)}
@@ -126,14 +126,14 @@ export default function WeeklyProgramPage() {
         </div>
 
         {/* Main Content - Mobile: Stack, Desktop: Side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-none">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Goals Sidebar */}
           <div className="lg:col-span-1 order-2 lg:order-1">
             <SimpleGoals />
           </div>
 
           {/* Main Calendar */}
-          <div className="lg:col-span-3 order-1 lg:order-2 min-w-0">
+          <div className="lg:col-span-3 order-1 lg:order-2">
             <MinimalistCalendar onActivityClick={handleActivityClick} onAddActivity={handleAddActivity} />
           </div>
         </div>

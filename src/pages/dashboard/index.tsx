@@ -43,18 +43,18 @@ const HotLeadsList = lazy(() =>
 
 // Loading component for suspense
 const ChartSkeleton = () => (
-  <div className="bg-gray-800 rounded-lg p-6 animate-pulse">
-    <div className="h-6 bg-gray-700 rounded w-1/3 mb-4"></div>
-    <div className="h-48 bg-gray-700 rounded"></div>
+  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 sm:p-6 animate-pulse">
+    <div className="h-5 sm:h-6 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mb-3 sm:mb-4"></div>
+    <div className="h-36 sm:h-48 bg-gray-300 dark:bg-gray-700 rounded"></div>
   </div>
 );
 
 const TableSkeleton = () => (
-  <div className="bg-gray-800 rounded-lg p-6 animate-pulse">
-    <div className="h-6 bg-gray-700 rounded w-1/3 mb-4"></div>
-    <div className="space-y-3">
+  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 sm:p-6 animate-pulse">
+    <div className="h-5 sm:h-6 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mb-3 sm:mb-4"></div>
+    <div className="space-y-2 sm:space-y-3">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="h-12 bg-gray-700 rounded"></div>
+        <div key={i} className="h-10 sm:h-12 bg-gray-300 dark:bg-gray-700 rounded"></div>
       ))}
     </div>
   </div>
@@ -144,7 +144,7 @@ export default function Dashboard() {
           // Notification created successfully
         }}
       />
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <StatsCard
           title="Total Submissions"
           value={stats?.total || 0}
@@ -175,7 +175,7 @@ export default function Dashboard() {
         />
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Suspense fallback={<ChartSkeleton />}>
           <SubmissionTrends submissions={submissions} isLoading={isLoadingSubmissions} />
         </Suspense>
@@ -184,7 +184,7 @@ export default function Dashboard() {
         </Suspense>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Suspense fallback={<TableSkeleton />}>
           <SalesRepScoreboard data={repStats} />
         </Suspense>
@@ -196,7 +196,7 @@ export default function Dashboard() {
         </Suspense>
       </section>
 
-      <section className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Suspense fallback={<TableSkeleton />}>
           <RecentSubmissions submissions={submissions.slice(0, 10)} isLoading={isLoadingSubmissions} />
         </Suspense>
@@ -205,7 +205,7 @@ export default function Dashboard() {
         </Suspense>
       </section>
 
-      <section className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Suspense fallback={<TableSkeleton />}>
           <PerformanceReview />
         </Suspense>

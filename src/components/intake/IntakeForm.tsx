@@ -304,15 +304,15 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-3 sm:p-6">
       <Card className="shadow-lg">
-        <CardHeader className="border-b border-light-border pb-4 sm:pb-6">
+        <CardHeader className="border-b border-light-border pb-3 sm:pb-4 lg:pb-6">
           <div className="relative">
             {/* Username display in top right */}
             {formData.username && (
-              <div className="absolute top-0 right-0 flex items-center text-xs sm:text-sm text-light-text-secondary dark:text-gray-300 bg-light-bg-secondary dark:bg-gray-800 px-2 sm:px-3 py-1 rounded-full">
+              <div className="absolute -top-2 -right-2 sm:top-0 sm:right-0 flex items-center text-xs sm:text-sm text-light-text-secondary dark:text-gray-300 bg-light-bg-secondary dark:bg-gray-800 px-2 sm:px-3 py-1 rounded-full">
                 <UserIcon className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
-                <span className="font-medium text-light-text-primary dark:text-white">{formData.username}</span>
+                <span className="font-medium text-light-text-primary dark:text-white truncate max-w-[100px] sm:max-w-none">{formData.username}</span>
               </div>
             )}
 
@@ -588,9 +588,9 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                   ))}
                 </div>
                 <div className="flex justify-between text-xs text-light-text-tertiary dark:text-gray-400 mt-1">
-                  <span className="dark:text-gray-400">Not Interested</span>
-                  <span className="text-center dark:text-gray-400">Moderate</span>
-                  <span className="dark:text-gray-400">Very Interested</span>
+                  <span className="dark:text-gray-400 text-[10px] sm:text-xs">Not Interested</span>
+                  <span className="text-center dark:text-gray-400 text-[10px] sm:text-xs">Moderate</span>
+                  <span className="dark:text-gray-400 text-[10px] sm:text-xs text-right">Very Interested</span>
                 </div>
                 <div className="text-center mt-3">
                   <Badge
@@ -642,13 +642,13 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-6">
-              <div className="flex space-x-4">
-                <Button type="submit" disabled={isSubmitting} className="flex-1 bg-flash-green text-white hover:bg-flash-green-dark disabled:opacity-50">
+            <div className="pt-4 sm:pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4">
+                <Button type="submit" disabled={isSubmitting} className="flex-1 bg-flash-green text-white hover:bg-flash-green-dark disabled:opacity-50 py-3 sm:py-2">
                   {isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : isEditMode ? "Update Submission" : "Submit Form"}
                 </Button>
                 {isEditMode && (
-                  <Button type="button" onClick={handleClearSearch} variant="outline" className="px-6">
+                  <Button type="button" onClick={handleClearSearch} variant="outline" className="px-6 py-3 sm:py-2">
                     Create New
                   </Button>
                 )}

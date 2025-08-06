@@ -24,7 +24,7 @@ const isNewLead = (submission: Submission): boolean => {
   return submissionDate >= sevenDaysAgo;
 };
 
-export default function LeadsPage() {
+export default function MinimalLeadsPage() {
   const [user, setUser] = useState<any>(null);
   const [selectedTerritory, setSelectedTerritory] = useState<string>("");
   const [userDefaultTerritory, setUserDefaultTerritory] = useState<string>("");

@@ -1,50 +1,45 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { AlertCircle, Lock, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState, useRef, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { AlertCircle, Lock, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PinVerificationProps {
   onVerify: (pin: string) => Promise<boolean>;
   onForgotPin?: () => void;
+  onCancel?: () => void;
   attemptsRemaining?: number;
   lockedUntil?: Date;
   isLoading?: boolean;
 }
 
-export default function PinVerification({
-  onVerify,
-  onForgotPin,
-  attemptsRemaining,
-  lockedUntil,
-  isLoading = false,
-}: PinVerificationProps) {
-  const [pin, setPin] = useState(['', '', '', '']);
-  const [error, setError] = useState('');
+export default function PinVerification({ onVerify, onForgotPin, onCancel, attemptsRemaining, lockedUntil, isLoading = false }: PinVerificationProps) {
+  const [pin, setPin] = useState(["", "", "", ""]);
+  const [error, setError] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Calculate time remaining for lockout
-  const [timeRemaining, setTimeRemaining] = useState<string>('');
-  
+  const [timeRemaining, setTimeRemaining] = useState<string>("");
+
   useEffect(() => {
     if (!lockedUntil) return;
 
     const updateTimer = () => {
       const now = new Date();
       const diff = lockedUntil.getTime() - now.getTime();
-      
+
       if (diff <= 0) {
-        setTimeRemaining('');
+        setTimeRemaining("");
         return;
       }
 
       const minutes = Math.floor(diff / 60000);
       const seconds = Math.floor((diff % 60000) / 1000);
-      setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+      setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, "0")}`);
     };
 
     updateTimer();
@@ -59,7 +54,7 @@ export default function PinVerification({
     const newPin = [...pin];
     newPin[index] = value;
     setPin(newPin);
-    setError('');
+    setError("");
 
     // Auto-focus next input
     if (value && index < 3) {
@@ -67,27 +62,27 @@ export default function PinVerification({
     }
 
     // Auto-submit when all digits are entered
-    if (value && index === 3 && newPin.every(digit => digit)) {
-      handleSubmit(newPin.join(''));
+    if (value && index === 3 && newPin.every((digit) => digit)) {
+      handleSubmit(newPin.join(""));
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !pin[index] && index > 0) {
+    if (e.key === "Backspace" && !pin[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowLeft' && index > 0) {
+    } else if (e.key === "ArrowLeft" && index > 0) {
       inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && index < 3) {
+    } else if (e.key === "ArrowRight" && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData('text');
-    
+    const pasted = e.clipboardData.getData("text");
+
     if (/^\d{4}$/.test(pasted)) {
-      const digits = pasted.split('');
+      const digits = pasted.split("");
       setPin(digits);
       inputRefs.current[3]?.focus();
       handleSubmit(pasted);
@@ -95,27 +90,27 @@ export default function PinVerification({
   };
 
   const handleSubmit = async (pinValue?: string) => {
-    const fullPin = pinValue || pin.join('');
-    
+    const fullPin = pinValue || pin.join("");
+
     if (fullPin.length !== 4) {
-      setError('Please enter all 4 digits');
+      setError("Please enter all 4 digits");
       return;
     }
 
     setIsVerifying(true);
-    setError('');
+    setError("");
 
     try {
       const success = await onVerify(fullPin);
-      
+
       if (!success) {
-        setError('Invalid PIN');
-        setPin(['', '', '', '']);
+        setError("Invalid PIN");
+        setPin(["", "", "", ""]);
         inputRefs.current[0]?.focus();
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
-      setPin(['', '', '', '']);
+      setError("An error occurred. Please try again.");
+      setPin(["", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
       setIsVerifying(false);
@@ -134,9 +129,7 @@ export default function PinVerification({
           </div>
         </div>
         <CardTitle className="text-2xl font-bold">Enter your PIN</CardTitle>
-        <CardDescription>
-          Please enter your 4-digit PIN to continue
-        </CardDescription>
+        <CardDescription>Please enter your 4-digit PIN to continue</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -156,7 +149,7 @@ export default function PinVerification({
 
           {showAttempts && !isLocked && (
             <div className="text-center text-sm text-amber-600">
-              {attemptsRemaining} attempt{attemptsRemaining !== 1 ? 's' : ''} remaining
+              {attemptsRemaining} attempt{attemptsRemaining !== 1 ? "s" : ""} remaining
             </div>
           )}
 
@@ -164,7 +157,9 @@ export default function PinVerification({
             {pin.map((digit, index) => (
               <Input
                 key={index}
-                ref={(el) => { inputRefs.current[index] = el; }}
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
@@ -173,11 +168,7 @@ export default function PinVerification({
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={index === 0 ? handlePaste : undefined}
                 disabled={isLoading || isVerifying || isLocked}
-                className={cn(
-                  "w-14 h-14 text-center text-2xl font-semibold",
-                  "focus:ring-2 focus:ring-flash-green",
-                  digit && "border-flash-green"
-                )}
+                className={cn("w-14 h-14 text-center text-2xl font-semibold", "focus:ring-2 focus:ring-flash-green", digit && "border-flash-green")}
                 autoComplete="off"
                 autoFocus={index === 0}
               />
@@ -186,7 +177,7 @@ export default function PinVerification({
 
           <Button
             onClick={() => handleSubmit()}
-            disabled={isLoading || isVerifying || isLocked || pin.some(d => !d)}
+            disabled={isLoading || isVerifying || isLocked || pin.some((d) => !d)}
             className="w-full bg-flash-green hover:bg-flash-green-light"
           >
             {isVerifying ? (
@@ -195,7 +186,7 @@ export default function PinVerification({
                 Verifying...
               </>
             ) : (
-              'Verify PIN'
+              "Verify PIN"
             )}
           </Button>
 
@@ -208,6 +199,19 @@ export default function PinVerification({
                 className="text-sm text-light-text-secondary hover:text-flash-green"
               >
                 Forgot your PIN?
+              </Button>
+            </div>
+          )}
+
+          {onCancel && (
+            <div className="text-center">
+              <Button
+                variant="link"
+                onClick={onCancel}
+                disabled={isLoading || isVerifying}
+                className="text-sm text-light-text-secondary hover:text-flash-green"
+              >
+                Back to Login
               </Button>
             </div>
           )}

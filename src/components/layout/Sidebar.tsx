@@ -39,7 +39,7 @@ const navigation: NavItem[] = [
   { name: "Intake Form ", href: "/intake-dynamic", icon: DocumentTextIcon },
   { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon, requiresPermission: "canViewAnalytics" },
   { name: "Submissions", href: "/dashboard/submissions", icon: TableCellsIcon },
-  { name: "Lead Management", href: "/dashboard/leads", icon: UserGroupIcon },
+  // { name: "Lead Management", href: "/dashboard/leads", icon: UserGroupIcon },
   { name: "Rep Tracking", href: "/dashboard/rep-tracking", icon: ClipboardDocumentCheckIcon, hideForRoles: ["Flash Sales Rep"] },
   { name: "Profile", href: "/dashboard/profile", icon: UserIcon },
   { name: "Settings", href: "/dashboard/settings", icon: Cog6ToothIcon, requiresPermission: "canViewSettings" },
@@ -75,104 +75,101 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile overlay */}
-      {isMobile && isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-      
+      {isMobile && isMobileMenuOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />}
+
       {/* Sidebar */}
-      <div className={`
-        ${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'relative'}
+      <div
+        className={`
+        ${isMobile ? "fixed inset-y-0 left-0 z-50" : "relative"}
         h-screen bg-background border-r border-border transition-all duration-300 flex flex-col
         ${collapsed && !isMobile ? "w-16" : "w-64"}
-        ${isMobile && !isMobileMenuOpen ? '-translate-x-full' : 'translate-x-0'}
-      `}>
-      <div className="p-4 flex items-center justify-between border-b border-border">
-        <div className="flex items-center justify-center flex-1">
-          {!collapsed ? (
-            <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-8 w-auto dark:invert" />
-          ) : (
-            <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-6 w-6 rounded-full dark:invert" />
-          )}
-        </div>
-        {!isMobile && (
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg hover:bg-muted transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-primary" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-primary" />}
-          </button>
-        )}
-      </div>
-
-      <nav className="flex-1 p-3 overflow-y-auto" data-tour="navigation">
-        <ul className="space-y-1">
-          {navigation
-            .filter((item) => {
-              // Check if item is hidden for current user role
-              if (item.hideForRoles && user?.role && item.hideForRoles.includes(user.role)) {
-                return false;
-              }
-              // Show all items if no permission required
-              if (!item.requiresPermission) return true;
-              // Check permission based on user role
-              return user?.role && hasPermission(user.role, item.requiresPermission);
-            })
-            .sort((a, b) => {
-              // For Sales Reps, put "My Dashboard" first
-              if (user?.role === "Flash Sales Rep") {
-                if (a.name === "My Dashboard") return -1;
-                if (b.name === "My Dashboard") return 1;
-              }
-              return 0;
-            })
-            .map((item) => {
-              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-              return (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center px-3 py-2.5 rounded-lg transition-all font-medium ${
-                      isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                    onClick={() => isMobile && setIsMobileMenuOpen(false)}
-                  >
-                    <item.icon className={`h-5 w-5 ${collapsed ? "mx-auto" : "mr-3"} ${isActive ? "text-white" : ""}`} aria-hidden="true" />
-                    {!collapsed && <span className="text-sm">{item.name}</span>}
-                  </Link>
-                </li>
-              );
-            })}
-        </ul>
-      </nav>
-
-      <div className="p-4 border-t border-light-border space-y-3">
-        <div className={`flex items-center ${collapsed ? "justify-center" : "justify-start"}`}>
-          <div className="h-9 w-9 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold shadow-sm">
-            {user?.username?.charAt(0).toUpperCase() || "U"}
+        ${isMobile && !isMobileMenuOpen ? "-translate-x-full" : "translate-x-0"}
+      `}
+      >
+        <div className="p-4 flex items-center justify-between border-b border-border">
+          <div className="flex items-center justify-center flex-1">
+            {!collapsed ? (
+              <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-8 w-auto dark:invert" />
+            ) : (
+              <img src="https://getflash.io/assets/img/logo-black.png" alt="Flash Sales Logo" className="h-6 w-6 rounded-full dark:invert" />
+            )}
           </div>
-          {!collapsed && (
-            <div className="ml-3">
-              <p className="text-sm font-medium text-foreground capitalize">{user?.username || "User"}</p>
-              <p className="text-xs text-muted-foreground">{user?.role || "Flash Sales Rep"}</p>
-            </div>
+          {!isMobile && (
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {collapsed ? <ChevronDoubleRightIcon className="h-5 w-5 text-primary" /> : <ChevronDoubleLeftIcon className="h-5 w-5 text-primary" />}
+            </button>
           )}
         </div>
-        <button
-          onClick={handleLogout}
-          className={`w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors ${
-            collapsed ? "justify-center" : "justify-start"
-          }`}
-          title="Logout"
-        >
-          <ArrowRightOnRectangleIcon className={`h-5 w-5 ${collapsed ? "" : "mr-3"}`} />
-          {!collapsed && <span>Logout</span>}
-        </button>
+
+        <nav className="flex-1 p-3 overflow-y-auto" data-tour="navigation">
+          <ul className="space-y-1">
+            {navigation
+              .filter((item) => {
+                // Check if item is hidden for current user role
+                if (item.hideForRoles && user?.role && item.hideForRoles.includes(user.role)) {
+                  return false;
+                }
+                // Show all items if no permission required
+                if (!item.requiresPermission) return true;
+                // Check permission based on user role
+                return user?.role && hasPermission(user.role, item.requiresPermission);
+              })
+              .sort((a, b) => {
+                // For Sales Reps, put "My Dashboard" first
+                if (user?.role === "Flash Sales Rep") {
+                  if (a.name === "My Dashboard") return -1;
+                  if (b.name === "My Dashboard") return 1;
+                }
+                return 0;
+              })
+              .map((item) => {
+                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                return (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center px-3 py-2.5 rounded-lg transition-all font-medium ${
+                        isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                      onClick={() => isMobile && setIsMobileMenuOpen(false)}
+                    >
+                      <item.icon className={`h-5 w-5 ${collapsed ? "mx-auto" : "mr-3"} ${isActive ? "text-white" : ""}`} aria-hidden="true" />
+                      {!collapsed && <span className="text-sm">{item.name}</span>}
+                    </Link>
+                  </li>
+                );
+              })}
+          </ul>
+        </nav>
+
+        <div className="p-4 border-t border-light-border space-y-3">
+          <div className={`flex items-center ${collapsed ? "justify-center" : "justify-start"}`}>
+            <div className="h-9 w-9 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold shadow-sm">
+              {user?.username?.charAt(0).toUpperCase() || "U"}
+            </div>
+            {!collapsed && (
+              <div className="ml-3">
+                <p className="text-sm font-medium text-foreground capitalize">{user?.username || "User"}</p>
+                <p className="text-xs text-muted-foreground">{user?.role || "Flash Sales Rep"}</p>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors ${
+              collapsed ? "justify-center" : "justify-start"
+            }`}
+            title="Logout"
+          >
+            <ArrowRightOnRectangleIcon className={`h-5 w-5 ${collapsed ? "" : "mr-3"}`} />
+            {!collapsed && <span>Logout</span>}
+          </button>
+        </div>
       </div>
-    </div>
     </>
   );
 }

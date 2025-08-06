@@ -95,29 +95,30 @@ export default function SubmissionsPage() {
 
   return (
     <DashboardLayout title="Submissions">
-      <div className="mb-8">
-        <div className="flex justify-between items-center gap-4 mb-4">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
           <div className="flex-1">
             <SubmissionFiltersComponent filters={filters} onFilterChange={handleSetFilters} onResetFilters={handleResetFilters} />
           </div>
           <Link
             href="/intake"
-            className="inline-flex items-center px-4 py-2 h-10 bg-flash-green text-white rounded-md hover:bg-flash-green-dark transition-colors font-medium shadow-sm whitespace-nowrap"
+            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 h-9 sm:h-10 bg-flash-green text-white rounded-md hover:bg-flash-green-dark transition-colors font-medium shadow-sm whitespace-nowrap text-sm"
           >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            New
+            <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">New Canvas Form</span>
+            <span className="sm:hidden">New</span>
           </Link>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4 flex justify-between items-center shadow-sm border border-light-border dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-sm border border-light-border dark:border-gray-700">
           <div>
-            <h2 className="text-lg font-semibold text-light-text-primary dark:text-white">
+            <h2 className="text-base sm:text-lg font-semibold text-light-text-primary dark:text-white">
               {user && (!user.role || !hasPermission(user.role, "canViewAllReps")) ? "My Submissions" : "All Submissions"}
             </h2>
-            <p className="text-sm text-light-text-secondary dark:text-gray-400">
+            <p className="text-xs sm:text-sm text-light-text-secondary dark:text-gray-400 mt-1">
               {isLoading ? "Loading..." : `${totalCount} submissions found`}
               {user && (!user.role || !hasPermission(user.role, "canViewAllReps")) && (
-                <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 px-2 py-1 rounded-full">
+                <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full inline-block mt-1 sm:mt-0 sm:inline">
                   Filtered to {user.username}
                 </span>
               )}

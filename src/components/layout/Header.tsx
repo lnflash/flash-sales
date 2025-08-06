@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { BellIcon, MagnifyingGlassIcon, XMarkIcon, Bars3Icon, UserCircleIcon, ArrowRightOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
-import { formatDate } from '@/utils/date-formatter';
-import { getUserFromStorage, logout } from '@/lib/auth';
-import { getUserNotifications, markAsRead, markAllAsRead, getUnreadCount } from '@/lib/notifications';
-import { Notification } from '@/types/notifications';
-import { useMobileMenu } from '@/contexts/MobileMenuContext';
-import { IconButton } from '@/components/ui/icon-button';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import HelpMenu from '@/components/onboarding/HelpMenu';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { BellIcon, MagnifyingGlassIcon, XMarkIcon, Bars3Icon, UserCircleIcon, ArrowRightOnRectangleIcon, UserIcon } from "@heroicons/react/24/outline";
+import { formatDate } from "@/utils/date-formatter";
+import { getUserFromStorage, logout } from "@/lib/auth";
+import { getUserNotifications, markAsRead, markAllAsRead, getUnreadCount } from "@/lib/notifications";
+import { Notification } from "@/types/notifications";
+import { useMobileMenu } from "@/contexts/MobileMenuContext";
+import { IconButton } from "@/components/ui/icon-button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import HelpMenu from "@/components/onboarding/HelpMenu";
 
 interface HeaderProps {
   title: string;
@@ -20,7 +20,7 @@ export default function Header({ title }: HeaderProps) {
   const [notificationsList, setNotificationsList] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -51,23 +51,23 @@ export default function Header({ title }: HeaderProps) {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push("/login");
   };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (showNotifications && !target.closest('.notifications-dropdown')) {
+      if (showNotifications && !target.closest(".notifications-dropdown")) {
         setShowNotifications(false);
       }
-      if (showUserMenu && !target.closest('.user-menu-dropdown')) {
+      if (showUserMenu && !target.closest(".user-menu-dropdown")) {
         setShowUserMenu(false);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, [showNotifications, showUserMenu]);
 
   const loadNotifications = (username: string) => {
@@ -94,12 +94,12 @@ export default function Header({ title }: HeaderProps) {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high':
-        return 'text-red-600 bg-red-50';
-      case 'medium':
-        return 'text-yellow-600 bg-yellow-50';
+      case "high":
+        return "text-red-600 bg-red-50";
+      case "medium":
+        return "text-yellow-600 bg-yellow-50";
       default:
-        return 'text-green-600 bg-green-50';
+        return "text-green-600 bg-green-50";
     }
   };
 
@@ -112,33 +112,33 @@ export default function Header({ title }: HeaderProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleSearch(e as any);
     }
   };
 
   return (
-    <header className="bg-background border-b border-border">
+    <header className="bg-background border-b border-border relative z-40">
       <div className="px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
+        <div className="flex items-center justify-between min-h-[60px]">
+          <div className="flex items-center flex-1 min-w-0">
             {/* Mobile menu toggle */}
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors mr-3"
+              className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors mr-3 flex-shrink-0"
               aria-label="Toggle menu"
             >
               <Bars3Icon className="h-6 w-6 text-muted-foreground" />
             </button>
-            
-            <div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{title}</h1>
-              <p className="text-sm text-muted-foreground mt-1 hidden sm:block">{currentDate}</p>
+
+            {/* Just show the current date */}
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-muted-foreground hidden sm:block">{currentDate}</p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             {/* Desktop search */}
             <form onSubmit={handleSearch} className="relative hidden md:block">
               <input
@@ -168,10 +168,10 @@ export default function Header({ title }: HeaderProps) {
             <HelpMenu />
 
             <div className="relative notifications-dropdown">
-              <IconButton 
+              <IconButton
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative"
-                aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+                aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
               >
                 <BellIcon className="h-6 w-6 text-muted-foreground" />
                 {unreadCount > 0 && (
@@ -180,56 +180,40 @@ export default function Header({ title }: HeaderProps) {
                   </span>
                 )}
               </IconButton>
-              
+
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-popover rounded-lg shadow-lg border border-border z-50">
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-popover rounded-lg shadow-lg border border-border z-[60]">
                   <div className="p-4 border-b border-border">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-semibold text-foreground">Notifications</h3>
                       <div className="flex items-center gap-2">
                         {unreadCount > 0 && (
-                          <button
-                            onClick={handleMarkAllAsRead}
-                            className="text-sm text-primary hover:opacity-80"
-                          >
+                          <button onClick={handleMarkAllAsRead} className="text-sm text-primary hover:opacity-80">
                             Mark all as read
                           </button>
                         )}
-                        <button
-                          onClick={() => setShowNotifications(false)}
-                          className="p-1 rounded hover:bg-muted"
-                        >
+                        <button onClick={() => setShowNotifications(false)} className="p-1 rounded hover:bg-muted">
                           <XMarkIcon className="h-5 w-5 text-muted-foreground" />
                         </button>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="max-h-96 overflow-y-auto">
                     {notificationsList.length === 0 ? (
-                      <div className="p-8 text-center text-muted-foreground">
-                        No notifications
-                      </div>
+                      <div className="p-8 text-center text-muted-foreground">No notifications</div>
                     ) : (
                       notificationsList.map((notification) => (
                         <div
                           key={notification.id}
                           onClick={() => handleNotificationClick(notification)}
-                          className={`p-4 border-b border-border hover:bg-muted cursor-pointer transition-colors ${
-                            !notification.read ? 'bg-blue-50' : ''
-                          }`}
+                          className={`p-4 border-b border-border hover:bg-muted cursor-pointer transition-colors ${!notification.read ? "bg-blue-50" : ""}`}
                         >
                           <div className="flex justify-between items-start mb-1">
-                            <h4 className="font-medium text-foreground">
-                              {notification.title}
-                            </h4>
-                            <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(notification.priority)}`}>
-                              {notification.priority}
-                            </span>
+                            <h4 className="font-medium text-foreground">{notification.title}</h4>
+                            <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(notification.priority)}`}>{notification.priority}</span>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {notification.message}
-                          </p>
+                          <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
                           <div className="flex justify-between items-center text-xs text-muted-foreground">
                             <span>From: {notification.fromUsername}</span>
                             <span>{formatDate(notification.createdAt)}</span>
@@ -244,26 +228,23 @@ export default function Header({ title }: HeaderProps) {
 
             {/* User Menu */}
             <div className="relative user-menu-dropdown">
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center p-2 rounded-lg hover:bg-muted transition-colors"
-              >
+              <button onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center p-2 rounded-lg hover:bg-muted transition-colors">
                 <div className="h-8 w-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-semibold">
-                  {user?.username?.charAt(0).toUpperCase() || 'U'}
+                  {user?.username?.charAt(0).toUpperCase() || "U"}
                 </div>
               </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-popover rounded-lg shadow-lg border border-border z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-popover rounded-lg shadow-lg border border-border z-[60]">
                   <div className="p-4 border-b border-border">
-                    <p className="text-sm font-medium text-foreground">{user?.username || 'User'}</p>
-                    <p className="text-xs text-muted-foreground">{user?.role || 'Flash Sales Rep'}</p>
+                    <p className="text-sm font-medium text-foreground">{user?.username || "User"}</p>
+                    <p className="text-xs text-muted-foreground">{user?.role || "Flash Sales Rep"}</p>
                   </div>
                   <div className="p-2">
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
-                        router.push('/dashboard/profile');
+                        router.push("/dashboard/profile");
                       }}
                       className="w-full flex items-center px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
                     >
@@ -286,7 +267,7 @@ export default function Header({ title }: HeaderProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Mobile search bar */}
         {showMobileSearch && (
           <div className="mt-4 md:hidden">
@@ -301,11 +282,7 @@ export default function Header({ title }: HeaderProps) {
                 autoFocus
               />
               <MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-              <button
-                type="button"
-                onClick={() => setShowMobileSearch(false)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-              >
+              <button type="button" onClick={() => setShowMobileSearch(false)} className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 <XMarkIcon className="h-5 w-5 text-muted-foreground" />
               </button>
             </form>

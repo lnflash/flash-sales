@@ -65,23 +65,23 @@ export default function RecentSubmissions({ submissions, isLoading = false }: Re
         <div className="space-y-2">
           {submissions.map((submission) => (
             <Link key={submission.id} href={`/dashboard/submissions/${submission.id}`} className="block">
-              <div className="p-3 rounded-lg border border-transparent hover:border-light-border hover:bg-light-bg-secondary transition-all duration-200 cursor-pointer group">
-                <div className="flex items-start justify-between">
+              <div className="p-2 sm:p-3 rounded-lg border border-transparent hover:border-light-border hover:bg-light-bg-secondary transition-all duration-200 cursor-pointer group">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-light-text-primary truncate group-hover:text-flash-green transition-colors">{submission.ownerName}</p>
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                      <p className="font-medium text-sm sm:text-base text-light-text-primary truncate group-hover:text-flash-green transition-colors">{submission.ownerName}</p>
                       {submission.interestLevel && submission.interestLevel >= 8 && (
                         <div className="flex items-center">
                           {[...Array(Math.floor(submission.interestLevel / 2))].map((_, i) => (
-                            <StarIcon key={i} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                            <StarIcon key={i} className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-yellow-500 fill-yellow-500" />
                           ))}
                         </div>
                       )}
                     </div>
-                    <p className="text-sm text-light-text-secondary truncate">{submission.phoneNumber || "No phone"}</p>
+                    <p className="text-xs sm:text-sm text-light-text-secondary truncate">{submission.phoneNumber || "No phone"}</p>
                     {submission.territory && <p className="text-xs text-light-text-tertiary">{submission.territory}</p>}
                   </div>
-                  <div className="flex flex-col items-end gap-1 ml-4">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-1 sm:ml-4">
                     <Badge
                       variant={submission.signedUp ? "default" : "secondary"}
                       className={cn(

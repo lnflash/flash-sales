@@ -870,7 +870,7 @@ export default function DynamicIntakeForm() {
       case 1:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Business Information</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">Business Information</h3>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Business Name</label>
               <Input name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="Flash Payments Inc." autoFocus />
@@ -931,7 +931,7 @@ export default function DynamicIntakeForm() {
       case 2:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Contact Information</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">Contact Information</h3>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner/Manager Name</label>
               <Input name="ownerName" value={formData.ownerName} onChange={handleInputChange} placeholder="John Smith" />
@@ -962,8 +962,8 @@ export default function DynamicIntakeForm() {
       case 3:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Business Metrics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">Business Metrics</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monthly Revenue</label>
                 <select
@@ -1030,8 +1030,8 @@ export default function DynamicIntakeForm() {
           const industryConfig = INDUSTRY_CONFIGS[formData.businessType];
           return (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{industryConfig.label} Specific Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">{industryConfig.label} Specific Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {industryConfig.additionalFields.map((field) => (
                   <div key={field.name}>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{field.label}</label>
@@ -1063,7 +1063,7 @@ export default function DynamicIntakeForm() {
           // No business type selected, show general additional details
           return (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Additional Information</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">Additional Information</h3>
               <AdditionalDetailsFields formData={formData} handleInputChange={handleInputChange} />
             </div>
           );
@@ -1072,7 +1072,7 @@ export default function DynamicIntakeForm() {
       case 5:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Review Your Information</h3>
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">Review Your Information</h3>
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-2">
               <p className="text-gray-900 dark:text-white">
                 <strong>Business:</strong> {formData.businessName || "Not provided"}
@@ -1184,44 +1184,44 @@ export default function DynamicIntakeForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-6 sm:py-12 px-3 sm:px-4 pb-20 sm:pb-12">
       {showSearch && !success && !isEditMode && (
-        <div className="max-w-2xl mx-auto mb-8">
+        <div className="max-w-2xl mx-auto mb-4 sm:mb-8">
           <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Search Existing Submissions</h3>
+            <CardContent className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">Search Existing Submissions</h3>
               <SubmissionSearch onSelect={(submission) => router.push(`/intake-dynamic?id=${submission.id}&mode=edit`)} onClear={() => {}} />
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Search for existing submissions to view or edit them</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-2">Search for existing submissions to view or edit them</p>
             </CardContent>
           </Card>
         </div>
       )}
 
       <Card className="max-w-2xl mx-auto bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-        <CardContent className="p-8">
+        <CardContent className="p-4 sm:p-6 lg:p-8">
           {success ? (
-            <div className="text-center py-8">
-              <CheckCircleIcon className="h-16 w-16 text-flash-green mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Thank You!</h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">Your information has been submitted successfully.</p>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Submission ID: {submissionId}</p>
-              <p className="text-lg font-semibold mt-4 text-flash-green">Lead Score: {leadScore}/100</p>
-              <Button onClick={() => window.location.reload()} className="mt-6 bg-flash-green hover:bg-flash-green-light">
+            <div className="text-center py-6 sm:py-8">
+              <CheckCircleIcon className="h-12 w-12 sm:h-16 sm:w-16 text-flash-green mx-auto mb-3 sm:mb-4" />
+              <h2 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900 dark:text-white">Thank You!</h2>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-3 sm:mb-4">Your information has been submitted successfully.</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Submission ID: {submissionId}</p>
+              <p className="text-base sm:text-lg font-semibold mt-3 sm:mt-4 text-flash-green">Lead Score: {leadScore}/100</p>
+              <Button onClick={() => window.location.reload()} className="mt-4 sm:mt-6 bg-flash-green hover:bg-flash-green-light">
                 Submit Another
               </Button>
             </div>
           ) : (
             <>
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-center mb-2 text-gray-900 dark:text-white">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-2xl font-bold text-center mb-1 sm:mb-2 text-gray-900 dark:text-white">
                   {isEditMode ? "Edit Submission" : "Flash Sales Intake Form"}
                 </h2>
-                <p className="text-center text-gray-600 dark:text-gray-300">
+                <p className="text-xs sm:text-base text-center text-gray-600 dark:text-gray-300">
                   {isEditMode ? "Update lead information" : "Capture lead information and qualify prospects"}
                 </p>
               </div>
-              <div className="mt-4">
-                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
+              <div className="mt-3 sm:mt-4">
+                <div className="flex justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2">
                   <span>
                     Step {currentStep} of {FORM_STEPS.length}
                   </span>

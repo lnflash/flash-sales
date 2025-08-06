@@ -8,16 +8,15 @@ import { useWeeklyProgramStore } from "@/stores/useWeeklyProgramStore";
 import { useAuth } from "@/hooks/useAuth";
 import { Activity } from "@/types/weekly-program";
 import { format, addWeeks, subWeeks, startOfWeek } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, PlusIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, ChevronRightIcon, ArrowPathIcon, PlusIcon } from "@heroicons/react/24/outline";
 
-export default function WeeklyProgramPage() {
+export default function MinimalistWeeklyProgramPage() {
   const { currentWeek, setCurrentWeek, getWeeklyMetrics } = useWeeklyProgramStore();
   const { user, loading: authLoading } = useAuth();
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [defaultDate, setDefaultDate] = useState<string | undefined>();
-  const [showAdvancedView, setShowAdvancedView] = useState(false);
 
   const metrics = getWeeklyMetrics();
   const weekStart = new Date(currentWeek);
@@ -65,35 +64,23 @@ export default function WeeklyProgramPage() {
 
   return (
     <DashboardLayout title="Weekly Program">
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 max-w-6xl mx-auto">
         {/* Streamlined Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="min-w-0 flex-1">
+          <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Weekly Program</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Focus on what matters most this week</p>
           </div>
 
-          <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Toggle for advanced view (placeholder for future feature) */}
-            <button
-              onClick={() => setShowAdvancedView(!showAdvancedView)}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
-              title={showAdvancedView ? "Switch to simple view" : "Switch to advanced view"}
-            >
-              <Cog6ToothIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">{showAdvancedView ? "Simple" : "Advanced"}</span>
-            </button>
-
-            {/* Quick add button */}
-            <button
-              onClick={() => handleAddActivity()}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-flash-green hover:bg-flash-green/90 text-white rounded-lg font-medium transition-colors"
-            >
-              <PlusIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Add Activity</span>
-              <span className="sm:hidden">Add</span>
-            </button>
-          </div>
+          {/* Quick add button */}
+          <button
+            onClick={() => handleAddActivity()}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-flash-green hover:bg-flash-green/90 text-white rounded-lg font-medium transition-colors"
+          >
+            <PlusIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Add Activity</span>
+            <span className="sm:hidden">Add</span>
+          </button>
         </div>
 
         {/* Simple Week Navigation */}
@@ -126,14 +113,14 @@ export default function WeeklyProgramPage() {
         </div>
 
         {/* Main Content - Mobile: Stack, Desktop: Side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-none">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Goals Sidebar */}
           <div className="lg:col-span-1 order-2 lg:order-1">
             <SimpleGoals />
           </div>
 
           {/* Main Calendar */}
-          <div className="lg:col-span-3 order-1 lg:order-2 min-w-0">
+          <div className="lg:col-span-3 order-1 lg:order-2">
             <MinimalistCalendar onActivityClick={handleActivityClick} onAddActivity={handleAddActivity} />
           </div>
         </div>

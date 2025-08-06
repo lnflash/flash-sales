@@ -221,25 +221,25 @@ export default function RepDashboard() {
       />
 
       {/* User Info Bar */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 mb-6 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
-        <div className="flex items-center">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="flex items-center min-w-0">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-r from-flash-green to-flash-green-light flex items-center justify-center text-white font-semibold flex-shrink-0">
             {displayUsername.charAt(0).toUpperCase()}
           </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
+          <div className="ml-2 sm:ml-3 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">
               {isViewingOwnDashboard ? `Welcome back, ${user.username}!` : `Viewing ${displayUsername}'s Dashboard`}
             </p>
-            <p className="text-xs text-gray-600 dark:text-gray-300">
+            <p className="text-xs text-gray-600 dark:text-gray-300 hidden sm:block">
               {canViewAllReps && selectedUsername && selectedUsername !== user.username
                 ? `Admin view of ${selectedUsername}'s data`
                 : "Viewing your personal dashboard"}
             </p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-gray-600 dark:text-gray-300">Your Submissions</p>
-          <p className="text-lg font-semibold text-gray-900 dark:text-white">{submissions.length}</p>
+        <div className="text-right flex-shrink-0">
+          <p className="text-xs text-gray-600 dark:text-gray-300 hidden sm:block">Your Submissions</p>
+          <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{submissions.length}</p>
         </div>
       </div>
 
@@ -262,7 +262,7 @@ export default function RepDashboard() {
       ) : (
         <>
           {/* Stats Overview */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
@@ -295,7 +295,7 @@ export default function RepDashboard() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 col-span-2 lg:col-span-1">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 col-span-1 xs:col-span-2 md:col-span-1">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 truncate">Closed/Month</p>
@@ -305,7 +305,7 @@ export default function RepDashboard() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 col-span-2 lg:col-span-1">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 col-span-1 xs:col-span-2 md:col-span-3 lg:col-span-1">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 truncate">Conversion</p>
@@ -345,7 +345,7 @@ export default function RepDashboard() {
           </div>
 
           {/* Leads by Status */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
             {leadStatusOrder
               .filter((status) => status !== "converted")
               .map((status) => {

@@ -156,26 +156,26 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout title="Profile">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto px-3 sm:px-0">
         {/* Profile Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-light-border dark:border-gray-700 mb-6">
-          <div className="flex items-center justify-between mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 border border-light-border dark:border-gray-700 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
             <div className="flex items-center">
-              <div className="w-24 h-24 bg-flash-green/10 rounded-full flex items-center justify-center">
-                <UserIcon className="w-12 h-12 text-flash-green" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-flash-green/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <UserIcon className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-flash-green" />
               </div>
-              <div className="ml-6">
-                <h1 className="text-2xl font-bold text-light-text-primary dark:text-white">{profile?.full_name || profile?.username || "Unknown User"}</h1>
-                <p className="text-light-text-secondary dark:text-gray-400">{profile?.email || (user ? `${user.username}@getflash.io` : '')}</p>
+              <div className="ml-3 sm:ml-4 lg:ml-6 min-w-0">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-light-text-primary dark:text-white truncate">{profile?.full_name || profile?.username || "Unknown User"}</h1>
+                <p className="text-sm sm:text-base text-light-text-secondary dark:text-gray-400 truncate">{profile?.email || (user ? `${user.username}@getflash.io` : '')}</p>
               </div>
             </div>
 
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center px-4 py-2 bg-flash-green text-white rounded-md hover:bg-flash-green-light transition-colors"
+                className="flex items-center justify-center px-3 sm:px-4 py-2 bg-flash-green text-white rounded-md hover:bg-flash-green-light transition-colors text-sm sm:text-base self-start sm:self-auto"
               >
-                <PencilIcon className="w-4 h-4 mr-2" />
+                <PencilIcon className="w-4 h-4 mr-1.5 sm:mr-2" />
                 Edit Profile
               </button>
             )}
@@ -198,11 +198,11 @@ export default function ProfilePage() {
           )}
 
           {/* Profile Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {/* First Name */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
-                <UserIcon className="w-4 h-4 mr-1" />
+              <label className="flex items-center text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
+                <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 First Name
               </label>
               {isEditing ? (
@@ -211,17 +211,17 @@ export default function ProfilePage() {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary dark:text-white">{profile?.first_name || "Not set"}</p>
+                <p className="text-sm sm:text-base text-light-text-primary dark:text-white">{profile?.first_name || "Not set"}</p>
               )}
             </div>
 
             {/* Last Name */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
-                <UserIcon className="w-4 h-4 mr-1" />
+              <label className="flex items-center text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
+                <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Last Name
               </label>
               {isEditing ? (
@@ -230,35 +230,35 @@ export default function ProfilePage() {
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary dark:text-white">{profile?.last_name || "Not set"}</p>
+                <p className="text-sm sm:text-base text-light-text-primary dark:text-white">{profile?.last_name || "Not set"}</p>
               )}
             </div>
 
             {/* Username */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
-                <IdentificationIcon className="w-4 h-4 mr-1" />
+              <label className="flex items-center text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
+                <IdentificationIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Username
               </label>
-              <p className="text-light-text-primary dark:text-white">{profile?.username || user?.username}</p>
+              <p className="text-sm sm:text-base text-light-text-primary dark:text-white">{profile?.username || user?.username}</p>
             </div>
 
             {/* Email */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
-                <EnvelopeIcon className="w-4 h-4 mr-1" />
+              <label className="flex items-center text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
+                <EnvelopeIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Email
               </label>
-              <p className="text-light-text-primary dark:text-white">{profile?.email || (user ? `${user.username}@getflash.io` : '')}</p>
+              <p className="text-sm sm:text-base text-light-text-primary dark:text-white truncate">{profile?.email || (user ? `${user.username}@getflash.io` : '')}</p>
             </div>
 
             {/* Phone */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
-                <PhoneIcon className="w-4 h-4 mr-1" />
+              <label className="flex items-center text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
+                <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Phone
               </label>
               {isEditing ? (
@@ -268,17 +268,17 @@ export default function ProfilePage() {
                   value={formData.phone}
                   onChange={handleInputChange}
                   placeholder="+1 (876) 555-0123"
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 />
               ) : (
-                <p className="text-light-text-primary dark:text-white">{profile?.phone || "Not provided"}</p>
+                <p className="text-sm sm:text-base text-light-text-primary dark:text-white">{profile?.phone || "Not provided"}</p>
               )}
             </div>
 
             {/* Timezone */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
-                <GlobeAltIcon className="w-4 h-4 mr-1" />
+              <label className="flex items-center text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
+                <GlobeAltIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Timezone
               </label>
               {isEditing ? (
@@ -286,7 +286,7 @@ export default function ProfilePage() {
                   name="timezone"
                   value={formData.timezone}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green"
                 >
                   <option value="America/New_York">Eastern Time (ET)</option>
                   <option value="America/Chicago">Central Time (CT)</option>
@@ -295,42 +295,42 @@ export default function ProfilePage() {
                   <option value="America/Jamaica">Jamaica Time (JMT)</option>
                 </select>
               ) : (
-                <p className="text-light-text-primary dark:text-white">{profile?.timezone || "America/New_York"}</p>
+                <p className="text-sm sm:text-base text-light-text-primary dark:text-white">{profile?.timezone || "America/New_York"}</p>
               )}
             </div>
 
             {/* Member Since */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
-                <CalendarIcon className="w-4 h-4 mr-1" />
+              <label className="flex items-center text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
+                <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Member Since
               </label>
-              <p className="text-light-text-primary dark:text-white">{profile?.created_at ? formatDate(profile.created_at) : "N/A"}</p>
+              <p className="text-sm sm:text-base text-light-text-primary dark:text-white">{profile?.created_at ? formatDate(profile.created_at) : "N/A"}</p>
             </div>
 
             {/* Role */}
             <div>
-              <label className="flex items-center text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
-                <IdentificationIcon className="w-4 h-4 mr-1" />
+              <label className="flex items-center text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1">
+                <IdentificationIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Role
               </label>
-              <p className="text-light-text-primary dark:text-white capitalize">{profile?.role?.replace("_", " ") || "Sales Rep"}</p>
+              <p className="text-sm sm:text-base text-light-text-primary dark:text-white capitalize">{profile?.role?.replace("_", " ") || "Sales Rep"}</p>
             </div>
           </div>
 
           {/* Edit Actions */}
           {isEditing && (
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 border border-light-border dark:border-gray-600 text-light-text-primary dark:text-gray-300 rounded-md hover:bg-light-bg-secondary dark:hover:bg-gray-700 transition-colors"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base border border-light-border dark:border-gray-600 text-light-text-primary dark:text-gray-300 rounded-md hover:bg-light-bg-secondary dark:hover:bg-gray-700 transition-colors order-2 sm:order-1"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className={`px-4 py-2 rounded-md transition-colors ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-md transition-colors order-1 sm:order-2 ${
                   isSaving ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-flash-green text-white hover:bg-flash-green-light"
                 }`}
               >
@@ -341,28 +341,28 @@ export default function ProfilePage() {
         </div>
 
         {/* PIN Management */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <PinManagement />
         </div>
 
         {/* Territory Settings */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-light-border dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-light-text-primary dark:text-white mb-6 flex items-center">
-            <MapPinIcon className="w-6 h-6 mr-2 text-flash-green" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 border border-light-border dark:border-gray-700">
+          <h2 className="text-lg sm:text-xl font-semibold text-light-text-primary dark:text-white mb-4 sm:mb-6 flex items-center">
+            <MapPinIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-1.5 sm:mr-2 text-flash-green" />
             Territory Settings
           </h2>
 
           <div className="max-w-md">
-            <label htmlFor="defaultTerritory" className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">
+            <label htmlFor="defaultTerritory" className="block text-xs sm:text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-1.5 sm:mb-2">
               Default Territory
             </label>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <select
                 id="defaultTerritory"
                 value={formData.default_territory}
                 onChange={(e) => setFormData((prev) => ({ ...prev, default_territory: e.target.value }))}
                 disabled={!isEditing}
-                className={`flex-1 px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green ${
+                className={`flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base bg-white dark:bg-gray-700 dark:text-white border border-light-border dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-flash-green ${
                   !isEditing ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
@@ -384,7 +384,7 @@ export default function ProfilePage() {
                     }
                   }}
                   disabled={isSaving || formData.default_territory === profile?.default_territory}
-                  className={`px-4 py-2 rounded-md transition-all ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-md transition-all w-full sm:w-auto ${
                     isSaving || formData.default_territory === profile?.default_territory
                       ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                       : "bg-flash-green text-white hover:bg-flash-green-light"
@@ -395,7 +395,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <p className="mt-3 text-sm text-light-text-secondary dark:text-gray-400">This territory will be automatically selected when creating new submissions.</p>
+            <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-light-text-secondary dark:text-gray-400">This territory will be automatically selected when creating new submissions.</p>
           </div>
         </div>
       </div>
