@@ -227,7 +227,10 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
         // Debounce enrichment
         const timeoutId = setTimeout(async () => {
           setIsEnriching(true);
-          const result = await enrichCompany({ name: value });
+          const result = await enrichCompany({ 
+            name: value,
+            location: formData.territory || 'Jamaica'
+          });
           if (result.success) {
             setEnrichmentData(result.data);
           }
@@ -420,11 +423,20 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                       {enrichmentData.industry && (
                         <p className="text-blue-700">Industry: {enrichmentData.industry}</p>
                       )}
-                      {enrichmentData.size && (
-                        <p className="text-blue-700">Company Size: {enrichmentData.size} employees</p>
+                      {enrichmentData.location?.address && (
+                        <p className="text-blue-700">Address: {enrichmentData.location.address}</p>
                       )}
-                      {enrichmentData.location?.city && (
-                        <p className="text-blue-700">Location: {enrichmentData.location.city}, {enrichmentData.location.state}</p>
+                      {enrichmentData.phone && (
+                        <p className="text-blue-700">Phone: {enrichmentData.phone}</p>
+                      )}
+                      {enrichmentData.website && (
+                        <p className="text-blue-700">Website: <a href={enrichmentData.website} target="_blank" rel="noopener noreferrer" className="underline">{enrichmentData.website}</a></p>
+                      )}
+                      {enrichmentData.rating && (
+                        <p className="text-blue-700">Rating: {enrichmentData.rating} ⭐ ({enrichmentData.totalRatings} reviews)</p>
+                      )}
+                      {enrichmentData.businessStatus && (
+                        <p className="text-blue-700">Status: {enrichmentData.businessStatus}</p>
                       )}
                     </div>
                   </div>
