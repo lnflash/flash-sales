@@ -22,6 +22,7 @@ import LeadStatusCard from "@/components/rep-dashboard/LeadStatusCard";
 import FollowUpPriorities from "@/components/rep-dashboard/FollowUpPriorities";
 import PerformanceSnapshot from "@/components/rep-dashboard/PerformanceSnapshot";
 import RepFilter from "@/components/rep-dashboard/RepFilter";
+import { useUsers } from "@/hooks/useUsers";
 
 // Lead status priority order
 const leadStatusOrder: LeadStatus[] = ["new", "contacted", "qualified", "converted"];
@@ -130,16 +131,9 @@ export default function RepDashboard() {
     usernameToFilter,
   });
 
-  // For admins, we'll use a different approach to get available reps
-  const [availableReps, setAvailableReps] = useState<string[]>([]);
-
-  useEffect(() => {
-    // Only fetch available reps if user is admin
-    if (canViewAllReps && user) {
-      // For now, use a hardcoded list. In production, this would be a separate API call
-      setAvailableReps(["charms", "Tatiana_1", "rogimon", "Chala", "seakah", "flash"].sort());
-    }
-  }, [canViewAllReps, user]);
+  // Dynamically fetch available reps from database
+  const { users: dbUsers } = useUsers();
+  const availableReps = dbUsers.map(u => u.username).filter(Boolean);
 
   // Log for debugging
   useEffect(() => {

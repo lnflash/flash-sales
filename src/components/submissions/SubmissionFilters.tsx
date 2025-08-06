@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SubmissionFilters } from "@/types/submission";
 import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
+import { useUsers } from "@/hooks/useUsers";
 
 interface SubmissionFiltersProps {
   filters: SubmissionFilters;
@@ -13,6 +14,7 @@ interface SubmissionFiltersProps {
 export default function SubmissionFiltersComponent({ filters, onFilterChange, onResetFilters }: SubmissionFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.search || "");
+  const { users, loading: usersLoading } = useUsers();
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -205,19 +207,21 @@ export default function SubmissionFiltersComponent({ filters, onFilterChange, on
                   username: e.target.value || undefined,
                 })
               }
+              disabled={usersLoading}
             >
               <option value="">All Reps</option>
-              <option value="rogimon">rogimon</option>
-              <option value="tatiana_1">tatiana_1</option>
-              <option value="charms">charms</option>
-              <option value="chala">chala</option>
-              <option value="kandi">kandi</option>
-              <option value="leah">leah</option>
-              <option value="tamoy">tamoy</option>
-              <option value="jodi">jodi</option>
-              <option value="flash">flash</option>
-              <option value="ally_oops">ally_oops</option>
-              <option value="Unassigned">Unassigned</option>
+              {usersLoading ? (
+                <option disabled>Loading users...</option>
+              ) : (
+                <>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.username}>
+                      {user.username}
+                    </option>
+                  ))}
+                  <option value="Unassigned">Unassigned</option>
+                </>
+              )}
             </select>
           </div>
 
