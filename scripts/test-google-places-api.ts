@@ -167,13 +167,14 @@ async function testGooglePlacesApiDirect(): Promise<void> {
       }
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     results.push({
       test: 'Direct API Call',
       passed: false,
-      message: `Network error: ${error.message}`,
+      message: `Network error: ${errorMessage}`,
       details: error
     });
-    log.error(`Network error: ${error.message}`);
+    log.error(`Network error: ${errorMessage}`);
   }
 }
 
@@ -222,11 +223,12 @@ async function testApiEndpoint(): Promise<void> {
       log.error(`HTTP error: ${response.status}`);
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     results.push({
       test: 'API Endpoint',
       passed: false,
-      message: `Cannot reach endpoint: ${error.message}`,
-      details: { baseUrl, error: error.message }
+      message: `Cannot reach endpoint: ${errorMessage}`,
+      details: { baseUrl, error: errorMessage }
     });
     log.warning(`Cannot reach endpoint (may be running in Node.js environment)`);
   }
@@ -300,13 +302,14 @@ async function testSupabaseCache(): Promise<void> {
     }
     
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     results.push({
       test: 'Supabase Cache',
       passed: false,
-      message: `Connection error: ${error.message}`,
+      message: `Connection error: ${errorMessage}`,
       details: error
     });
-    log.error(`Supabase connection error: ${error.message}`);
+    log.error(`Supabase connection error: ${errorMessage}`);
   }
 }
 
@@ -354,7 +357,8 @@ async function testCompanySearches(): Promise<void> {
       await new Promise(resolve => setTimeout(resolve, 500));
       
     } catch (error) {
-      log.error(`✗ ${company.name}: Error - ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      log.error(`✗ ${company.name}: Error - ${errorMessage}`);
       failCount++;
     }
   }
@@ -400,7 +404,8 @@ async function testErrorHandling(): Promise<void> {
       log.success('Empty query handled correctly');
     }
   } catch (error) {
-    log.error(`Unexpected error with empty query: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    log.error(`Unexpected error with empty query: ${errorMessage}`);
   }
   
   results.push({
@@ -464,7 +469,8 @@ async function saveReport(): Promise<void> {
     
     log.info(`\nReport saved to: ${filepath}`);
   } catch (error) {
-    log.warning(`Could not save report: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    log.warning(`Could not save report: ${errorMessage}`);
   }
 }
 
