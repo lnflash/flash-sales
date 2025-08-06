@@ -242,7 +242,7 @@ class DataEnrichmentService {
   }
 
   // Parse Google Place data into our format
-  private parseGooglePlaceData(place: GooglePlaceResult, originalQuery: { domain?: string; name?: string }): CompanyEnrichment {
+  private parseGooglePlaceData(place: GooglePlaceResult, originalQuery: { domain?: string; name?: string }): any {
     // Extract location components
     let city = '';
     let state = '';
@@ -265,6 +265,7 @@ class DataEnrichmentService {
     // Map Google place types to industries
     const industryMapping = this.mapTypesToIndustry(place.types || []);
 
+    // Return data in the format expected by IntakeForm
     return {
       name: place.name,
       domain: originalQuery.domain,
@@ -279,15 +280,22 @@ class DataEnrichmentService {
           lng: place.geometry.location.lng
         } : undefined
       },
-      phone: place.formatted_phone_number || place.international_phone_number,
-      website: place.website,
-      rating: place.rating,
-      totalRatings: place.user_ratings_total,
-      businessStatus: place.business_status,
-      types: place.types,
-      openingHours: place.opening_hours?.weekday_text,
-      placeId: place.place_id,
-      description: `${industryMapping} business in ${city || 'Jamaica'}`
+      // Nest contact information as expected by the form
+      contact: {
+        phone: place.formatted_phone_number || place.international_phone_number || null,
+        website: place.website || null,
+        email: null // Google Places doesn't provide email
+      },
+      // Additional info in separate object
+      additionalInfo: {
+        rating: place.rating,
+        totalRatings: place.user_ratings_total,
+        businessStatus: place.business_status,
+        types: place.types,
+        openingHours: place.opening_hours?.weekday_text,
+        placeId: place.place_id,
+        description: `${industryMapping} business in ${city || 'Jamaica'}`
+      }
     };
   }
 

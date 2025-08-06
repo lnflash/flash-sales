@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getUserFromStorage } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +50,9 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   // Enrichment states
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichmentData, setEnrichmentData] = useState<any>(null);
+  
+  // Debouncing ref for enrichment
+  const enrichmentTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     ownerName: "",
@@ -84,6 +87,13 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
     if (submissionId) {
       loadSubmission(submissionId);
     }
+    
+    // Cleanup function to clear enrichment timeout
+    return () => {
+      if (enrichmentTimeoutRef.current) {
+        clearTimeout(enrichmentTimeoutRef.current);
+      }
+    };
   }, [submissionId]);
 
   const loadSubmission = async (id: string) => {
@@ -219,22 +229,42 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
       }
 
       // Auto-enrich company data when business name is entered
-      if (name === "ownerName" && value.length > 3) {
-        // Debounce enrichment
-        const timeoutId = setTimeout(async () => {
+      if (name === "ownerName" && value.length > 2) {
+        // Clear previous timeout if exists
+        if (enrichmentTimeoutRef.current) {
+          clearTimeout(enrichmentTimeoutRef.current);
+        }
+        
+        // Set new timeout for debounced enrichment
+        enrichmentTimeoutRef.current = setTimeout(async () => {
+          console.log("Enriching company:", value, "in", formData.territory || "Jamaica");
           setIsEnriching(true);
-          const result = await enrichCompany({
-            name: value,
-            location: formData.territory || "Jamaica",
-          });
-          if (result.success) {
-            setEnrichmentData(result.data);
+          setEnrichmentData(null); // Clear previous data
+          
+          try {
+            const result = await enrichCompany({
+              name: value,
+              location: formData.territory || "Jamaica",
+            });
+            console.log("Enrichment result:", result);
+            
+            if (result.success) {
+              setEnrichmentData(result.data);
+            } else {
+              console.error("Enrichment failed:", result.error);
+            }
+          } catch (error) {
+            console.error("Error during enrichment:", error);
+          } finally {
+            setIsEnriching(false);
           }
-          setIsEnriching(false);
         }, 1000);
-
-        // Cleanup timeout on component unmount or new input
-        return () => clearTimeout(timeoutId);
+      } else if (name === "ownerName" && value.length <= 2) {
+        // Clear enrichment data if business name is too short
+        setEnrichmentData(null);
+        if (enrichmentTimeoutRef.current) {
+          clearTimeout(enrichmentTimeoutRef.current);
+        }
       }
     }
   };

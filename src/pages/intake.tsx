@@ -1,4 +1,4 @@
-import IntakeForm from '@/components/intake/IntakeForm';
+import IntakeFormWithEnrichment from '@/components/intake/IntakeFormWithEnrichment';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useRouter } from 'next/router';
 
@@ -12,7 +12,7 @@ export default function IntakePage() {
   
   return (
     <DashboardLayout title={isEditMode ? "Edit Submission" : "Canvas Form"}>
-      <IntakeForm submissionId={submissionId} />
+      <IntakeFormWithEnrichment submissionId={submissionId} />
     </DashboardLayout>
   );
 }
