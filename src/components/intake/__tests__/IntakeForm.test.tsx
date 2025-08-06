@@ -243,7 +243,7 @@ describe('IntakeForm', () => {
     const signedUpCheckbox = screen.getByLabelText(/Customer Signed Up/i);
 
     // Select signed_up in lead status
-    await userEvent.selectOptions(leadStatusSelect, 'signed_up');
+    await userEvent.selectOptions(leadStatusSelect, 'converted');
 
     // The signed up checkbox should be checked
     await waitFor(() => {
@@ -255,7 +255,7 @@ describe('IntakeForm', () => {
 
     // Lead status should no longer be signed_up
     await waitFor(() => {
-      expect(leadStatusSelect.value).not.toBe('signed_up');
+      expect(leadStatusSelect.value).not.toBe('converted');
     });
   });
 

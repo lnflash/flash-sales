@@ -24,7 +24,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 // Lead status options that should replace the signed up checkbox
-export type LeadStatus = 'canvas' | 'contacted' | 'prospect' | 'opportunity' | 'signed_up';
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'qualified' | 'converted';
 
 // Helper function to determine if a lead is active (created/edited in last 30 days)
 const isActiveLead = (submission: Submission): boolean => {
@@ -54,7 +54,7 @@ const isStaleLead = (submission: Submission): boolean => {
 const getLeadStage = (submission: Submission): LeadStage => {
   // TODO: Once we add the status field, use that instead
   if (submission.signedUp) return 'customer';
-  if (submission.interestLevel >= 4 && submission.packageSeen) return 'opportunity';
+  if (submission.interestLevel >= 4 && submission.packageSeen) return 'qualified';
   if (submission.interestLevel >= 3) return 'qualified';
   if (submission.phoneNumber) return 'contacted';
   return 'new';
@@ -112,7 +112,7 @@ const submissionToWorkflow = (submission: Submission): LeadWorkflow => {
     });
   }
   
-  if (stage === 'qualified' || stage === 'opportunity' || stage === 'customer') {
+  if (stage === 'qualified' || stage === 'customer') {
     workflow.stageHistory.push({
       fromStage: 'contacted',
       toStage: 'qualified',
@@ -121,10 +121,10 @@ const submissionToWorkflow = (submission: Submission): LeadWorkflow => {
     });
   }
   
-  if (stage === 'opportunity' || stage === 'customer') {
+  if (stage === 'qualified' || stage === 'customer') {
     workflow.stageHistory.push({
       fromStage: 'qualified',
-      toStage: 'opportunity',
+      toStage: 'qualified',
       transitionDate: submission.timestamp,
       performedBy: submission.username || 'System',
     });
@@ -132,7 +132,7 @@ const submissionToWorkflow = (submission: Submission): LeadWorkflow => {
   
   if (stage === 'customer') {
     workflow.stageHistory.push({
-      fromStage: 'opportunity',
+      fromStage: 'qualified',
       toStage: 'customer',
       transitionDate: submission.timestamp,
       performedBy: submission.username || 'System',
@@ -150,7 +150,7 @@ const submissionToWorkflow = (submission: Submission): LeadWorkflow => {
     case 'qualified':
       workflow.nextActions = ['Schedule product demo', 'Prepare custom proposal'];
       break;
-    case 'opportunity':
+    case 'qualified':
       workflow.nextActions = ['Finalize proposal', 'Get stakeholder buy-in'];
       break;
     case 'customer':
@@ -401,7 +401,7 @@ export default function LeadsPage() {
           </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {workflows
-              .filter(w => ['contacted', 'qualified', 'opportunity'].includes(w.currentStage))
+              .filter(w => ['contacted', 'qualified', 'qualified'].includes(w.currentStage))
               .slice(0, 2)
               .map(workflow => {
                 const submission = submissions.find(s => s.id === workflow.submissionId) || {

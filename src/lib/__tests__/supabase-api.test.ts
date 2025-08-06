@@ -109,7 +109,7 @@ describe('supabase-api', () => {
       const submission = mapDealToSubmission(deal);
 
       expect(submission.signedUp).toBe(true);
-      expect(submission.leadStatus).toBe('signed_up');
+      expect(submission.leadStatus).toBe('converted');
     });
   });
 

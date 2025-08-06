@@ -45,7 +45,7 @@ export function useOptimizedSubmissions({
           query = query.eq('status', filters.status);
         }
         if (filters.signedUp !== undefined) {
-          query = query.eq('signed_up', filters.signedUp);
+          query = query.eq('converted', filters.signedUp);
         }
         if (filters.territory) {
           query = query.eq('territory', filters.territory);
@@ -151,7 +151,7 @@ export function useOptimizedSubmissionStats(filters: UseOptimizedSubmissionsOpti
           supabase
             .from('deals')
             .select('*', { count: 'exact', head: true })
-            .eq('signed_up', true)
+            .eq('converted', true)
             .match(filters.username ? { username: filters.username } : {}),
           // Average interest level
           supabase

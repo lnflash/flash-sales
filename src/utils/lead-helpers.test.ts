@@ -180,7 +180,7 @@ describe('Lead Helper Functions', () => {
 
 describe('Lead Status Mapping', () => {
   it('should correctly map lead status values', () => {
-    const leadStatuses: LeadStatus[] = ['canvas', 'contacted', 'prospect', 'opportunity', 'signed_up'];
+    const leadStatuses: LeadStatus[] = ['new', 'contacted', 'qualified', 'qualified', 'converted'];
     
     leadStatuses.forEach(status => {
       expect(status).toMatch(/^(canvas|contacted|prospect|opportunity|signed_up)$/);
@@ -189,11 +189,11 @@ describe('Lead Status Mapping', () => {
 
   it('should handle lead status display names', () => {
     const statusDisplayMap: Record<LeadStatus, string> = {
-      'canvas': 'Canvas',
+      'new': 'Canvas',
       'contacted': 'Contacted',
-      'prospect': 'Prospect',
-      'opportunity': 'Opportunity',
-      'signed_up': 'Signed Up'
+      'qualified': 'Prospect',
+      'qualified': 'Opportunity',
+      'converted': 'Signed Up'
     };
 
     Object.entries(statusDisplayMap).forEach(([status, displayName]) => {

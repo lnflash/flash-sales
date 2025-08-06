@@ -85,19 +85,19 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
         cell: (info) => {
           const submission = info.row.original;
           const status = info.getValue() as LeadStatus | undefined;
-          const displayStatus = status || (submission.signedUp ? 'signed_up' : 'canvas');
+          const displayStatus = status || (submission.signedUp ? 'converted' : 'new');
           
           return (
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                displayStatus === 'signed_up'
+                displayStatus === 'converted'
                   ? 'bg-flash-green/10 text-flash-green border border-flash-green/20 dark:bg-flash-green/20 dark:text-flash-green dark:border-flash-green/30'
-                  : displayStatus === 'opportunity'
+                  : displayStatus === 'qualified'
                   ? 'bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-700'
-                  : displayStatus === 'prospect'
-                  ? 'bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
                   : displayStatus === 'contacted'
                   ? 'bg-yellow-100 text-yellow-800 border border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700'
+                  : displayStatus === 'new'
+                  ? 'bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
                   : 'bg-gray-100 text-light-text-secondary border border-light-border dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600'
               }`}
             >
@@ -205,7 +205,7 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
               Showing {data.length} of {totalItems || data.length} submissions
             </div>
             {data.map((submission) => {
-              const displayStatus = submission.leadStatus || (submission.signedUp ? 'signed_up' : 'canvas');
+              const displayStatus = submission.leadStatus || (submission.signedUp ? 'converted' : 'new');
               
               return (
                 <div key={submission.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-light-border dark:border-gray-700 overflow-hidden">
@@ -221,14 +221,14 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                       </div>
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          displayStatus === 'signed_up'
+                          displayStatus === 'converted'
                             ? 'bg-flash-green/10 text-flash-green border border-flash-green/20'
-                            : displayStatus === 'opportunity'
+                            : displayStatus === 'qualified'
                             ? 'bg-purple-100 text-purple-800 border border-purple-300'
-                            : displayStatus === 'prospect'
-                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
                             : displayStatus === 'contacted'
                             ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                            : displayStatus === 'new'
+                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
                             : 'bg-gray-100 text-light-text-secondary border border-light-border'
                         }`}
                       >

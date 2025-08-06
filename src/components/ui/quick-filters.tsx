@@ -33,11 +33,11 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const statusOptions = [
-    { value: 'canvas', label: 'Canvas', color: 'bg-gray-100 text-gray-800' },
+    { value: 'new', label: 'Canvas', color: 'bg-gray-100 text-gray-800' },
     { value: 'contacted', label: 'Contacted', color: 'bg-blue-100 text-blue-800' },
-    { value: 'prospect', label: 'Prospect', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'opportunity', label: 'Opportunity', color: 'bg-purple-100 text-purple-800' },
-    { value: 'signed_up', label: 'Signed Up', color: 'bg-green-100 text-green-800' }
+    { value: 'qualified', label: 'Prospect', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'qualified', label: 'Opportunity', color: 'bg-purple-100 text-purple-800' },
+    { value: 'converted', label: 'Signed Up', color: 'bg-green-100 text-green-800' }
   ];
 
   const dateRangeOptions = [

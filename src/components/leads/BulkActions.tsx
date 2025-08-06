@@ -76,7 +76,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
         `"${sub.ownerName}"`,
         `"${sub.phoneNumber}"`,
         `"${sub.interestLevel}"`,
-        `"${sub.leadStatus || 'canvas'}"`,
+        `"${sub.leadStatus || 'new'}"`,
         `"${new Date(sub.timestamp).toLocaleDateString()}"`
       ].join(','))
     ].join('\n');
@@ -141,7 +141,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 {showStatusMenu && (
                   <div className="absolute bottom-full mb-2 left-0 bg-popover rounded-lg shadow-lg border border-border p-2 min-w-[200px]">
                     <div className="space-y-1">
-                      {['canvas', 'contacted', 'prospect', 'opportunity', 'signed_up'].map(status => (
+                      {['new', 'contacted', 'qualified', 'qualified', 'converted'].map(status => (
                         <button
                           key={status}
                           onClick={() => handleBulkStatusUpdate(status)}

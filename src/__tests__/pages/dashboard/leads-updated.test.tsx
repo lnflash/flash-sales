@@ -98,7 +98,7 @@ describe('LeadsPage - Updated Tests', () => {
       ownerName: 'Recent Business',
       phoneNumber: '1234567890',
       interestLevel: 8,
-      leadStatus: 'canvas',
+      leadStatus: 'new',
       username: 'testuser',
       territory: 'Kingston',
       timestamp: new Date().toISOString()
@@ -118,7 +118,7 @@ describe('LeadsPage - Updated Tests', () => {
       ownerName: 'Old Business',
       phoneNumber: '5555555555',
       interestLevel: 5,
-      leadStatus: 'canvas',
+      leadStatus: 'new',
       username: 'testuser',
       territory: 'Kingston',
       timestamp: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString()

@@ -25,8 +25,8 @@ export default function PerformanceSnapshot({ submissions }: PerformanceSnapshot
     new Date(s.timestamp) >= twoWeeksAgo && new Date(s.timestamp) < oneWeekAgo
   );
   
-  const thisWeekSignups = thisWeekSubmissions.filter(s => s.leadStatus === 'signed_up').length;
-  const lastWeekSignups = lastWeekSubmissions.filter(s => s.leadStatus === 'signed_up').length;
+  const thisWeekSignups = thisWeekSubmissions.filter(s => s.leadStatus === 'converted').length;
+  const lastWeekSignups = lastWeekSubmissions.filter(s => s.leadStatus === 'converted').length;
   
   const thisWeekContacts = thisWeekSubmissions.length;
   const lastWeekContacts = lastWeekSubmissions.length;

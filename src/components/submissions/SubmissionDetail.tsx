@@ -144,14 +144,14 @@ export default function SubmissionDetail({
             <div className="flex items-center mt-2 md:mt-0">
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  submission.leadStatus === 'signed_up' || submission.signedUp
+                  submission.leadStatus === 'converted' || submission.signedUp
                     ? 'bg-flash-green/10 text-flash-green border border-flash-green/20'
-                    : submission.leadStatus === 'opportunity'
+                    : submission.leadStatus === 'qualified'
                     ? 'bg-purple-100 text-purple-800 border border-purple-300'
-                    : submission.leadStatus === 'prospect'
-                    ? 'bg-blue-100 text-blue-800 border border-blue-300'
                     : submission.leadStatus === 'contacted'
                     ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                    : submission.leadStatus === 'new'
+                    ? 'bg-blue-100 text-blue-800 border border-blue-300'
                     : 'bg-gray-100 text-light-text-secondary border border-light-border'
                 }`}
               >

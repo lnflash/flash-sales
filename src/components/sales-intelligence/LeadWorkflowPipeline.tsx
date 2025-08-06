@@ -14,7 +14,7 @@ const STAGES: { key: LeadStage; label: string }[] = [
   { key: 'new', label: 'New Leads' },
   { key: 'contacted', label: 'Contacted' },
   { key: 'qualified', label: 'Qualified' },
-  { key: 'opportunity', label: 'Opportunity' },
+  { key: 'qualified', label: 'Opportunity' },
   { key: 'customer', label: 'Customer' },
 ];
 

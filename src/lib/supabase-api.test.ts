@@ -44,7 +44,7 @@ describe('Supabase API - Lead Status', () => {
         decision_makers: 'John Doe',
         interest_level: 4,
         status: 'open',
-        lead_status: 'opportunity' as LeadStatus,
+        lead_status: 'qualified' as LeadStatus,
         specific_needs: 'Needs POS system',
         owner: { email: 'test@getflash.io', username: 'testuser' },
         created_at: '2024-01-01T00:00:00Z'
@@ -59,7 +59,7 @@ describe('Supabase API - Lead Status', () => {
         decisionMakers: 'John Doe',
         interestLevel: 4,
         signedUp: false,
-        leadStatus: 'opportunity',
+        leadStatus: 'qualified',
         specificNeeds: 'Needs POS system',
         username: 'testuser',
         territory: 'Kingston',
@@ -67,22 +67,22 @@ describe('Supabase API - Lead Status', () => {
       };
 
       // Test that the shape matches what we expect
-      expect(expectedSubmission.leadStatus).toBe('opportunity');
+      expect(expectedSubmission.leadStatus).toBe('qualified');
       expect(expectedSubmission.signedUp).toBe(false);
     });
 
-    it('should map status "won" to leadStatus "signed_up" when lead_status is not present', () => {
+    it('should map status "won" to leadStatus "converted" when lead_status is not present', () => {
       const mockDeal = {
         status: 'won',
         lead_status: undefined
       };
 
-      // When status is 'won' and no lead_status, it should map to 'signed_up'
-      const expectedLeadStatus = 'signed_up';
+      // When status is 'won' and no lead_status, it should map to 'converted'
+      const expectedLeadStatus = 'converted';
       const expectedSignedUp = true;
 
       expect(mockDeal.status === 'won').toBe(expectedSignedUp);
-      expect(expectedLeadStatus).toBe('signed_up');
+      expect(expectedLeadStatus).toBe('converted');
     });
   });
 
@@ -108,29 +108,29 @@ describe('Supabase API - Lead Status', () => {
 
     it('should handle lead_status in update submission payload', () => {
       const updateData = {
-        leadStatus: 'opportunity' as LeadStatus,
+        leadStatus: 'qualified' as LeadStatus,
         signedUp: false
       };
 
       // Test that the update would include lead_status field
-      expect(updateData.leadStatus).toBe('opportunity');
+      expect(updateData.leadStatus).toBe('qualified');
       expect(updateData.signedUp).toBe(false);
     });
 
     it('should sync signedUp status when leadStatus is signed_up', () => {
       const submissionData = {
-        leadStatus: 'signed_up' as LeadStatus
+        leadStatus: 'converted' as LeadStatus
       };
 
-      // When leadStatus is 'signed_up', signedUp should be true
-      const expectedSignedUp = submissionData.leadStatus === 'signed_up';
+      // When leadStatus is 'converted', signedUp should be true
+      const expectedSignedUp = submissionData.leadStatus === 'converted';
       expect(expectedSignedUp).toBe(true);
     });
   });
 
   describe('Lead Status Validation', () => {
     it('should accept all valid lead status values', () => {
-      const validStatuses: LeadStatus[] = ['canvas', 'contacted', 'prospect', 'opportunity', 'signed_up'];
+      const validStatuses: LeadStatus[] = ['new', 'contacted', 'qualified', 'qualified', 'converted'];
       
       validStatuses.forEach(status => {
         expect(status).toMatch(/^(canvas|contacted|prospect|opportunity|signed_up)$/);

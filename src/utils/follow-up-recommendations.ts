@@ -103,7 +103,7 @@ export function generateFollowUpRecommendations(context: LeadContext): FollowUpR
       }
       break;
 
-    case 'opportunity':
+    case 'qualified':
       if (daysInStage > 7) {
         recommendations.push({
           id: 'close-urgency',
@@ -198,7 +198,7 @@ export function generateFollowUpRecommendations(context: LeadContext): FollowUpR
   }
 
   // Package not seen but qualified
-  if (!submission.packageSeen && ['qualified', 'opportunity'].includes(workflow.currentStage)) {
+  if (!submission.packageSeen && ['qualified', 'qualified'].includes(workflow.currentStage)) {
     recommendations.push({
       id: 'share-materials',
       type: 'email',

@@ -1,4 +1,4 @@
-export type LeadStage = 'new' | 'contacted' | 'qualified' | 'opportunity' | 'customer' | 'lost';
+export type LeadStage = 'new' | 'contacted' | 'qualified' | 'customer' | 'lost';
 
 export interface LeadQualificationCriteria {
   hasbudget: boolean;
@@ -46,8 +46,7 @@ export interface WorkflowStats {
   conversionRates: {
     newToContacted: number;
     contactedToQualified: number;
-    qualifiedToOpportunity: number;
-    opportunityToCustomer: number;
+    qualifiedToCustomer: number;
     overallConversion: number;
   };
   topPerformers: {

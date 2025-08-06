@@ -12,7 +12,7 @@ function LeadStatusForm() {
 
   const handleLeadStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as LeadStatus;
-    const isSignedUp = value === 'signed_up';
+    const isSignedUp = value === 'converted';
     setFormData({
       leadStatus: value,
       signedUp: isSignedUp
@@ -29,11 +29,11 @@ function LeadStatusForm() {
         data-testid="lead-status-select"
       >
         <option value="">Select Status</option>
-        <option value="canvas">Canvas</option>
+        <option value="new">Canvas</option>
         <option value="contacted">Contacted</option>
-        <option value="prospect">Prospect</option>
-        <option value="opportunity">Opportunity</option>
-        <option value="signed_up">Signed Up</option>
+        <option value="qualified">Prospect</option>
+        <option value="qualified">Opportunity</option>
+        <option value="converted">Signed Up</option>
       </select>
       <div data-testid="signed-up-value">{formData.signedUp.toString()}</div>
     </form>
@@ -62,7 +62,7 @@ describe('Lead Status Form', () => {
     
     const select = screen.getByTestId('lead-status-select');
     
-    await user.selectOptions(select, 'prospect');
+    await user.selectOptions(select, 'qualified');
     
     expect((screen.getByRole('option', { name: 'Prospect' }) as HTMLOptionElement).selected).toBe(true);
   });
@@ -78,7 +78,7 @@ describe('Lead Status Form', () => {
     expect(signedUpDisplay).toHaveTextContent('false');
     
     // Select signed_up status
-    await user.selectOptions(select, 'signed_up');
+    await user.selectOptions(select, 'converted');
     
     // signedUp should now be true
     expect(signedUpDisplay).toHaveTextContent('true');
@@ -92,7 +92,7 @@ describe('Lead Status Form', () => {
     const signedUpDisplay = screen.getByTestId('signed-up-value');
     
     // Test various non-signed_up statuses
-    const statuses = ['canvas', 'contacted', 'prospect', 'opportunity'];
+    const statuses = ['new', 'contacted', 'qualified', 'qualified'];
     
     for (const status of statuses) {
       await user.selectOptions(select, status);
@@ -107,7 +107,7 @@ describe('Lead Status Form', () => {
     const select = screen.getByTestId('lead-status-select');
     
     // Select a status first
-    await user.selectOptions(select, 'prospect');
+    await user.selectOptions(select, 'qualified');
     
     // Then select empty option
     await user.selectOptions(select, '');
@@ -124,34 +124,34 @@ describe('Lead Status Display', () => {
       ).join(' ');
     };
 
-    expect(formatLeadStatus('canvas')).toBe('Canvas');
+    expect(formatLeadStatus('new')).toBe('Canvas');
     expect(formatLeadStatus('contacted')).toBe('Contacted');
-    expect(formatLeadStatus('prospect')).toBe('Prospect');
-    expect(formatLeadStatus('opportunity')).toBe('Opportunity');
-    expect(formatLeadStatus('signed_up')).toBe('Signed Up');
+    expect(formatLeadStatus('qualified')).toBe('Prospect');
+    expect(formatLeadStatus('qualified')).toBe('Opportunity');
+    expect(formatLeadStatus('converted')).toBe('Signed Up');
   });
 
   it('should apply correct styling based on lead status', () => {
     const getStatusClasses = (status: LeadStatus): string => {
       switch (status) {
-        case 'signed_up':
+        case 'converted':
           return 'bg-flash-green/10 text-flash-green border border-flash-green/20';
-        case 'opportunity':
+        case 'qualified':
           return 'bg-purple-100 text-purple-800 border border-purple-300';
-        case 'prospect':
+        case 'qualified':
           return 'bg-blue-100 text-blue-800 border border-blue-300';
         case 'contacted':
           return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
-        case 'canvas':
+        case 'new':
         default:
           return 'bg-gray-100 text-light-text-secondary border border-light-border';
       }
     };
 
-    expect(getStatusClasses('signed_up')).toContain('flash-green');
-    expect(getStatusClasses('opportunity')).toContain('purple');
-    expect(getStatusClasses('prospect')).toContain('blue');
+    expect(getStatusClasses('converted')).toContain('flash-green');
+    expect(getStatusClasses('qualified')).toContain('purple');
+    expect(getStatusClasses('qualified')).toContain('blue');
     expect(getStatusClasses('contacted')).toContain('yellow');
-    expect(getStatusClasses('canvas')).toContain('gray');
+    expect(getStatusClasses('new')).toContain('gray');
   });
 });

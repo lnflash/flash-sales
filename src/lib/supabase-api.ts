@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/supabase/client";
+import { getSupabase } from "@/lib/supabase/client";
+const supabase = getSupabase();
 import { Submission, SubmissionFilters, PaginationState, SortOption, SubmissionStats, SubmissionListResponse } from "@/types/submission";
 import { normalizeSearchTerm } from "@/lib/search-utils";
 
@@ -30,7 +31,7 @@ export function mapDealToSubmission(deal: any): Submission {
   if (deal.lead_status) {
     leadStatus = deal.lead_status;
   } else if (deal.status === "won") {
-    leadStatus = "signed_up";
+    leadStatus = "converted";
   }
 
   // Get metadata from custom_fields first, fallback to metadata
@@ -94,7 +95,7 @@ function buildSupabaseQuery(baseQuery: any, filters?: SubmissionFilters, paginat
       // Also search for boolean values
       if (searchTerm === 'yes' || searchTerm === 'true' || searchTerm === 'signed up') {
         searchConditions.push(`package_seen.eq.true`, `status.eq.won`);
-      } else if (searchTerm === 'no' || searchTerm === 'false' || searchTerm === 'prospect') {
+      } else if (searchTerm === 'no' || searchTerm === 'false' || searchTerm === 'qualified') {
         searchConditions.push(`package_seen.eq.false`, `status.neq.won`);
       }
       
@@ -327,27 +328,88 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
           .select()
           .single();
         
-        if (orgError) throw orgError;
-        organizationId = newOrg.id;
+        if (orgError) {
+          console.error("Organization creation error:", orgError);
+          throw orgError;
+        }
+        if (newOrg) {
+          organizationId = newOrg.id;
+        }
       }
     }
     
-    // Create contact if phone number is provided
+    // Create contact if phone number is provided (even without organization)
     let contactId = null;
-    if (data.phoneNumber && organizationId) {
-      const { data: newContact, error: contactError } = await supabase
-        .from("contacts")
-        .insert({
-          organization_id: organizationId,
-          phone_primary: data.phoneNumber,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+    if (data.phoneNumber || data.email) {
+      // Parse owner name for contact
+      const nameParts = (data.ownerName || "").split(" - ");
+      const contactName = nameParts.length > 1 ? nameParts[1] : nameParts[0];
+      const [firstName, ...lastNameParts] = contactName.split(" ");
+      const lastName = lastNameParts.join(" ") || "Contact";
       
-      if (!contactError && newContact) {
-        contactId = newContact.id;
+      // Check for existing contact by email first
+      if (data.email) {
+        const { data: existingContact } = await supabase
+          .from("contacts")
+          .select("id")
+          .eq("email", data.email)
+          .single();
+        
+        if (existingContact) {
+          contactId = existingContact.id;
+          // Update existing contact with new info
+          await supabase
+            .from("contacts")
+            .update({
+              phone_primary: data.phoneNumber || null,
+              organization_id: organizationId,
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", contactId);
+        }
+      }
+      
+      // Create new contact if not found
+      if (!contactId) {
+        const { data: newContact, error: contactError } = await supabase
+          .from("contacts")
+          .insert({
+            organization_id: organizationId,
+            phone_primary: data.phoneNumber || null,
+            email: data.email || null,
+            first_name: firstName || "Unknown",
+            last_name: lastName,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (contactError) {
+          console.error("Contact creation error:", contactError);
+          // If email constraint error, retry without email
+          if (contactError.code === '23505' && data.email) {
+            const { data: retryContact } = await supabase
+              .from("contacts")
+              .insert({
+                organization_id: organizationId,
+                phone_primary: data.phoneNumber || null,
+                email: null,
+                first_name: firstName || "Unknown",
+                last_name: lastName,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .select()
+              .single();
+            
+            if (retryContact) {
+              contactId = retryContact.id;
+            }
+          }
+        } else if (newContact) {
+          contactId = newContact.id;
+        }
       }
     }
     
@@ -375,13 +437,26 @@ export async function createSubmission(data: Omit<Submission, "id" | "timestamp"
         owner_id: ownerId,
         package_seen: data.packageSeen || false,
         decision_makers: data.decisionMakers || "",
-        interest_level: data.interestLevel || 0,
+        interest_level: data.interestLevel || 3,
         status: data.signedUp ? "won" : "open",
-        // lead_status: data.leadStatus || (data.signedUp ? "signed_up" : undefined), // Temporarily commented until DB migration is applied
+        lead_status: data.leadStatus || (data.signedUp ? "converted" : "new"),
         specific_needs: data.specificNeeds || "",
         stage: "initial_contact",
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        custom_fields: {
+          source: "canvas_form",
+          email: data.email || null,
+          phoneNumber: data.phoneNumber || null,
+          businessType: data.businessType || null,
+          monthlyRevenue: data.monthlyRevenue || null,
+          numberOfEmployees: data.numberOfEmployees || null,
+          yearEstablished: data.yearEstablished || null,
+          currentProcessor: data.currentProcessor || null,
+          painPoints: data.painPoints || [],
+          territory: data.territory || null,
+          username: data.username || null
+        }
       })
       .select(`
         *,
@@ -459,14 +534,44 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
       }
     }
 
-    // Update phone number in contact if changed
-    if (data.phoneNumber !== undefined && currentDeal.primary_contact_id) {
-      const { error: contactError } = await supabase
+    // Handle contact update or creation
+    if ((data.phoneNumber !== undefined || data.email !== undefined) && !currentDeal.primary_contact_id) {
+      // No existing contact, create one
+      const nameParts = (data.ownerName || "").split(" - ");
+      const contactName = nameParts.length > 1 ? nameParts[1] : nameParts[0];
+      const [firstName, ...lastNameParts] = contactName.split(" ");
+      const lastName = lastNameParts.join(" ") || "Contact";
+      
+      const { data: newContact, error: contactError } = await supabase
         .from("contacts")
-        .update({ 
-          phone_primary: data.phoneNumber,
+        .insert({
+          organization_id: currentDeal.organization_id,
+          phone_primary: data.phoneNumber || null,
+          email: data.email || null,
+          first_name: firstName || "Unknown",
+          last_name: lastName,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
+        .select()
+        .single();
+      
+      if (!contactError && newContact) {
+        // Update deal with new contact ID
+        await supabase
+          .from("deals")
+          .update({ primary_contact_id: newContact.id })
+          .eq("id", id);
+      }
+    } else if ((data.phoneNumber !== undefined || data.email !== undefined) && currentDeal.primary_contact_id) {
+      // Update existing contact
+      const updateContactData: any = { updated_at: new Date().toISOString() };
+      if (data.phoneNumber !== undefined) updateContactData.phone_primary = data.phoneNumber;
+      if (data.email !== undefined) updateContactData.email = data.email;
+      
+      const { error: contactError } = await supabase
+        .from("contacts")
+        .update(updateContactData)
         .eq("id", currentDeal.primary_contact_id);
       
       if (contactError) {
@@ -497,9 +602,24 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
     if (data.decisionMakers !== undefined) updateData.decision_makers = data.decisionMakers;
     if (data.interestLevel !== undefined) updateData.interest_level = data.interestLevel;
     if (data.signedUp !== undefined) updateData.status = data.signedUp ? "won" : "open";
-    // if (data.leadStatus !== undefined) updateData.lead_status = data.leadStatus; // Temporarily commented until DB migration is applied
+    if (data.leadStatus !== undefined) updateData.lead_status = data.leadStatus;
     if (data.specificNeeds !== undefined) updateData.specific_needs = data.specificNeeds;
 
+    // Update custom_fields with additional data
+    if (Object.keys(updateData).length > 0 || data.email !== undefined || data.territory !== undefined) {
+      const customFields: any = {
+        source: "canvas_form",
+        lastUpdated: new Date().toISOString()
+      };
+      
+      if (data.email !== undefined) customFields.email = data.email;
+      if (data.phoneNumber !== undefined) customFields.phoneNumber = data.phoneNumber;
+      if (data.territory !== undefined) customFields.territory = data.territory;
+      if (data.username !== undefined) customFields.username = data.username;
+      
+      updateData.custom_fields = customFields;
+    }
+    
     const { data: updatedDeal, error } = await supabase
       .from("deals")
       .update({

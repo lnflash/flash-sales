@@ -18,6 +18,7 @@ import { enrichCompany, enrichPerson, enrichPhoneNumber } from "@/services/data-
 interface FormData {
   ownerName: string;
   phoneNumber: string;
+  email: string;
   packageSeen: boolean;
   decisionMakers: string;
   interestLevel: number;
@@ -53,6 +54,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
   const [formData, setFormData] = useState<FormData>({
     ownerName: "",
     phoneNumber: "",
+    email: "",
     packageSeen: false,
     decisionMakers: "",
     interestLevel: 3,
@@ -91,6 +93,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
       setFormData({
         ownerName: submission.ownerName || "",
         phoneNumber: submission.phoneNumber || "",
+        email: submission.email || "",
         packageSeen: submission.packageSeen || false,
         decisionMakers: submission.decisionMakers || "",
         interestLevel: submission.interestLevel || 3,
@@ -114,6 +117,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
     setFormData({
       ownerName: submission.ownerName || "",
       phoneNumber: submission.phoneNumber || "",
+      email: submission.email || "",
       packageSeen: submission.packageSeen || false,
       decisionMakers: submission.decisionMakers || "",
       interestLevel: submission.interestLevel || 3,
@@ -135,6 +139,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
     setFormData({
       ownerName: "",
       phoneNumber: "",
+      email: "",
       packageSeen: false,
       decisionMakers: "",
       interestLevel: 3,
@@ -175,7 +180,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else if (name === "leadStatus") {
       // Sync signedUp field when leadStatus changes
-      const isSignedUp = value === "signed_up";
+      const isSignedUp = value === "converted";
       setFormData((prev) => ({ 
         ...prev, 
         [name]: value as LeadStatus,
@@ -204,6 +209,17 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
             }
           });
         }
+      }
+      
+      // Validate email
+      if (name === "email" && value) {
+        const validation = validateEmail(value);
+        setEmailValidation({
+          isValid: validation.isValid,
+          message: validation.isValid 
+            ? "Valid email" 
+            : validation.errors?.[0]
+        });
       }
       
       // Auto-enrich company data when business name is entered
@@ -268,6 +284,7 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
         setFormData({
           ownerName: "",
           phoneNumber: "",
+          email: "",
           packageSeen: false,
           decisionMakers: "",
           interestLevel: 3,
@@ -465,6 +482,39 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
               </div>
             </div>
 
+            {/* Email */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-light-text-secondary mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="e.g., owner@business.com"
+                  className={`w-full ${!emailValidation.isValid && formData.email ? 'border-red-500' : ''}`}
+                />
+                {emailValidation.message && formData.email && (
+                  <div className={`mt-1 text-xs ${emailValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                    {emailValidation.isValid ? (
+                      <span className="flex items-center">
+                        <CheckCircleIcon className="w-3 h-3 mr-1" />
+                        Valid email
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <ExclamationCircleIcon className="w-3 h-3 mr-1" />
+                        {emailValidation.message}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Territory */}
             <div>
               <label htmlFor="territory" className="block text-sm font-medium text-light-text-secondary mb-2">
@@ -587,11 +637,10 @@ export default function IntakeForm({ submissionId }: IntakeFormProps) {
                 className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary rounded-md border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               >
                 <option value="">Select Status</option>
-                <option value="canvas">Canvas</option>
+                <option value="new">New</option>
                 <option value="contacted">Contacted</option>
-                <option value="prospect">Prospect</option>
-                <option value="opportunity">Opportunity</option>
-                <option value="signed_up">Signed Up</option>
+                <option value="qualified">Qualified</option>
+                <option value="converted">Converted</option>
               </select>
               <p className="mt-1 text-xs text-light-text-tertiary dark:text-dark-text-tertiary">
                 Select the current status of this lead

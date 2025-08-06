@@ -113,7 +113,7 @@ export function determineLeadStage(
   }
 
   if (qualificationScore >= 80 && submission.interestLevel >= 4) {
-    return 'opportunity';
+    return 'qualified';
   }
 
   if (qualificationScore >= 60) {
@@ -151,7 +151,7 @@ export function getNextActions(workflow: LeadWorkflow): string[] {
       actions.push('Address specific pain points');
       break;
 
-    case 'opportunity':
+    case 'qualified':
       actions.push('Finalize proposal');
       actions.push('Negotiate terms');
       actions.push('Get buy-in from all stakeholders');
@@ -192,8 +192,7 @@ export function getStageColor(stage: LeadStage): string {
   const colors: Record<LeadStage, string> = {
     new: 'bg-gray-100 text-gray-800 border-gray-300',
     contacted: 'bg-blue-100 text-blue-800 border-blue-300',
-    qualified: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-    opportunity: 'bg-purple-100 text-purple-800 border-purple-300',
+    qualified: 'bg-purple-100 text-purple-800 border-purple-300',
     customer: 'bg-green-100 text-green-800 border-green-300',
     lost: 'bg-red-100 text-red-800 border-red-300',
   };
@@ -206,7 +205,6 @@ export function getStageIcon(stage: LeadStage): string {
     new: '🆕',
     contacted: '📞',
     qualified: '✅',
-    opportunity: '💼',
     customer: '🎉',
     lost: '❌',
   };

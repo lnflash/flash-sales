@@ -1,5 +1,5 @@
-// Lead status options
-export type LeadStatus = 'canvas' | 'contacted' | 'prospect' | 'opportunity' | 'signed_up';
+// Lead status options - must match database constraint
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'converted';
 
 // Mirror the intake form submission type
 export interface Submission {

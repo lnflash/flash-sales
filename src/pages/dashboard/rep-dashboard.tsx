@@ -24,16 +24,15 @@ import PerformanceSnapshot from '@/components/rep-dashboard/PerformanceSnapshot'
 import RepFilter from '@/components/rep-dashboard/RepFilter';
 
 // Lead status priority order
-const leadStatusOrder: LeadStatus[] = ['opportunity', 'prospect', 'contacted', 'canvas', 'signed_up'];
+const leadStatusOrder: LeadStatus[] = ['new', 'contacted', 'qualified', 'converted'];
 
 // Group submissions by lead status
 const groupByLeadStatus = (submissions: Submission[]) => {
   const groups: Record<LeadStatus | 'unassigned', Submission[]> = {
-    canvas: [],
+    new: [],
     contacted: [],
-    prospect: [],
-    opportunity: [],
-    signed_up: [],
+    qualified: [],
+    converted: [],
     unassigned: []
   };
 
@@ -60,8 +59,8 @@ const getFollowUpPriority = (submission: Submission): 'urgent' | 'high' | 'mediu
     (new Date().getTime() - new Date(submission.timestamp).getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  if (submission.leadStatus === 'opportunity' && daysSinceContact > 2) return 'urgent';
-  if (submission.leadStatus === 'prospect' && daysSinceContact > 5) return 'high';
+  if (submission.leadStatus === 'qualified' && daysSinceContact > 2) return 'urgent';
+  if (submission.leadStatus === 'qualified' && daysSinceContact > 5) return 'high';
   if (submission.interestLevel >= 4 && daysSinceContact > 3) return 'high';
   if (daysSinceContact > 7) return 'medium';
   return 'low';
@@ -164,29 +163,28 @@ export default function RepDashboard() {
   // Calculate stats
   const stats = {
     totalLeads: submissions.length,
-    hotLeads: submissions.filter(s => s.interestLevel >= 4 && s.leadStatus !== 'signed_up').length,
+    hotLeads: submissions.filter(s => s.interestLevel >= 4 && s.leadStatus !== 'converted').length,
     needsFollowUp: submissions.filter(s => {
       const priority = getFollowUpPriority(s);
       return priority === 'urgent' || priority === 'high';
     }).length,
     closedThisMonth: submissions.filter(s => {
-      if (s.leadStatus !== 'signed_up') return false;
+      if (s.leadStatus !== 'converted') return false;
       const submissionDate = new Date(s.timestamp);
       const now = new Date();
       return submissionDate.getMonth() === now.getMonth() && 
              submissionDate.getFullYear() === now.getFullYear();
     }).length,
     conversionRate: submissions.length > 0 
-      ? Math.round((submissions.filter(s => s.leadStatus === 'signed_up').length / submissions.length) * 100)
+      ? Math.round((submissions.filter(s => s.leadStatus === 'converted').length / submissions.length) * 100)
       : 0
   };
 
   const leadStatusConfig = {
-    canvas: { color: 'gray', label: 'Canvas', icon: MapPinIcon },
+    new: { color: 'blue', label: 'New', icon: MapPinIcon },
     contacted: { color: 'yellow', label: 'Contacted', icon: PhoneIcon },
-    prospect: { color: 'blue', label: 'Prospect', icon: DocumentTextIcon },
-    opportunity: { color: 'purple', label: 'Opportunity', icon: FireIcon },
-    signed_up: { color: 'green', label: 'Signed Up', icon: CheckCircleIcon }
+    qualified: { color: 'purple', label: 'Qualified', icon: DocumentTextIcon },
+    converted: { color: 'green', label: 'Converted', icon: CheckCircleIcon }
   };
 
   // Show loading state while user data is loading
@@ -350,7 +348,7 @@ export default function RepDashboard() {
 
       {/* Leads by Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {leadStatusOrder.filter(status => status !== 'signed_up').map(status => {
+        {leadStatusOrder.filter(status => status !== 'converted').map(status => {
           const leads = groupedSubmissions[status];
           const config = leadStatusConfig[status];
           
