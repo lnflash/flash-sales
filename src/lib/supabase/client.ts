@@ -55,6 +55,16 @@ const createSupabaseClient = () => {
         eventsPerSecond: 10,
       },
     },
+    global: {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      }
+    },
+    db: {
+      schema: 'public'
+    }
   });
 };
 
@@ -72,29 +82,10 @@ export const getSupabase = () => {
 // Export for backward compatibility
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
   get: (target, prop) => {
-    const client = getSupabase();
-    return client[prop as keyof typeof client];
+    const instance = getSupabase();
+    return instance[prop as keyof typeof instance];
   }
 });
 
-// Re-export from runtime-config
-export { isSupabaseConfigured } from './runtime-config';
-
-// Hook for real-time subscriptions
-export function useRealtimeSubscription<T extends keyof Database['public']['Tables']>(
-  table: T,
-  callback: (payload: any) => void
-) {
-  const channel = supabase
-    .channel(`public:${table}`)
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: table as string },
-      callback
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}
+// Alias for getSupabase - used in newer code
+export const getSupabaseClient = getSupabase;

@@ -548,7 +548,7 @@ class DataEnrichmentService {
         .select('data, timestamp')
         .eq('type', type)
         .eq('key', key)
-        .single();
+        .maybeSingle();
       
       if (error || !data) {
         return null;
