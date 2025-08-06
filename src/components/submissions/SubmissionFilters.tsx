@@ -197,7 +197,7 @@ export default function SubmissionFiltersComponent({ filters, onFilterChange, on
           <div>
             <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">Sales Rep</label>
             <select
-              className="w-full px-3 py-2 bg-white rounded-md text-light-text-primary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+              className="w-full px-3 py-2 bg-white dark:bg-gray-700 rounded-md text-light-text-primary dark:text-white border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
               value={filters.username || ""}
               onChange={(e) =>
                 onFilterChange({
@@ -216,6 +216,7 @@ export default function SubmissionFiltersComponent({ filters, onFilterChange, on
               <option value="tamoy">tamoy</option>
               <option value="jodi">jodi</option>
               <option value="flash">flash</option>
+              <option value="ally_oops">ally_oops</option>
               <option value="Unassigned">Unassigned</option>
             </select>
           </div>
@@ -224,10 +225,10 @@ export default function SubmissionFiltersComponent({ filters, onFilterChange, on
             <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-400 mb-2">Date Range</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-light-text-tertiary mb-1">From</label>
+                <label className="block text-xs text-light-text-tertiary dark:text-gray-500 mb-1">From</label>
                 <input
                   type="date"
-                  className="w-full px-3 py-2 bg-white rounded-md text-light-text-primary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 rounded-md text-light-text-primary dark:text-white border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
                   value={filters.dateRange?.start || ""}
                   onChange={(e) =>
                     onFilterChange({
@@ -241,10 +242,10 @@ export default function SubmissionFiltersComponent({ filters, onFilterChange, on
                 />
               </div>
               <div>
-                <label className="block text-xs text-light-text-tertiary mb-1">To</label>
+                <label className="block text-xs text-light-text-tertiary dark:text-gray-500 mb-1">To</label>
                 <input
                   type="date"
-                  className="w-full px-3 py-2 bg-white rounded-md text-light-text-primary border border-light-border focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 rounded-md text-light-text-primary dark:text-white border border-light-border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-flash-green focus:border-flash-green"
                   value={filters.dateRange?.end || ""}
                   onChange={(e) =>
                     onFilterChange({
