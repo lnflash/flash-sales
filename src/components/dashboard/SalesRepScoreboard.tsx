@@ -1,20 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { 
-  TrophyIcon, 
-  ChevronDownIcon, 
-  ChevronUpIcon,
-  ArrowPathIcon,
-  FireIcon,
-  SparklesIcon
-} from '@heroicons/react/24/outline';
-import { SalesRepStats } from '@/utils/rep-stats-calculator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { TrophyIcon, ChevronDownIcon, ChevronUpIcon, ArrowPathIcon, FireIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { SalesRepStats } from "@/utils/rep-stats-calculator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 interface SalesRepScoreboardProps {
   data: SalesRepStats[];
@@ -22,32 +15,30 @@ interface SalesRepScoreboardProps {
 }
 
 export default function SalesRepScoreboard({ data, isLoading = false }: SalesRepScoreboardProps) {
-  const [sortBy, setSortBy] = useState<keyof SalesRepStats>('totalSubmissions');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortBy, setSortBy] = useState<keyof SalesRepStats>("totalSubmissions");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const handleSort = (column: keyof SalesRepStats) => {
     if (column === sortBy) {
-      setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
+      setSortDirection(sortDirection === "desc" ? "asc" : "desc");
     } else {
       setSortBy(column);
-      setSortDirection('desc');
+      setSortDirection("desc");
     }
   };
 
   const sortedData = [...data].sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
-    
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-      return sortDirection === 'desc' ? bValue - aValue : aValue - bValue;
+
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      return sortDirection === "desc" ? bValue - aValue : aValue - bValue;
     }
-    
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection === 'desc' 
-        ? bValue.localeCompare(aValue) 
-        : aValue.localeCompare(bValue);
+
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sortDirection === "desc" ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);
     }
-    
+
     return 0;
   });
 
@@ -61,10 +52,12 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
 
   // Get performance badge
   const getPerformanceBadge = (rate: number) => {
-    if (rate >= 80) return { label: 'Excellent', color: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700' };
-    if (rate >= 60) return { label: 'Good', color: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-700' };
-    if (rate >= 40) return { label: 'Average', color: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700' };
-    return { label: 'Needs Improvement', color: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-200 dark:border-red-700' };
+    if (rate >= 80)
+      return { label: "Excellent", color: "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700" };
+    if (rate >= 60) return { label: "Good", color: "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-700" };
+    if (rate >= 40)
+      return { label: "Average", color: "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" };
+    return { label: "Needs Improvement", color: "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-200 dark:border-red-700" };
   };
 
   if (isLoading) {
@@ -95,9 +88,9 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-light-text-primary dark:text-white">Sales Rep Scoreboard</CardTitle>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="text-light-text-secondary dark:text-gray-400 hover:text-flash-green hover:bg-light-bg-secondary dark:hover:bg-gray-700"
           >
             <ArrowPathIcon className="w-4 h-4 mr-1" />
@@ -112,46 +105,42 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
               <tr className="border-b border-light-border dark:border-gray-700">
                 <th className="pb-3 text-left">
                   <button
-                    onClick={() => handleSort('username')}
+                    onClick={() => handleSort("username")}
                     className="flex items-center text-xs font-medium text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors"
                   >
                     Rep Name
-                    {sortBy === 'username' && (
-                      sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
-                    )}
+                    {sortBy === "username" &&
+                      (sortDirection === "desc" ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />)}
                   </button>
                 </th>
                 <th className="pb-3 text-center">
                   <button
-                    onClick={() => handleSort('totalSubmissions')}
+                    onClick={() => handleSort("totalSubmissions")}
                     className="flex items-center justify-center text-xs font-medium text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors mx-auto"
                   >
                     Submissions
-                    {sortBy === 'totalSubmissions' && (
-                      sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
-                    )}
+                    {sortBy === "totalSubmissions" &&
+                      (sortDirection === "desc" ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />)}
                   </button>
                 </th>
                 <th className="pb-3 text-center">
                   <button
-                    onClick={() => handleSort('signedUp')}
+                    onClick={() => handleSort("signedUp")}
                     className="flex items-center justify-center text-xs font-medium text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors mx-auto"
                   >
                     Signed Up
-                    {sortBy === 'signedUp' && (
-                      sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
-                    )}
+                    {sortBy === "signedUp" &&
+                      (sortDirection === "desc" ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />)}
                   </button>
                 </th>
                 <th className="pb-3 text-center">
                   <button
-                    onClick={() => handleSort('conversionRate')}
+                    onClick={() => handleSort("conversionRate")}
                     className="flex items-center justify-center text-xs font-medium text-light-text-secondary dark:text-gray-400 hover:text-light-text-primary dark:hover:text-white transition-colors mx-auto"
                   >
                     Conversion
-                    {sortBy === 'conversionRate' && (
-                      sortDirection === 'desc' ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />
-                    )}
+                    {sortBy === "conversionRate" &&
+                      (sortDirection === "desc" ? <ChevronDownIcon className="w-3 h-3 ml-1" /> : <ChevronUpIcon className="w-3 h-3 ml-1" />)}
                   </button>
                 </th>
               </tr>
@@ -160,37 +149,34 @@ export default function SalesRepScoreboard({ data, isLoading = false }: SalesRep
               {sortedData.map((rep, index) => {
                 const performanceBadge = getPerformanceBadge(rep.conversionRate);
                 return (
-                  <tr key={rep.username} className="border-b border-light-border last:border-0 hover:bg-light-bg-secondary transition-colors">
+                  <tr
+                    key={rep.username}
+                    className="border-b border-light-border dark:border-gray-700 last:border-0 hover:bg-light-bg-secondary dark:hover:bg-gray-700/50 transition-colors"
+                  >
                     <td className="py-4">
                       <div className="flex items-center gap-3">
                         {getMedalIcon(index)}
                         <div>
-                          <p className="font-medium text-light-text-primary">{rep.username}</p>
+                          <p className="font-medium text-light-text-primary dark:text-white">{rep.username}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            {rep.conversionRate > 70 && (
-                              <FireIcon className="w-3 h-3 text-orange-500" />
-                            )}
-                            {rep.avgInterestLevel > 4 && (
-                              <SparklesIcon className="w-3 h-3 text-purple-500" />
-                            )}
+                            {rep.conversionRate > 70 && <FireIcon className="w-3 h-3 text-orange-500" />}
+                            {rep.avgInterestLevel > 4 && <SparklesIcon className="w-3 h-3 text-purple-500" />}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 text-center">
-                      <p className="text-sm font-semibold text-light-text-primary">{rep.totalSubmissions}</p>
+                      <p className="text-sm font-semibold text-light-text-primary dark:text-white">{rep.totalSubmissions}</p>
                     </td>
                     <td className="py-4 text-center">
-                      <p className="text-sm font-semibold text-light-text-primary">{rep.signedUp}</p>
+                      <p className="text-sm font-semibold text-light-text-primary dark:text-white">{rep.signedUp}</p>
                     </td>
                     <td className="py-4">
                       <div className="flex flex-col items-center gap-2">
                         <div className="w-full max-w-[100px]">
                           <Progress value={rep.conversionRate} className="h-2" />
                         </div>
-                        <Badge className={cn("text-xs", performanceBadge.color)}>
-                          {rep.conversionRate.toFixed(0)}%
-                        </Badge>
+                        <Badge className={cn("text-xs", performanceBadge.color)}>{rep.conversionRate.toFixed(0)}%</Badge>
                       </div>
                     </td>
                   </tr>
