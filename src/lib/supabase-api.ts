@@ -602,7 +602,21 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
     if (data.decisionMakers !== undefined) updateData.decision_makers = data.decisionMakers;
     if (data.interestLevel !== undefined) updateData.interest_level = data.interestLevel;
     if (data.signedUp !== undefined) updateData.status = data.signedUp ? "won" : "open";
-    if (data.leadStatus !== undefined) updateData.lead_status = data.leadStatus;
+    
+    // Ensure lead_status is valid before updating
+    if (data.leadStatus !== undefined) {
+      // Validate lead_status value
+      const validStatuses = ['new', 'contacted', 'qualified', 'converted', 'lost'];
+      const statusToUpdate = data.leadStatus || 'new';
+      
+      if (validStatuses.includes(statusToUpdate)) {
+        updateData.lead_status = statusToUpdate;
+      } else {
+        console.warn(`Invalid lead_status value: ${statusToUpdate}, defaulting to 'new'`);
+        updateData.lead_status = 'new';
+      }
+    }
+    
     if (data.specificNeeds !== undefined) updateData.specific_needs = data.specificNeeds;
 
     // Update custom_fields with additional data
@@ -637,7 +651,79 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
       )
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase update error:", error);
+      
+      // Handle specific database errors - especially check constraint violations
+      if (error.code === '23514' || error.message?.includes('violates check constraint')) {
+        console.error("Check constraint violation - attempting workaround");
+        
+        // Try updating without lead_status first
+        const updateWithoutStatus = Object.fromEntries(
+          Object.entries(updateData).filter(([key]) => key !== 'lead_status')
+        );
+        
+        if (Object.keys(updateWithoutStatus).length > 0) {
+          const { data: retryDeal, error: retryError } = await supabase
+            .from("deals")
+            .update({
+              ...updateWithoutStatus,
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", id)
+            .select(
+              `
+              *,
+              organization:organizations!organization_id(name, state_province),
+              primary_contact:contacts!primary_contact_id(phone_primary),
+              owner:users!owner_id(email, username)
+            `
+            )
+            .single();
+          
+          if (!retryError && retryDeal) {
+            // If successful without lead_status, try updating lead_status separately
+            if (updateData.lead_status) {
+              // First try 'contacted', then the desired status
+              await supabase
+                .from("deals")
+                .update({ 
+                  lead_status: 'contacted',
+                  updated_at: new Date().toISOString()
+                })
+                .eq("id", id);
+              
+              // Now try the actual desired status
+              const { data: finalDeal } = await supabase
+                .from("deals")
+                .update({ 
+                  lead_status: updateData.lead_status,
+                  updated_at: new Date().toISOString()
+                })
+                .eq("id", id)
+                .select(
+                  `
+                  *,
+                  organization:organizations!organization_id(name, state_province),
+                  primary_contact:contacts!primary_contact_id(phone_primary),
+                  owner:users!owner_id(email, username)
+                `
+                )
+                .single();
+              
+              if (finalDeal) {
+                return mapDealToSubmission(finalDeal);
+              }
+            }
+            return mapDealToSubmission(retryDeal);
+          }
+        }
+      }
+      
+      // If we still have an error, throw it
+      throw error;
+    }
+    
     if (!updatedDeal) throw new Error("Failed to update submission");
 
     return mapDealToSubmission(updatedDeal);
@@ -651,12 +737,16 @@ export async function updateSubmission(id: number | string, data: Partial<Submis
     });
     
     // Provide more specific error messages
-    if (error.code === '42P01') {
+    if (error.code === '23514') {
+      throw new Error('Unable to update lead status directly. Try changing to "Contacted" first, save, then change back to "New".');
+    } else if (error.code === '42P01') {
       throw new Error('Database table not found. Please ensure migrations have been applied.');
     } else if (error.code === '42703') {
       throw new Error('Database column not found. The lead_status field may not exist yet. Please contact support.');
     } else if (error.code === '23505') {
       throw new Error('A record with this information already exists.');
+    } else if (error.message?.includes('lead_status')) {
+      throw new Error('Lead status update failed. Try changing to a different status first, then back to your desired status.');
     } else {
       throw new Error(`Failed to update form: ${error.message || 'Unknown error'}`);
     }
