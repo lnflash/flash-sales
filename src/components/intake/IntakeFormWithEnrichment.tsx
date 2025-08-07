@@ -24,11 +24,13 @@ import { LeadStatus, Submission } from "@/types/submission";
 import SubmissionSearch from "./SubmissionSearch";
 import { useMobileMenu } from "@/contexts/MobileMenuContext";
 import { validatePhoneNumber, validateEmail } from "@/utils/validation";
+import { PhoneNumbersFieldWithRef, PhoneEntry } from "./PhoneNumbersField";
 
 interface FormData {
   ownerName: string; // This will be the business name
   businessOwner: string; // New field for the owner's name
-  phoneNumber: string;
+  phoneNumber: string; // Legacy single phone - will be converted to phoneNumbers
+  phoneNumbers: PhoneEntry[]; // New array of phone numbers with labels
   email: string;
   packageSeen: boolean;
   decisionMakers: string;
@@ -87,13 +89,15 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
   const [enrichmentData, setEnrichmentData] = useState<EnrichmentData | null>(null);
   const [enrichmentError, setEnrichmentError] = useState<string | null>(null);
   
-  // Debouncing ref for enrichment
+  // Refs
   const enrichmentTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const phoneFieldRef = useRef<{ addEnrichmentPhone: (phone: string, label?: string) => void } | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     ownerName: "",
     businessOwner: "",
-    phoneNumber: "",
+    phoneNumber: "", // Keep for backward compatibility
+    phoneNumbers: [], // New array field
     email: "",
     packageSeen: false,
     decisionMakers: "",
@@ -164,10 +168,21 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
         ownerName = parts[1] || "";
       }
       
+      // Convert legacy phoneNumber to phoneNumbers array
+      let phoneNumbers: PhoneEntry[] = [];
+      if (submission.phoneNumber) {
+        phoneNumbers = [{
+          id: '1',
+          number: submission.phoneNumber,
+          label: 'Primary'
+        }];
+      }
+      
       setFormData({
         ownerName: businessName,
         businessOwner: ownerName,
         phoneNumber: submission.phoneNumber || "",
+        phoneNumbers: phoneNumbers,
         email: submission.email || "",
         packageSeen: submission.packageSeen || false,
         decisionMakers: submission.decisionMakers || "",
@@ -199,10 +214,21 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
       ownerName = parts[1] || "";
     }
     
+    // Convert legacy phoneNumber to phoneNumbers array
+    let phoneNumbers: PhoneEntry[] = [];
+    if (submission.phoneNumber) {
+      phoneNumbers = [{
+        id: '1',
+        number: submission.phoneNumber,
+        label: 'Primary'
+      }];
+    }
+    
     setFormData({
       ownerName: businessName,
       businessOwner: ownerName,
       phoneNumber: submission.phoneNumber || "",
+      phoneNumbers: phoneNumbers,
       email: submission.email || "",
       packageSeen: submission.packageSeen || false,
       decisionMakers: submission.decisionMakers || "",
@@ -224,6 +250,7 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
       ownerName: "",
       businessOwner: "",
       phoneNumber: "",
+      phoneNumbers: [],
       email: "",
       packageSeen: false,
       decisionMakers: "",
@@ -426,11 +453,17 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
         ? `${formData.ownerName.trim()} - ${formData.businessOwner.trim()}`
         : formData.ownerName.trim();
 
-      // Create submission data without the businessOwner field
-      const { businessOwner, ...dataWithoutOwner } = formData;
+      // Convert phoneNumbers array to single phoneNumber for backward compatibility
+      // Use the first phone number or the one labeled "Primary" if available
+      const primaryPhone = formData.phoneNumbers.find(p => p.label === 'Primary') || formData.phoneNumbers[0];
+      const phoneNumber = primaryPhone?.number || formData.phoneNumber || "";
+
+      // Create submission data without the businessOwner and phoneNumbers fields
+      const { businessOwner, phoneNumbers, ...dataWithoutExtra } = formData;
       const submissionData = {
-        ...dataWithoutOwner,
-        ownerName: combinedOwnerName // Override with combined value
+        ...dataWithoutExtra,
+        ownerName: combinedOwnerName, // Override with combined value
+        phoneNumber: phoneNumber // Use primary phone number
       };
 
       if (isEditMode && submissionId) {
@@ -612,7 +645,11 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
                               </div>
                               <button
                                 type="button"
-                                onClick={() => setFormData(prev => ({ ...prev, phoneNumber: enrichmentData.contact?.phone || "" }))}
+                                onClick={() => {
+                                  if (phoneFieldRef.current && enrichmentData.contact?.phone) {
+                                    phoneFieldRef.current.addEnrichmentPhone(enrichmentData.contact.phone, 'Default');
+                                  }
+                                }}
                                 className="self-start sm:self-auto text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                               >
                                 Use Phone
@@ -700,27 +737,16 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
               </p>
             </div>
 
-            {/* Phone Number */}
+            {/* Phone Numbers - Multiple with Labels */}
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
-                Phone Number
+              <label className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
+                Phone Numbers
               </label>
-              <Input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-                className={`w-full bg-light-background-secondary dark:bg-gray-800 border-light-border dark:border-gray-700 text-light-text-primary dark:text-white ${
-                  phoneValidation.isValid ? "" : "border-red-500"
-                }`}
-                placeholder="e.g., (876) 555-1234"
+              <PhoneNumbersFieldWithRef
+                ref={phoneFieldRef}
+                value={formData.phoneNumbers}
+                onChange={(phones) => setFormData(prev => ({ ...prev, phoneNumbers: phones }))}
               />
-              {phoneValidation.message && (
-                <p className={`mt-1 text-xs ${phoneValidation.isValid ? "text-green-600" : "text-red-600"}`}>
-                  {phoneValidation.message}
-                </p>
-              )}
             </div>
 
             {/* Email */}
