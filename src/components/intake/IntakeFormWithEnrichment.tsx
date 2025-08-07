@@ -26,7 +26,8 @@ import { useMobileMenu } from "@/contexts/MobileMenuContext";
 import { validatePhoneNumber, validateEmail } from "@/utils/validation";
 
 interface FormData {
-  ownerName: string;
+  ownerName: string; // This will be the business name
+  businessOwner: string; // New field for the owner's name
   phoneNumber: string;
   email: string;
   packageSeen: boolean;
@@ -91,11 +92,12 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
 
   const [formData, setFormData] = useState<FormData>({
     ownerName: "",
+    businessOwner: "",
     phoneNumber: "",
     email: "",
     packageSeen: false,
     decisionMakers: "",
-    interestLevel: 3,
+    interestLevel: 1, // Changed default from 3 to 1
     signedUp: false,
     leadStatus: "new",
     specificNeeds: "",
@@ -151,13 +153,25 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
     setIsLoading(true);
     try {
       const submission = await getSubmissionById(id);
+      // Try to split the ownerName if it contains both business and owner
+      let businessName = submission.ownerName || "";
+      let ownerName = "";
+      
+      // Check if ownerName contains " - " separator (legacy format)
+      if (businessName.includes(" - ")) {
+        const parts = businessName.split(" - ");
+        businessName = parts[0];
+        ownerName = parts[1] || "";
+      }
+      
       setFormData({
-        ownerName: submission.ownerName || "",
+        ownerName: businessName,
+        businessOwner: ownerName,
         phoneNumber: submission.phoneNumber || "",
         email: submission.email || "",
         packageSeen: submission.packageSeen || false,
         decisionMakers: submission.decisionMakers || "",
-        interestLevel: submission.interestLevel || 3,
+        interestLevel: submission.interestLevel || 1,
         signedUp: submission.signedUp || false,
         leadStatus: submission.leadStatus,
         specificNeeds: submission.specificNeeds || "",
@@ -174,13 +188,25 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
   };
 
   const handleSubmissionSelect = (submission: Submission) => {
+    // Try to split the ownerName if it contains both business and owner
+    let businessName = submission.ownerName || "";
+    let ownerName = "";
+    
+    // Check if ownerName contains " - " separator (legacy format)
+    if (businessName.includes(" - ")) {
+      const parts = businessName.split(" - ");
+      businessName = parts[0];
+      ownerName = parts[1] || "";
+    }
+    
     setFormData({
-      ownerName: submission.ownerName || "",
+      ownerName: businessName,
+      businessOwner: ownerName,
       phoneNumber: submission.phoneNumber || "",
       email: submission.email || "",
       packageSeen: submission.packageSeen || false,
       decisionMakers: submission.decisionMakers || "",
-      interestLevel: submission.interestLevel || 3,
+      interestLevel: submission.interestLevel || 1,
       signedUp: submission.signedUp || false,
       leadStatus: submission.leadStatus,
       specificNeeds: submission.specificNeeds || "",
@@ -196,11 +222,12 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
     const defaultTerritory = localStorage.getItem(`defaultTerritory_${user?.username}`) || "";
     setFormData({
       ownerName: "",
+      businessOwner: "",
       phoneNumber: "",
       email: "",
       packageSeen: false,
       decisionMakers: "",
-      interestLevel: 3,
+      interestLevel: 1,
       signedUp: false,
       leadStatus: "new",
       specificNeeds: "",
@@ -382,7 +409,7 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
 
     try {
       if (!formData.ownerName.trim()) {
-        setError("Business name and owner is required");
+        setError("Business name is required");
         setIsSubmitting(false);
         return;
       }
@@ -393,14 +420,27 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
         return;
       }
 
+      // Combine business name and owner for the database
+      // Store as "Business Name - Owner Name" if owner is provided
+      const combinedOwnerName = formData.businessOwner.trim() 
+        ? `${formData.ownerName.trim()} - ${formData.businessOwner.trim()}`
+        : formData.ownerName.trim();
+
+      // Create submission data without the businessOwner field
+      const { businessOwner, ...dataWithoutOwner } = formData;
+      const submissionData = {
+        ...dataWithoutOwner,
+        ownerName: combinedOwnerName // Override with combined value
+      };
+
       if (isEditMode && submissionId) {
-        await updateSubmission(submissionId, formData);
+        await updateSubmission(submissionId, submissionData);
         setSuccess(true);
         setTimeout(() => {
           router.push("/dashboard/submissions");
         }, 1500);
       } else {
-        await createSubmission(formData);
+        await createSubmission(submissionData);
         setSuccess(true);
         setTimeout(() => {
           router.push("/dashboard/submissions");
@@ -512,10 +552,10 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            {/* Business Name and Owner */}
+            {/* Business Name - Required */}
             <div>
               <label htmlFor="ownerName" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
-                Business Name and Owner *
+                Business Name *
               </label>
               <Input
                 id="ownerName"
@@ -524,7 +564,7 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
                 value={formData.ownerName}
                 onChange={handleInputChange}
                 className="w-full bg-light-background-secondary dark:bg-gray-800 border-light-border dark:border-gray-700 text-light-text-primary dark:text-white"
-                placeholder="e.g., Earth Elements"
+                placeholder="e.g., Island Grill, NCB, Digicel"
                 required
               />
               
@@ -639,6 +679,25 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
                   </p>
                 </div>
               )}
+            </div>
+
+            {/* Business Owner Name - Optional */}
+            <div>
+              <label htmlFor="businessOwner" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
+                Business Owner Name <span className="text-xs text-light-text-tertiary">(Optional)</span>
+              </label>
+              <Input
+                id="businessOwner"
+                name="businessOwner"
+                type="text"
+                value={formData.businessOwner}
+                onChange={handleInputChange}
+                className="w-full bg-light-background-secondary dark:bg-gray-800 border-light-border dark:border-gray-700 text-light-text-primary dark:text-white"
+                placeholder="e.g., John Smith, Jane Doe"
+              />
+              <p className="mt-1 text-xs text-light-text-tertiary dark:text-gray-500">
+                Enter the name of the business owner or primary contact
+              </p>
             </div>
 
             {/* Phone Number */}
