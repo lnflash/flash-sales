@@ -100,20 +100,20 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
         id: "actions",
         header: "Actions",
         cell: (info) => (
-          <div className="flex space-x-2">
+          <div className="flex justify-center items-center space-x-1">
             <Link
               href={`/dashboard/submissions/${info.getValue()}`}
-              className="p-1 text-light-text-secondary hover:text-flash-green rounded-md transition-colors"
-              title="View Details"
+              className="p-1 text-light-text-secondary hover:text-flash-green rounded transition-colors"
+              title="View"
             >
-              <EyeIcon className="h-5 w-5" />
+              <EyeIcon className="h-4 w-4" />
             </Link>
             <Link
               href={`/dashboard/submissions/${info.getValue()}/edit`}
-              className="p-1 text-light-text-secondary hover:text-amber-600 rounded-md transition-colors"
+              className="p-1 text-light-text-secondary hover:text-amber-600 rounded transition-colors"
               title="Edit"
             >
-              <PencilSquareIcon className="h-5 w-5" />
+              <PencilSquareIcon className="h-4 w-4" />
             </Link>
             {onDelete && (
               <button
@@ -125,11 +125,11 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                     onDelete(submissionId);
                   }
                 }}
-                className="p-1 text-light-text-secondary hover:text-red-600 rounded-md transition-colors"
+                className="p-1 text-light-text-secondary hover:text-red-600 rounded transition-colors"
                 title="Delete"
                 type="button"
               >
-                <TrashIcon className="h-5 w-5" />
+                <TrashIcon className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -281,20 +281,46 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
     );
   }
 
-  // Desktop Table View
+  // Desktop Table View - Responsive without horizontal scroll
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-light-border dark:border-gray-700">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-light-border dark:divide-gray-700">
+      <div className="w-full">
+        <table className="w-full divide-y divide-light-border dark:divide-gray-700">
           <thead className="bg-light-bg-secondary dark:bg-gray-900">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-gray-400 uppercase tracking-wider whitespace-nowrap"
-                  >
+                {headerGroup.headers.map((header) => {
+                  // Add specific width classes for columns
+                  const columnId = header.column.id;
+                  let headerClass = "px-2 lg:px-4 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-gray-400 uppercase tracking-wider ";
+                  
+                  // Set column widths to prevent horizontal scrolling
+                  if (columnId === "ownerName") {
+                    headerClass += "w-[25%] min-w-[120px]";
+                  } else if (columnId === "phoneNumber") {
+                    headerClass += "hidden lg:table-cell w-[15%]";
+                  } else if (columnId === "packageSeen") {
+                    headerClass += "hidden xl:table-cell w-[10%] text-center";
+                  } else if (columnId === "interestLevel") {
+                    headerClass += "w-[15%] min-w-[80px]";
+                  } else if (columnId === "leadStatus") {
+                    headerClass += "w-[12%] min-w-[70px]";
+                  } else if (columnId === "username") {
+                    headerClass += "hidden md:table-cell w-[10%]";
+                  } else if (columnId === "territory") {
+                    headerClass += "hidden xl:table-cell w-[10%]";
+                  } else if (columnId === "timestamp") {
+                    headerClass += "hidden sm:table-cell w-[12%]";
+                  } else if (columnId === "actions") {
+                    headerClass += "w-[100px] text-center";
+                  }
+                  
+                  return (
+                    <th
+                      key={header.id}
+                      scope="col"
+                      className={headerClass}
+                    >
                     {header.isPlaceholder ? null : (
                       <div
                         className={`flex items-center ${header.column.getCanSort() ? "cursor-pointer select-none" : ""}`}
@@ -309,18 +335,45 @@ export default function SubmissionTable({ data, isLoading = false, totalItems = 
                       </div>
                     )}
                   </th>
-                ))}
+                  );
+                })}
               </tr>
             ))}
           </thead>
           <tbody className="divide-y divide-light-border dark:divide-gray-700">
             {table.getRowModel().rows.map((row) => (
               <tr key={row.id} className="hover:bg-light-bg-secondary dark:hover:bg-gray-700 transition-colors">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 whitespace-nowrap">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  // Apply same responsive classes to cells as headers
+                  const columnId = cell.column.id;
+                  let cellClass = "px-2 lg:px-4 py-3 text-sm ";
+                  
+                  if (columnId === "ownerName") {
+                    cellClass += "font-medium truncate max-w-[200px]";
+                  } else if (columnId === "phoneNumber") {
+                    cellClass += "hidden lg:table-cell";
+                  } else if (columnId === "packageSeen") {
+                    cellClass += "hidden xl:table-cell text-center";
+                  } else if (columnId === "interestLevel") {
+                    cellClass += "";
+                  } else if (columnId === "leadStatus") {
+                    cellClass += "";
+                  } else if (columnId === "username") {
+                    cellClass += "hidden md:table-cell";
+                  } else if (columnId === "territory") {
+                    cellClass += "hidden xl:table-cell";
+                  } else if (columnId === "timestamp") {
+                    cellClass += "hidden sm:table-cell";
+                  } else if (columnId === "actions") {
+                    cellClass += "text-center";
+                  }
+                  
+                  return (
+                    <td key={cell.id} className={cellClass}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

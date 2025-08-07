@@ -428,6 +428,27 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
 
   return (
     <div className="max-w-2xl mx-auto p-3 sm:p-6">
+      <style jsx>{`
+        input[type="range"]::-webkit-slider-thumb {
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          background: #10B981;
+          cursor: pointer;
+          border-radius: 50%;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input[type="range"]::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          background: #10B981;
+          cursor: pointer;
+          border-radius: 50%;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+      `}</style>
       <Card className="bg-white dark:bg-gray-900 shadow-lg border-light-border dark:border-gray-700">
         <CardHeader className="pb-4 px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -694,6 +715,59 @@ export default function IntakeFormWithEnrichment({ submissionId }: IntakeFormPro
                 <option value="Portland">Portland</option>
                 <option value="St. Thomas">St. Thomas</option>
               </select>
+            </div>
+
+            {/* Package Seen Checkbox - Mobile Friendly */}
+            <div className="bg-light-background-secondary dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-light-border dark:border-gray-700">
+              <label className="flex items-start sm:items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="packageSeen"
+                  name="packageSeen"
+                  checked={formData.packageSeen}
+                  onChange={handleInputChange}
+                  className="mt-1 sm:mt-0 mr-3 h-4 w-4 text-flash-green bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-flash-green focus:ring-2"
+                />
+                <div className="flex-1">
+                  <span className="block text-sm font-medium text-light-text-primary dark:text-white">
+                    Package Seen
+                  </span>
+                  <span className="block text-xs text-light-text-secondary dark:text-gray-400 mt-1">
+                    Check if the customer has viewed the package/presentation
+                  </span>
+                </div>
+              </label>
+            </div>
+
+            {/* Interest Level Slider - Mobile Optimized */}
+            <div>
+              <label htmlFor="interestLevel" className="block text-sm font-medium text-light-text-secondary dark:text-gray-300 mb-2">
+                Interest Level: <span className="text-flash-green font-semibold">{formData.interestLevel}/5</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-light-text-secondary dark:text-gray-400">Low</span>
+                <input
+                  type="range"
+                  id="interestLevel"
+                  name="interestLevel"
+                  min="1"
+                  max="5"
+                  value={formData.interestLevel}
+                  onChange={(e) => handleSliderChange(Number(e.target.value))}
+                  className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #10B981 0%, #10B981 ${(formData.interestLevel - 1) * 25}%, #E5E7EB ${(formData.interestLevel - 1) * 25}%, #E5E7EB 100%)`
+                  }}
+                />
+                <span className="text-xs text-light-text-secondary dark:text-gray-400">High</span>
+              </div>
+              <div className="flex justify-between mt-1 px-1">
+                <span className="text-xs text-light-text-secondary dark:text-gray-400">1</span>
+                <span className="text-xs text-light-text-secondary dark:text-gray-400">2</span>
+                <span className="text-xs text-light-text-secondary dark:text-gray-400">3</span>
+                <span className="text-xs text-light-text-secondary dark:text-gray-400">4</span>
+                <span className="text-xs text-light-text-secondary dark:text-gray-400">5</span>
+              </div>
             </div>
 
             {/* Lead Status */}
