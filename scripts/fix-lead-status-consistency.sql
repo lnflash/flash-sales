@@ -1,61 +1,95 @@
--- Fix lead_status consistency issues for older submissions
--- This script ensures all submissions have valid lead_status values
+-- Fix lead_status consistency issues in the deals table
+-- The app uses 'deals' table to store what the UI calls 'submissions'
 
--- 1. First, let's check what values currently exist
+-- 1. First, let's check what values currently exist in deals table
 SELECT DISTINCT lead_status, COUNT(*) as count 
-FROM submissions 
+FROM deals 
 GROUP BY lead_status 
 ORDER BY lead_status;
 
--- 2. Update any NULL or empty lead_status to 'new'
-UPDATE submissions 
-SET lead_status = 'new' 
+-- 2. Check for any NULL or invalid lead_status values
+SELECT 
+  id,
+  name,
+  lead_status,
+  status,
+  created_at
+FROM deals
+WHERE lead_status IS NULL 
+   OR lead_status = '' 
+   OR lead_status NOT IN ('new', 'contacted', 'qualified', 'converted', 'lost')
+LIMIT 20;
+
+-- 3. Update any NULL or empty lead_status to 'new'
+UPDATE deals 
+SET lead_status = 'new',
+    updated_at = NOW()
 WHERE lead_status IS NULL 
    OR lead_status = '' 
    OR lead_status NOT IN ('new', 'contacted', 'qualified', 'converted', 'lost');
 
--- 3. Add a check constraint to ensure valid values going forward
--- First drop existing constraint if it exists
-ALTER TABLE submissions 
+-- 4. Check existing constraints on the deals table
+SELECT 
+  conname AS constraint_name,
+  pg_get_constraintdef(oid) AS constraint_definition
+FROM pg_constraint
+WHERE conrelid = 'deals'::regclass
+  AND contype = 'c';
+
+-- 5. Drop any existing check constraint on lead_status if it exists
+ALTER TABLE deals 
+DROP CONSTRAINT IF EXISTS deals_lead_status_check;
+
+ALTER TABLE deals 
 DROP CONSTRAINT IF EXISTS valid_lead_status;
 
--- Add the constraint
-ALTER TABLE submissions 
-ADD CONSTRAINT valid_lead_status 
-CHECK (lead_status IN ('new', 'contacted', 'qualified', 'converted', 'lost'));
+-- 6. Add a flexible check constraint that allows NULL
+ALTER TABLE deals 
+ADD CONSTRAINT deals_lead_status_check 
+CHECK (
+  lead_status IS NULL OR 
+  lead_status IN ('new', 'contacted', 'qualified', 'converted', 'lost')
+);
 
--- 4. Set default value for lead_status
-ALTER TABLE submissions 
+-- 7. Set default value for lead_status
+ALTER TABLE deals 
 ALTER COLUMN lead_status SET DEFAULT 'new';
 
--- 5. Make lead_status NOT NULL (after we've fixed all existing records)
-ALTER TABLE submissions 
-ALTER COLUMN lead_status SET NOT NULL;
+-- 8. Create an index for better query performance if it doesn't exist
+CREATE INDEX IF NOT EXISTS idx_deals_lead_status 
+ON deals(lead_status);
 
--- 6. Create an index for better query performance
-CREATE INDEX IF NOT EXISTS idx_submissions_lead_status 
-ON submissions(lead_status);
+-- 9. Verify the fix
+SELECT 
+  'Total Deals' as metric,
+  COUNT(*) as count
+FROM deals
+UNION ALL
+SELECT 
+  'Deals with valid lead_status',
+  COUNT(*)
+FROM deals
+WHERE lead_status IN ('new', 'contacted', 'qualified', 'converted', 'lost')
+UNION ALL
+SELECT 
+  'Deals with NULL lead_status',
+  COUNT(*)
+FROM deals
+WHERE lead_status IS NULL
+UNION ALL
+SELECT 
+  'Deals with invalid lead_status',
+  COUNT(*)
+FROM deals
+WHERE lead_status IS NOT NULL 
+  AND lead_status NOT IN ('new', 'contacted', 'qualified', 'converted', 'lost');
 
--- 7. Update the updated_at timestamp for modified records
-UPDATE submissions 
-SET updated_at = NOW() 
-WHERE lead_status = 'new' 
-  AND (updated_at IS NULL OR updated_at < NOW() - INTERVAL '1 minute');
-
--- 8. Verify the fix
+-- 10. Final check - show distribution of lead_status values
 SELECT 
   lead_status,
   COUNT(*) as count,
   MIN(created_at) as oldest_record,
   MAX(created_at) as newest_record
-FROM submissions 
+FROM deals 
 GROUP BY lead_status 
 ORDER BY lead_status;
-
--- 9. Check for any remaining issues
-SELECT id, owner_name, lead_status, created_at 
-FROM submissions 
-WHERE lead_status IS NULL 
-   OR lead_status = '' 
-   OR lead_status NOT IN ('new', 'contacted', 'qualified', 'converted', 'lost')
-LIMIT 10;
